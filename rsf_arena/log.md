@@ -144,3 +144,16 @@ Structured autonomous-loop entries start below this header. Phase 1 smoke tests 
 - n_features: 48
 - verdict: BETTER (CI +0.032 >> SE=0.003; RMST +3.63 mo >> IQR_003=1.12; new best on both objectives)
 - one_line_lesson: 10-seed ensemble dramatically improves both metrics (CI 0.647→0.678, RMST 3.06→8.12); averaging predictions across seeds smooths noisy tree effects and creates more confident, accurate treatment recommendations
+
+### iter_012 — more_trees
+
+- type: PARAM
+- idea_id: more_trees
+- hypothesis: Expanding n_estimators search from [100, 600] to [200, 1000] gives the optimizer room to find trees-rich configs; more trees per model → more stable individual predictions → ensemble CI and RMST both increase beyond iter_011 best.
+- changed_files: rsf_arena/train.py
+- red_line_audit: pure hyperparameter range change; no data or metric definition changes; no test access
+- val_ci: PENDING
+- val_rmst_diff: PENDING
+- n_features: PENDING
+- verdict: PENDING
+- one_line_lesson: PENDING
