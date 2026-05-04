@@ -53,3 +53,16 @@ Structured autonomous-loop entries start below this header. Phase 1 smoke tests 
 - n_features: 148
 - verdict: WORSE — reverted (CI −0.024 < 0, RMST −4.15 << 0; Pareto selection chose large-gene low-interaction config that collapses treatment recommendations)
 - one_line_lesson: Tiny leaves [3,15] cause Pareto tie (only 2 Pareto front members, both score 1.0) → arbitrary trial selection; the chosen large-feature config (k_main=128, k_int=2) generalizes poorly to full-train refit on RMST
+
+### iter_005 — rmst_biased_pareto_selection
+
+- type: CODE
+- idea_id: rmst_biased_pareto_selection
+- hypothesis: Normalizing CI + RMST across all completed trials (not just Pareto front) and using 0.40*CI + 0.60*RMST weights will consistently select high-RMST configs instead of suffering from 2-member Pareto ties, recovering RMST without sacrificing CI.
+- changed_files: rsf_arena/train.py
+- red_line_audit: selection logic change only; data, features, training procedure, and metric definitions unchanged; no test access
+- val_ci: PENDING
+- val_rmst_diff: PENDING
+- n_features: PENDING
+- verdict: PENDING
+- one_line_lesson: PENDING
