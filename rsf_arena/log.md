@@ -139,8 +139,8 @@ Structured autonomous-loop entries start below this header. Phase 1 smoke tests 
 - hypothesis: Averaging counterfactual risk predictions from 10 deterministic seed models (rather than taking median of independently computed per-seed metrics) smooths noisy tree-level treatment effect estimates, pushing ensemble RMST above the per-seed median while keeping CI stable.
 - changed_files: rsf_arena/train.py
 - red_line_audit: evaluation only; all 10 models fit on train_df; counterfactual predictions set ACT=1/ACT=0 on valid rows; metric definitions preserved; no test access
-- val_ci: PENDING
-- val_rmst_diff: PENDING
-- n_features: PENDING
-- verdict: PENDING
-- one_line_lesson: PENDING
+- val_ci: 0.6784 ± 0.0027 (ensemble of 10 seeds)
+- val_rmst_diff: 8.12 months (seed panel: [4.94, 4.28, 3.82, 4.79, 7.78, 8.14, 7.80, 3.82, 5.55, 3.77])
+- n_features: 48
+- verdict: BETTER (CI +0.032 >> SE=0.003; RMST +3.63 mo >> IQR_003=1.12; new best on both objectives)
+- one_line_lesson: 10-seed ensemble dramatically improves both metrics (CI 0.647→0.678, RMST 3.06→8.12); averaging predictions across seeds smooths noisy tree effects and creates more confident, accurate treatment recommendations

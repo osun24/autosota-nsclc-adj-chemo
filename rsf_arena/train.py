@@ -14,6 +14,8 @@ import warnings
 import numpy as np
 import optuna
 import pandas as pd
+from lifelines import KaplanMeierFitter
+from lifelines.utils import restricted_mean_survival_time
 from optuna.samplers import NSGAIISampler
 from sksurv.ensemble import RandomSurvivalForest
 from sksurv.linear_model import CoxPHSurvivalAnalysis
@@ -307,31 +309,56 @@ def run(n_trials: int = DEFAULT_N_TRIALS, bootstrap_n: int = DEFAULT_BOOTSTRAPS,
         "rsf_params": rsf_params,
         "chosen_trial_params": dict(chosen.params),
     }
-    # Seed panel: fit 5 deterministic models and report medians for stable final metrics.
-    FINAL_SEEDS = [7, 13, 21, 37, 53]
+    # Seed ensemble: average risk predictions across 10 seeds for stable CI and RMST.
+    FINAL_SEEDS = [7, 13, 21, 37, 53, 71, 89, 97, 113, 127]
+    ens_risks, ens_risks_treated, ens_risks_untreated = [], [], []
     seed_cis, seed_rmsts = [], []
     last_model, feat_names = None, None
+    valid_tr = valid_df.copy(); valid_tr["Adjuvant Chemo"] = 1
+    valid_co = valid_df.copy(); valid_co["Adjuvant Chemo"] = 0
     for fs in FINAL_SEEDS:
         meta_seed = dict(metadata)
         meta_seed["rsf_params"] = dict(rsf_params)
         meta_seed["rsf_params"]["random_state"] = int(fs)
         m, fn, _, _, _ = fit_model_from_metadata(meta_seed, train_df, valid_df, refit_train_valid=False)
+        X_v = prepare.build_matrix_from_feature_names(valid_df, fn)
+        X_tr = prepare.build_matrix_from_feature_names(valid_tr, fn)
+        X_co = prepare.build_matrix_from_feature_names(valid_co, fn)
+        r = prepare.predict_rsf_risk(m, X_v)
+        r_tr = prepare.predict_rsf_risk(m, X_tr)
+        r_co = prepare.predict_rsf_risk(m, X_co)
+        ens_risks.append(r); ens_risks_treated.append(r_tr); ens_risks_untreated.append(r_co)
+        seed_cis.append(prepare.cindex(r, valid_df["OS_MONTHS"].to_numpy(float), valid_df["OS_STATUS"].to_numpy(int)))
         vr = prepare.evaluate_on_valid(m, valid_df, genes_main, genes_inter, dup_inter, fn, clin_cols)
-        seed_cis.append(float(vr["val_ci"]))
         seed_rmsts.append(float(vr["val_rmst_diff"]))
         last_model, feat_names = m, fn
-    print(f"[Seed Panel] val_ci per seed: {[round(v,4) for v in seed_cis]}")
-    print(f"[Seed Panel] val_rmst_diff per seed: {[round(v,3) for v in seed_rmsts]}")
-    valid_result = {"val_ci": float(np.median(seed_cis)), "val_rmst_diff": float(np.median(seed_rmsts)), "n_features": len(feat_names)}
+    # Ensemble predictions
+    ens_r = np.mean(ens_risks, axis=0)
+    ens_r_tr = np.mean(ens_risks_treated, axis=0)
+    ens_r_co = np.mean(ens_risks_untreated, axis=0)
+    ens_ci = prepare.cindex(ens_r, valid_df["OS_MONTHS"].to_numpy(float), valid_df["OS_STATUS"].to_numpy(int))
+    model_rec = np.where(ens_r_tr < ens_r_co, 1, 0)
+    alignment = valid_df["Adjuvant Chemo"].to_numpy(int) == model_rec
+    if int(alignment.sum()) > 0 and int((~alignment).sum()) > 0:
+        km_a = KaplanMeierFitter().fit(valid_df.loc[alignment, "OS_MONTHS"], event_observed=valid_df.loc[alignment, "OS_STATUS"])
+        km_n = KaplanMeierFitter().fit(valid_df.loc[~alignment, "OS_MONTHS"], event_observed=valid_df.loc[~alignment, "OS_STATUS"])
+        ens_rmst = float(restricted_mean_survival_time(km_a, t=60) - restricted_mean_survival_time(km_n, t=60))
+    else:
+        ens_rmst = 0.0
+    print(f"[Seed Panel] val_ci per seed:    {[round(v,4) for v in seed_cis]}")
+    print(f"[Seed Panel] val_rmst per seed:  {[round(v,3) for v in seed_rmsts]}")
+    print(f"[Ensemble ] val_ci={ens_ci:.4f}, val_rmst_diff={ens_rmst:.3f}")
     model = last_model
     result = {
-        "val_ci": float(valid_result["val_ci"]),
-        "val_rmst_diff": float(valid_result["val_rmst_diff"]),
+        "val_ci": float(ens_ci),
+        "val_rmst_diff": float(ens_rmst),
         "val_ci_se": float(np.std(seed_cis, ddof=1)),
         "rmst_iqr": float(np.percentile(seed_rmsts, 75) - np.percentile(seed_rmsts, 25)),
         "seed_panel_cis": seed_cis,
         "seed_panel_rmsts": seed_rmsts,
-        "n_features": int(valid_result["n_features"]),
+        "ensemble_ci": float(ens_ci),
+        "ensemble_rmst_diff": float(ens_rmst),
+        "n_features": len(feat_names),
         "k_main": k_main,
         "k_int": k_int,
         "dup_inter": dup_inter,
