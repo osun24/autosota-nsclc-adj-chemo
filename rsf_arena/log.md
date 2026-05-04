@@ -48,8 +48,8 @@ Structured autonomous-loop entries start below this header. Phase 1 smoke tests 
 - hypothesis: Shrinking min_samples_leaf search range from [10, 120] to [3, 15] allows finer HTE splits with the 75-feature interaction-enabled input, improving both CI and RMST_diff over the iter_003 best.
 - changed_files: rsf_arena/train.py
 - red_line_audit: pure hyperparameter range change; no data/metric changes; no test access
-- val_ci: PENDING
-- val_rmst_diff: PENDING
-- n_features: PENDING
-- verdict: PENDING
-- one_line_lesson: PENDING
+- val_ci: 0.6228 ± 0.0002
+- val_rmst_diff: 0.34 ± 0.10 (months)
+- n_features: 148
+- verdict: WORSE — reverted (CI −0.024 < 0, RMST −4.15 << 0; Pareto selection chose large-gene low-interaction config that collapses treatment recommendations)
+- one_line_lesson: Tiny leaves [3,15] cause Pareto tie (only 2 Pareto front members, both score 1.0) → arbitrary trial selection; the chosen large-feature config (k_main=128, k_int=2) generalizes poorly to full-train refit on RMST
