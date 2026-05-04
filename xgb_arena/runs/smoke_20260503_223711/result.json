@@ -1,0 +1,16 @@
+{
+  "best_ntree": 8,
+  "bootstrap_n": 2,
+  "chosen_trial": 4,
+  "dup_inter": 1,
+  "k_int": 8,
+  "k_main": 16,
+  "n_features": 42,
+  "n_trials": 10,
+  "notes": "iter_001: stability_selection_genes \u2014 LASSO-Cox stability selection replaces univariate ranking.",
+  "rmst_iqr": 0.6361506739464353,
+  "val_ci": 0.6792364761951555,
+  "val_ci_se": 0.009310893595931496,
+  "val_rmst_diff": 3.8222788361114937,
+  "wall_clock_sec": 42.45
+}

@@ -19,4 +19,10 @@ Structured autonomous-loop entries start below this header. The Phase 1 smoke te
 - Censored patients are not dropped (unchanged). ✓
 - Treatment recommendation logic (counterfactual risk comparison) is unchanged. ✓
 
-*Result to be filled in after run.*
+- val_ci: 0.6792 ± 0.0093
+- val_rmst_diff: 3.82 ± 0.64 (months)
+- n_features: 42 (k_main=16, k_int=8)
+- verdict: BASELINE (no prior to compare)
+- one_line_lesson: Stability selection found only 5/2261 genes at ≥60% threshold (alpha too aggressive); it still acts as a soft ranker, and the final model stopped at best_ntree=8 — very early stopping suggests the XGB is under-training or the ES criterion is misaligned.
+
+*Notes:* best_ntree=8 on final refit is anomalous; Optuna bootstrap median was 214 trees for the chosen trial. RMST diff locked at 3.82 across most trials, suggesting the model mostly recommends OBS for all patients.

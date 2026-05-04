@@ -66,6 +66,73 @@ def rank_genes_univariate(train_df: pd.DataFrame, gene_cols: list[str]) -> list[
     return [g for g, _ in ranks]
 
 
+def stability_selection_genes(
+    train_df: pd.DataFrame,
+    gene_cols: list[str],
+    n_subsamples: int = 100,
+    subsample_frac: float = 0.5,
+    stability_threshold: float = 0.6,
+    target_selections: int = 50,
+    seed: int = 42,
+) -> list[str]:
+    """Rank genes by LASSO-Cox stability selection frequency over half-subsamples."""
+    from sksurv.linear_model import CoxnetSurvivalAnalysis
+
+    y = Surv.from_arrays(
+        event=train_df["OS_STATUS"].astype(bool).values,
+        time=train_df["OS_MONTHS"].values.astype(float),
+    )
+    X = train_df[gene_cols].to_numpy(dtype=np.float64)
+    X_mean = X.mean(axis=0)
+    X_std = X.std(axis=0)
+    X_std = np.where(X_std > 0, X_std, 1.0)
+    X_scaled = ((X - X_mean) / X_std).astype(np.float64)
+
+    n = len(train_df)
+    n_sub = int(n * subsample_frac)
+    rng = np.random.default_rng(seed)
+
+    try:
+        cox_full = CoxnetSurvivalAnalysis(
+            l1_ratio=1.0, fit_baseline_model=False,
+            max_iter=500, n_alphas=30,
+        )
+        cox_full.fit(X_scaled, y)
+        alphas = cox_full.alphas_
+        coef_path = cox_full.coef_  # shape: (n_features, n_alphas)
+        n_selected = (np.abs(coef_path) > 1e-8).sum(axis=0)
+        candidates = np.where(n_selected >= target_selections)[0]
+        alpha_idx = int(candidates[0]) if len(candidates) > 0 else int(len(alphas) - 1)
+        target_alpha = float(alphas[alpha_idx])
+        print(f"[StabSel] alpha={target_alpha:.4g} -> {int(n_selected[alpha_idx])} selected on full data")
+    except Exception as e:
+        print(f"[StabSel] Fallback to univariate: {e}")
+        return rank_genes_univariate(train_df, gene_cols)
+
+    selection_counts = np.zeros(len(gene_cols), dtype=int)
+    failed = 0
+    for i in range(n_subsamples):
+        idx = rng.choice(n, size=n_sub, replace=False)
+        try:
+            cox = CoxnetSurvivalAnalysis(
+                alphas=[target_alpha], l1_ratio=1.0,
+                fit_baseline_model=False, max_iter=300,
+            )
+            cox.fit(X_scaled[idx], y[idx])
+            selection_counts += (np.abs(cox.coef_.ravel()) > 1e-8).astype(int)
+        except Exception:
+            failed += 1
+
+    selection_probs = selection_counts / max(n_subsamples - failed, 1)
+    n_stable = int((selection_probs >= stability_threshold).sum())
+    print(
+        f"[StabSel] {n_stable}/{len(gene_cols)} genes stable (>={stability_threshold*100:.0f}%), "
+        f"{failed} subsamples failed"
+    )
+    order = np.argsort(-selection_probs)
+    return [gene_cols[int(i)] for i in order]
+
+
 def build_features_with_interactions(
     df: pd.DataFrame,
     main_genes: list[str],
@@ -358,7 +425,7 @@ def run(n_trials: int = DEFAULT_N_TRIALS, bootstrap_n: int = DEFAULT_BOOTSTRAPS,
     start = time.time()
     train_df, valid_df = prepare.load_train_valid()
     clin_cols, clin_pretx, gene_feats = prepare.clinical_and_gene_columns(train_df, valid_df)
-    gene_rank = rank_genes_univariate(train_df, gene_feats)
+    gene_rank = stability_selection_genes(train_df, gene_feats)
     max_genes = len(gene_rank)
     n_events_tr = int(train_df["OS_STATUS"].sum())
     feat_budget = max(24, int(FEAT_EVENT_FRACTION * n_events_tr))
@@ -494,7 +561,7 @@ def run(n_trials: int = DEFAULT_N_TRIALS, bootstrap_n: int = DEFAULT_BOOTSTRAPS,
         "bootstrap_n": int(bootstrap_n),
         "n_trials": int(n_trials),
         "chosen_trial": int(chosen.number),
-        "notes": "Phase 1 smoke-test scaffold: existing XGB logic, 10-trial/2-bootstrap default budget, no test access.",
+        "notes": "iter_001: stability_selection_genes — LASSO-Cox stability selection replaces univariate ranking.",
         "wall_clock_sec": round(time.time() - start, 2),
     }
     metadata = {
