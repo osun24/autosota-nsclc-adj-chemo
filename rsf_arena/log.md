@@ -35,8 +35,8 @@ Structured autonomous-loop entries start below this header. Phase 1 smoke tests 
 - hypothesis: Narrowing max_features_frac from [0.25, 0.90] to [0.05, 0.40] forces more randomized trees, reducing inter-tree correlation; with interactions active this should stabilize RMST alignment without sacrificing CI.
 - changed_files: rsf_arena/train.py
 - red_line_audit: pure hyperparameter change; no data or metric definition changes; no test access
-- val_ci: PENDING
-- val_rmst_diff: PENDING
-- n_features: PENDING
-- verdict: PENDING
-- one_line_lesson: PENDING
+- val_ci: 0.6465 ± 0.0004
+- val_rmst_diff: 4.49 ± 1.12 (months)
+- n_features: 75
+- verdict: BETTER (CI +0.022 > SE_001=0.012; RMST 4.49 vs 4.41 baseline, +2.52 vs iter_002 state >> IQR_002=0.55; best combined so far)
+- one_line_lesson: Aggressive mtry (0.05–0.40 frac) restored RMST to 4.49 while keeping CI at 0.647; k_int=25 interactions still selected, suggesting interaction features need low mtry to avoid in-tree collinearity

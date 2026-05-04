@@ -143,8 +143,8 @@ def suggest_hparams(trial: optuna.Trial, feat_budget: int, clin_cols: list[str],
     max_k_int = min(k_main, max(0, max_nonclin - k_main), 32)
     k_int = int(trial.suggest_int("k_int", 0, max_k_int)) if max_k_int > 0 else 0
     dup_inter = 1
-    mf_mode = trial.suggest_categorical("max_features_mode", ["sqrt", "log2", "frac"])
-    max_features = trial.suggest_float("max_features_frac", 0.25, 0.9) if mf_mode == "frac" else mf_mode
+    mf_mode = trial.suggest_categorical("max_features_mode", ["sqrt", "frac"])
+    max_features = trial.suggest_float("max_features_frac", 0.05, 0.40) if mf_mode == "frac" else mf_mode
     params = {
         "n_estimators": trial.suggest_int("n_estimators", 100, 600, step=100),
         "max_depth": trial.suggest_int("max_depth", 2, 8),
