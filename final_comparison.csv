@@ -1,0 +1,2 @@
+model,run_dir,model_source,test_ci,test_rmst_diff,km_logrank_pvalue,km_figure,c_for_benefit,c_for_benefit_note,n_features,k_main,k_int,gene_set_jaccard_vs_other_runs_mean,gene_set_jaccard_n_comparisons
+xgb_tlearner,xgb_arena/runs/smoke_20260503_231932,refit_train_valid,0.6400691699604744,7.4114456452866335,0.0015086174876859113,final_comparison_km.png,,Not computed in Phase 1 scaffold; add a versioned definition before using for claims.,113,96,0,0.4142857142857143,7
