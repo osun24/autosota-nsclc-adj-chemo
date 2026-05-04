@@ -1,0 +1,18 @@
+{
+  "best_ntree_arm0": 279,
+  "best_ntree_arm1": 1,
+  "best_ntree_s": 250,
+  "bootstrap_n": 2,
+  "chosen_trial": 0,
+  "dup_inter": 1,
+  "k_int": 16,
+  "k_main": 32,
+  "n_features": 115,
+  "n_trials": 10,
+  "notes": "iter_007: s_t_ensemble \u2014 CI from S-learner; RMST from averaged S+T ITE.",
+  "rmst_iqr": 0.44847734843691356,
+  "val_ci": 0.6619171620891269,
+  "val_ci_se": 0.021505384835379233,
+  "val_rmst_diff": 6.460632665605068,
+  "wall_clock_sec": 81.62
+}

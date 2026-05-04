@@ -1,0 +1,18 @@
+{
+  "best_ntree": 64,
+  "best_ntree_arm0": 96,
+  "best_ntree_arm1": 32,
+  "bootstrap_n": 2,
+  "chosen_trial": 3,
+  "dup_inter": 1,
+  "k_int": 0,
+  "k_main": 96,
+  "n_features": 113,
+  "n_trials": 10,
+  "notes": "iter_008: arm1_inbag_es \u2014 arm1 ES on 20% inbag holdout; arm0 ES on val_df.",
+  "rmst_iqr": 2.2467334825055403,
+  "val_ci": 0.6633420134623889,
+  "val_ci_se": 0.036687700139192966,
+  "val_rmst_diff": 6.855545602195569,
+  "wall_clock_sec": 40.46
+}

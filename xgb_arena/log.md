@@ -159,4 +159,24 @@ Structured autonomous-loop entries start below this header. The Phase 1 smoke te
 - No test-set paths introduced. ✓
 - Counterfactual: predict_0(x) and predict_1(x) for all val patients; recommend ACT if risk_1 < risk_0. ✓
 
+- val_ci: 0.6633 ± 0.0367
+- val_rmst_diff: 6.86 ± 2.25 (months, IQR)
+- n_features: 113 (k_main=96, best_ntree_arm0=96, best_ntree_arm1=32)
+- verdict: MIXED (arm1 best_ntree fixed 1→32; CI unchanged vs iter_004, RMST −0.12 within IQR)
+- one_line_lesson: Inbag ES fixed arm1 best_ntree (1→32), confirming the ES was the cause; final metrics identical to T-learner because Optuna still selects k_main=96/k_int=0 region — now that arm1 trains meaningfully, follow-up regularization (smaller depth/larger min_child_weight) may help.
+
+---
+
+### iter_009 — more_regularized_depth
+- type: PARAM
+- idea_id: more_regularized_depth
+- hypothesis: Restricting max_depth to [2, 4] and raising min_child_weight lower bound to 5.0 will force simpler trees in both arms, reducing overfitting in arm1 (70 events, 96 features) while arm1 inbag ES is now functional.
+- changed_files: xgb_arena/train.py
+
+**Red-line audit (pre-edit):**
+- Hyperparameter range change only; no new data paths or features introduced. ✓
+- arm1 inbag ES from iter_008 unchanged. ✓
+- Gene selection, IPTW, val split all unchanged. ✓
+- No test-set paths introduced. ✓
+
 *Result to be filled in after run.*

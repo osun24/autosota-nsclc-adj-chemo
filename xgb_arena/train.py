@@ -528,17 +528,32 @@ def run(n_trials: int = DEFAULT_N_TRIALS, bootstrap_n: int = DEFAULT_BOOTSTRAPS,
             w_arm1 = w_full[act_vals == 1]
 
             X_arm0 = boot_arm0[feat_names_t].to_numpy(dtype=np.float32)
-            X_arm1 = boot_arm1[feat_names_t].to_numpy(dtype=np.float32)
             X_val = valid_df[feat_names_t].to_numpy(dtype=np.float32)
 
+            # arm0: ES on val_df (OBS-heavy, appropriate signal for OBS model)
             dtr0 = make_dmatrix(X_arm0, boot_arm0["OS_MONTHS"].values, boot_arm0["OS_STATUS"].values, w_arm0, feat_names_t)
-            dtr1 = make_dmatrix(X_arm1, boot_arm1["OS_MONTHS"].values, boot_arm1["OS_STATUS"].values, w_arm1, feat_names_t)
-            dva = make_dmatrix(X_val, valid_df["OS_MONTHS"].values, valid_df["OS_STATUS"].values, None, feat_names_t)
+            dva0 = make_dmatrix(X_val, valid_df["OS_MONTHS"].values, valid_df["OS_STATUS"].values, None, feat_names_t)
+
+            # arm1: ES on 20% inbag holdout (ACT-relevant signal, fixes best_ntree_arm1=1)
+            n1 = len(boot_arm1)
+            es1_size = max(2, int(0.20 * n1))
+            rng_es1 = np.random.default_rng(int(boot_seed) + 9999)
+            es1_idx = rng_es1.choice(n1, size=es1_size, replace=False)
+            tr1_mask = np.ones(n1, dtype=bool); tr1_mask[es1_idx] = False
+            arm1_tr = boot_arm1.iloc[tr1_mask].reset_index(drop=True)
+            arm1_es_df = boot_arm1.iloc[es1_idx].reset_index(drop=True)
+            w_arm1_tr = w_arm1[tr1_mask]
+            if int(arm1_es_df["OS_STATUS"].sum()) >= 2:
+                dtr1 = make_dmatrix(arm1_tr[feat_names_t].to_numpy(dtype=np.float32), arm1_tr["OS_MONTHS"].values, arm1_tr["OS_STATUS"].values, w_arm1_tr, feat_names_t)
+                dva1 = make_dmatrix(arm1_es_df[feat_names_t].to_numpy(dtype=np.float32), arm1_es_df["OS_MONTHS"].values, arm1_es_df["OS_STATUS"].values, None, feat_names_t)
+            else:
+                dtr1 = make_dmatrix(boot_arm1[feat_names_t].to_numpy(dtype=np.float32), boot_arm1["OS_MONTHS"].values, boot_arm1["OS_STATUS"].values, w_arm1, feat_names_t)
+                dva1 = make_dmatrix(X_val, valid_df["OS_MONTHS"].values, valid_df["OS_STATUS"].values, None, feat_names_t)
 
             p0 = dict(params); p0["seed"] = int(boot_seed)
             p1 = dict(params); p1["seed"] = int(boot_seed) + 1
-            booster0, _ = train_xgb_cox(dtr0, dva, p0, num_boost_round, esr)
-            booster1, _ = train_xgb_cox(dtr1, dva, p1, num_boost_round, esr)
+            booster0, _ = train_xgb_cox(dtr0, dva0, p0, num_boost_round, esr)
+            booster1, _ = train_xgb_cox(dtr1, dva1, p1, num_boost_round, esr)
             best0 = booster0.best_iteration + 1 if booster0.best_iteration is not None else num_boost_round
             best1 = booster1.best_iteration + 1 if booster1.best_iteration is not None else num_boost_round
 
@@ -592,17 +607,32 @@ def run(n_trials: int = DEFAULT_N_TRIALS, bootstrap_n: int = DEFAULT_BOOTSTRAPS,
     w_arm1_fin = w_full[act_vals_tr == 1]
 
     X_arm0_fin = train_arm0[feat_names].to_numpy(dtype=np.float32)
-    X_arm1_fin = train_arm1[feat_names].to_numpy(dtype=np.float32)
     X_val_fin = valid_df[feat_names].to_numpy(dtype=np.float32)
 
+    # arm0: ES on val_df
     dtr0_fin = make_dmatrix(X_arm0_fin, train_arm0["OS_MONTHS"].values, train_arm0["OS_STATUS"].values, w_arm0_fin, feat_names)
-    dtr1_fin = make_dmatrix(X_arm1_fin, train_arm1["OS_MONTHS"].values, train_arm1["OS_STATUS"].values, w_arm1_fin, feat_names)
-    dva_fin = make_dmatrix(X_val_fin, valid_df["OS_MONTHS"].values, valid_df["OS_STATUS"].values, None, feat_names)
+    dva0_fin = make_dmatrix(X_val_fin, valid_df["OS_MONTHS"].values, valid_df["OS_STATUS"].values, None, feat_names)
+
+    # arm1: ES on 20% holdout from train_arm1
+    n1_fin = len(train_arm1)
+    es1_fin_size = max(2, int(0.20 * n1_fin))
+    rng_es1_fin = np.random.default_rng(7777)
+    es1_fin_idx = rng_es1_fin.choice(n1_fin, size=es1_fin_size, replace=False)
+    tr1_fin_mask = np.ones(n1_fin, dtype=bool); tr1_fin_mask[es1_fin_idx] = False
+    arm1_tr_fin = train_arm1.iloc[tr1_fin_mask].reset_index(drop=True)
+    arm1_es_fin = train_arm1.iloc[es1_fin_idx].reset_index(drop=True)
+    w_arm1_tr_fin = w_arm1_fin[tr1_fin_mask]
+    if int(arm1_es_fin["OS_STATUS"].sum()) >= 2:
+        dtr1_fin = make_dmatrix(arm1_tr_fin[feat_names].to_numpy(dtype=np.float32), arm1_tr_fin["OS_MONTHS"].values, arm1_tr_fin["OS_STATUS"].values, w_arm1_tr_fin, feat_names)
+        dva1_fin = make_dmatrix(arm1_es_fin[feat_names].to_numpy(dtype=np.float32), arm1_es_fin["OS_MONTHS"].values, arm1_es_fin["OS_STATUS"].values, None, feat_names)
+    else:
+        dtr1_fin = make_dmatrix(train_arm1[feat_names].to_numpy(dtype=np.float32), train_arm1["OS_MONTHS"].values, train_arm1["OS_STATUS"].values, w_arm1_fin, feat_names)
+        dva1_fin = make_dmatrix(X_val_fin, valid_df["OS_MONTHS"].values, valid_df["OS_STATUS"].values, None, feat_names)
 
     pf0 = dict(params_fin); pf0["seed"] = 7
     pf1 = dict(params_fin); pf1["seed"] = 8
-    booster0_fin, _ = train_xgb_cox(dtr0_fin, dva_fin, pf0, num_boost_round_fin, esr_fin)
-    booster1_fin, _ = train_xgb_cox(dtr1_fin, dva_fin, pf1, num_boost_round_fin, esr_fin)
+    booster0_fin, _ = train_xgb_cox(dtr0_fin, dva0_fin, pf0, num_boost_round_fin, esr_fin)
+    booster1_fin, _ = train_xgb_cox(dtr1_fin, dva1_fin, pf1, num_boost_round_fin, esr_fin)
     best0_fin = booster0_fin.best_iteration + 1 if booster0_fin.best_iteration is not None else num_boost_round_fin
     best1_fin = booster1_fin.best_iteration + 1 if booster1_fin.best_iteration is not None else num_boost_round_fin
     booster0_best = prepare.slice_booster_to_best_iteration(booster0_fin, best0_fin)
@@ -626,7 +656,7 @@ def run(n_trials: int = DEFAULT_N_TRIALS, bootstrap_n: int = DEFAULT_BOOTSTRAPS,
         "bootstrap_n": int(bootstrap_n),
         "n_trials": int(n_trials),
         "chosen_trial": int(chosen.number),
-        "notes": "iter_006: tlearner_ci_from_arm0 — CI from model_0 (OBS arm, n=661) only; RMST from counterfactual recs.",
+        "notes": "iter_008: arm1_inbag_es — arm1 ES on 20% inbag holdout; arm0 ES on val_df.",
         "wall_clock_sec": round(time.time() - start, 2),
     }
     metadata = {
