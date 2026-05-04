@@ -37,7 +37,7 @@ ARENA_DIR = Path(__file__).resolve().parent
 RUNS_DIR = ARENA_DIR / "runs"
 DEFAULT_N_TRIALS = int(os.environ.get("RSF_ARENA_N_TRIALS", "30"))
 DEFAULT_BOOTSTRAPS = int(os.environ.get("RSF_ARENA_BOOTSTRAPS", "3"))
-DEFAULT_SEEDS = int(os.environ.get("RSF_ARENA_SEEDS", "2"))
+DEFAULT_SEEDS = int(os.environ.get("RSF_ARENA_SEEDS", "3"))
 BOOTSTRAP_BASE_SEED = 31415
 FEAT_EVENT_FRACTION = 0.50
 
