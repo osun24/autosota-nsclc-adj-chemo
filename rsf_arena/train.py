@@ -160,22 +160,32 @@ def suggest_hparams(trial: optuna.Trial, feat_budget: int, clin_cols: list[str],
     return k_main, k_int, dup_inter, params
 
 
-def _select_pareto_compromise(study: optuna.Study) -> optuna.trial.FrozenTrial:
-    candidates = [t for t in study.best_trials if t.state == optuna.trial.TrialState.COMPLETE and t.values is not None]
-    if not candidates:
-        candidates = [t for t in study.trials if t.state == optuna.trial.TrialState.COMPLETE and t.values is not None]
-    if not candidates:
+def _select_pareto_compromise(study: optuna.Study, w_ci: float = 0.40, w_rmst: float = 0.60) -> optuna.trial.FrozenTrial:
+    """Select from Pareto front using normalized weighted score over *all* completed trials.
+
+    Normalization pools all trials (not just Pareto) so that two-member fronts don't
+    degenerate to a coin-flip tie. RMST is weighted higher than CI since it is the
+    harder, clinically-meaningful HTE objective.
+    """
+    all_complete = [t for t in study.trials if t.state == optuna.trial.TrialState.COMPLETE and t.values is not None]
+    if not all_complete:
         raise RuntimeError("No completed multi-objective trials found.")
-    ci_vals = np.array([float(t.values[0]) for t in candidates])
-    rmst_vals = np.array([float(t.values[1]) for t in candidates])
+    pareto = [t for t in study.best_trials if t.state == optuna.trial.TrialState.COMPLETE and t.values is not None]
+    if not pareto:
+        pareto = all_complete
+
+    # Normalise using global (all-trial) range so Pareto ties are broken consistently.
+    ci_all = np.array([float(t.values[0]) for t in all_complete])
+    rmst_all = np.array([float(t.values[1]) for t in all_complete])
+    ci_lo, ci_hi = float(ci_all.min()), float(ci_all.max())
+    rmst_lo, rmst_hi = float(rmst_all.min()), float(rmst_all.max())
 
     def norm(x, lo, hi):
         return 0.0 if hi <= lo else (x - lo) / (hi - lo)
 
     scored = []
-    for t in candidates:
-        score = norm(float(t.values[0]), float(ci_vals.min()), float(ci_vals.max()))
-        score += norm(float(t.values[1]), float(rmst_vals.min()), float(rmst_vals.max()))
+    for t in pareto:
+        score = w_ci * norm(float(t.values[0]), ci_lo, ci_hi) + w_rmst * norm(float(t.values[1]), rmst_lo, rmst_hi)
         scored.append((score, t))
     return sorted(scored, key=lambda z: z[0], reverse=True)[0][1]
 

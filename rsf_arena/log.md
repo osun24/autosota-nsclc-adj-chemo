@@ -61,8 +61,8 @@ Structured autonomous-loop entries start below this header. Phase 1 smoke tests 
 - hypothesis: Normalizing CI + RMST across all completed trials (not just Pareto front) and using 0.40*CI + 0.60*RMST weights will consistently select high-RMST configs instead of suffering from 2-member Pareto ties, recovering RMST without sacrificing CI.
 - changed_files: rsf_arena/train.py
 - red_line_audit: selection logic change only; data, features, training procedure, and metric definitions unchanged; no test access
-- val_ci: PENDING
-- val_rmst_diff: PENDING
-- n_features: PENDING
-- verdict: PENDING
-- one_line_lesson: PENDING
+- val_ci: 0.6465 ± 0.0004
+- val_rmst_diff: −0.22 ± 0.62 (months)
+- n_features: 75
+- verdict: MIXED (CI identical to iter_003; RMST declined — not due to selection logic but run-to-run RSF non-determinism via n_jobs=-1)
+- one_line_lesson: RMST-biased selection correctly chose k_main=32/k_int=25 again, but RSF non-determinism (n_jobs=-1 parallel trees) flips treatment recommendations → RMST swings from +4.49 to −0.22; need larger n_trials or seed averaging to stabilize
