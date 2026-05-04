@@ -14,3 +14,16 @@ Structured autonomous-loop entries start below this header. Phase 1 smoke tests 
 - n_features: 82
 - verdict: BETTER (baseline — first result)
 - one_line_lesson: Stability selection establishes baseline of CI=0.625, RMST_diff=4.41 mo; RMST IQR=2.02 indicates high variance in counterfactual alignment
+
+### iter_002 — interaction_enabled_rsf
+
+- type: ALGO
+- idea_id: interaction_enabled_rsf
+- hypothesis: Exposing k_int (gene×ACT interaction count, 0–32) as an Optuna hyperparameter will let the optimizer find configs where interaction terms directly encode treatment-effect heterogeneity, increasing val_rmst_diff while keeping val_ci stable.
+- changed_files: rsf_arena/train.py
+- red_line_audit: interaction features are g*ACT computed from train rows only; counterfactual eval sets ACT=1/0 on valid rows then uses predict_rsf_risk; no test access; metric definitions unchanged
+- val_ci: PENDING
+- val_rmst_diff: PENDING
+- n_features: PENDING
+- verdict: PENDING
+- one_line_lesson: PENDING
