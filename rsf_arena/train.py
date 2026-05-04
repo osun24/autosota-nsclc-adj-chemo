@@ -244,11 +244,19 @@ def run(n_trials: int = DEFAULT_N_TRIALS, bootstrap_n: int = DEFAULT_BOOTSTRAPS,
     start = time.time()
     train_df, valid_df = prepare.load_train_valid()
     clin_cols, clin_pretx, gene_feats = prepare.clinical_and_gene_columns(train_df, valid_df)
-    gene_rank = rank_genes_stability(train_df, gene_feats, n_bootstraps=25, seed=42)
+
+    # Honest RSF split: rank genes on one half, bootstrap RSF fitting on the other.
+    # Final model still uses all of train_df.
+    honest_rng = np.random.default_rng(99)
+    honest_perm = honest_rng.permutation(len(train_df))
+    rank_half = train_df.iloc[honest_perm[: len(train_df) // 2]].reset_index(drop=True)
+    fit_half = train_df.iloc[honest_perm[len(train_df) // 2 :]].reset_index(drop=True)
+
+    gene_rank = rank_genes_stability(rank_half, gene_feats, n_bootstraps=25, seed=42)
     max_genes = len(gene_rank)
     feat_budget = max(24, int(FEAT_EVENT_FRACTION * int(train_df["OS_STATUS"].sum())))
-    print(f"[Gene Ranking] Stability-ranked {max_genes} genes on TRAIN (25 half-sample bootstraps)")
-    print(f"[Budgets] feature budget <= {feat_budget}")
+    print(f"[Gene Ranking] Honest-split stability-ranked {max_genes} genes on ranking half ({len(rank_half)} rows)")
+    print(f"[Budgets] feature budget <= {feat_budget}, fit half size = {len(fit_half)}")
     print(f"Starting bootstrap optimization: {n_trials} trials x {bootstrap_n} bootstraps x {seed_eval_n} seeds")
 
     def objective(trial: optuna.Trial):
@@ -257,7 +265,7 @@ def run(n_trials: int = DEFAULT_N_TRIALS, bootstrap_n: int = DEFAULT_BOOTSTRAPS,
         n_features = None
         for b in range(int(bootstrap_n)):
             boot_seed = BOOTSTRAP_BASE_SEED + trial.number * 1000 + b
-            boot_train_df = prepare.bootstrap_resample_df(train_df, boot_seed, require_two_arms=True, require_event=True)
+            boot_train_df = prepare.bootstrap_resample_df(fit_half, boot_seed, require_two_arms=True, require_event=True)
             w_boot, _, _ = prepare.compute_iptw(boot_train_df, covariate_cols=clin_pretx, act_col="Adjuvant Chemo")
             Xtr, ytr, wtr, Xva, feat_names, genes_main, genes_inter = build_trial_mats_for_splits(
                 boot_train_df, valid_df, w_boot, k_main, k_int, dup_inter, gene_rank, clin_cols

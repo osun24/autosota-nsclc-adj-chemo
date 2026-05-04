@@ -87,8 +87,8 @@ Structured autonomous-loop entries start below this header. Phase 1 smoke tests 
 - hypothesis: Splitting train into a ranking half (gene stability selection) and a fitting half (bootstrap RSF) reduces adaptive overfit: the RSF can no longer exploit the same patients used for gene ranking, shrinking the optimization-to-final RMST gap and giving more reliable trial selection.
 - changed_files: rsf_arena/train.py
 - red_line_audit: both halves derived from train only (no valid/test data); censored patients retained; gene ranking still on train sub-set; final model still fit on full train; metric definitions unchanged
-- val_ci: PENDING
-- val_rmst_diff: PENDING
-- n_features: PENDING
-- verdict: PENDING
-- one_line_lesson: PENDING
+- val_ci: 0.6475 ± 0.0177
+- val_rmst_diff: 3.06 ± 1.69 (months)
+- n_features: 48
+- verdict: MIXED (CI +0.001 and RMST −1.43 both within SE/IQR noise vs iter_003 best; half-data ranking reduced runtime to 271s)
+- one_line_lesson: Honest split gives CI=0.6475 (marginally above best) but RMST=3.06 with high variance (IQR=1.69); faster runtime (271s) leaves budget for more trials/bootstraps in next iter
