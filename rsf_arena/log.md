@@ -131,3 +131,16 @@ Structured autonomous-loop entries start below this header. Phase 1 smoke tests 
 - n_features: 107
 - verdict: MIXED (CI −0.010 > SE=0.0035; RMST −1.93 < IQR=1.95 → within noise; seed panel reveals 3-month seed-level RMST variance)
 - one_line_lesson: Seed panel exposes that RMST has fundamental ≈3 mo seed variance for any single RSF config; "best" prior RMST values (4.05–4.49) were high-seed runs; true median RMST is ≈2.5–3 mo; CI is stable at 0.63–0.64
+
+### iter_011 — seed_ensemble_final
+
+- type: ALGO
+- idea_id: seed_ensemble_final
+- hypothesis: Averaging counterfactual risk predictions from 10 deterministic seed models (rather than taking median of independently computed per-seed metrics) smooths noisy tree-level treatment effect estimates, pushing ensemble RMST above the per-seed median while keeping CI stable.
+- changed_files: rsf_arena/train.py
+- red_line_audit: evaluation only; all 10 models fit on train_df; counterfactual predictions set ACT=1/ACT=0 on valid rows; metric definitions preserved; no test access
+- val_ci: PENDING
+- val_rmst_diff: PENDING
+- n_features: PENDING
+- verdict: PENDING
+- one_line_lesson: PENDING
