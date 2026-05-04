@@ -9,8 +9,8 @@ Structured autonomous-loop entries start below this header. Phase 1 smoke tests 
 - hypothesis: Replacing one-shot univariate Cox ranking with bootstrap stability selection (25 half-samples, concordance-based scoring) will select more reliably informative genes, improving both val_ci and val_rmst_diff vs a pure univariate baseline.
 - changed_files: rsf_arena/train.py
 - red_line_audit: stability scores computed exclusively on train bootstrap sub-samples (no valid_df rows used in ranking); censored patients are retained; metric definitions unchanged; no test-set access
-- val_ci: PENDING
-- val_rmst_diff: PENDING
-- n_features: PENDING
-- verdict: PENDING
-- one_line_lesson: PENDING
+- val_ci: 0.6249 ± 0.0116
+- val_rmst_diff: 4.41 ± 2.02 (months)
+- n_features: 82
+- verdict: BETTER (baseline — first result)
+- one_line_lesson: Stability selection establishes baseline of CI=0.625, RMST_diff=4.41 mo; RMST IQR=2.02 indicates high variance in counterfactual alignment

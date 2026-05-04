@@ -60,6 +60,22 @@ def rank_genes_univariate(train_df: pd.DataFrame, gene_cols: list[str]) -> list[
     return [g for g, _ in ranks]
 
 
+def rank_genes_stability(train_df: pd.DataFrame, gene_cols: list[str], n_bootstraps: int = 25, seed: int = 42) -> list[str]:
+    """Bootstrap stability selection: rank genes by how consistently they rank in the top half across half-samples."""
+    rng = np.random.default_rng(seed)
+    n = len(train_df)
+    sub_n = max(10, n // 2)
+    top_k = max(1, len(gene_cols) // 2)
+    scores: dict[str, float] = {g: 0.0 for g in gene_cols}
+    for _ in range(n_bootstraps):
+        idx = rng.choice(n, size=sub_n, replace=False)
+        sub_df = train_df.iloc[idx]
+        sub_ranked = rank_genes_univariate(sub_df, gene_cols)
+        for g in sub_ranked[:top_k]:
+            scores[g] += 1.0 / n_bootstraps
+    return sorted(gene_cols, key=lambda g: scores[g], reverse=True)
+
+
 def build_features_with_interactions(
     df: pd.DataFrame,
     main_genes: list[str],
@@ -214,10 +230,10 @@ def run(n_trials: int = DEFAULT_N_TRIALS, bootstrap_n: int = DEFAULT_BOOTSTRAPS,
     start = time.time()
     train_df, valid_df = prepare.load_train_valid()
     clin_cols, clin_pretx, gene_feats = prepare.clinical_and_gene_columns(train_df, valid_df)
-    gene_rank = rank_genes_univariate(train_df, gene_feats)
+    gene_rank = rank_genes_stability(train_df, gene_feats, n_bootstraps=25, seed=42)
     max_genes = len(gene_rank)
     feat_budget = max(24, int(FEAT_EVENT_FRACTION * int(train_df["OS_STATUS"].sum())))
-    print(f"[Gene Ranking] Ranked {max_genes} genes on TRAIN")
+    print(f"[Gene Ranking] Stability-ranked {max_genes} genes on TRAIN (25 half-sample bootstraps)")
     print(f"[Budgets] feature budget <= {feat_budget}")
     print(f"Starting bootstrap optimization: {n_trials} trials x {bootstrap_n} bootstraps x {seed_eval_n} seeds")
 
