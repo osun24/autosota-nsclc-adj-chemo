@@ -162,7 +162,7 @@ def suggest_hparams(trial: optuna.Trial, feat_budget: int, clin_cols: list[str],
     return k_main, k_int, dup_inter, params
 
 
-def _select_pareto_compromise(study: optuna.Study, w_ci: float = 0.40, w_rmst: float = 0.60) -> optuna.trial.FrozenTrial:
+def _select_pareto_compromise(study: optuna.Study, w_ci: float = 0.55, w_rmst: float = 0.45) -> optuna.trial.FrozenTrial:
     """Select from Pareto front using normalized weighted score over *all* completed trials.
 
     Normalization pools all trials (not just Pareto) so that two-member fronts don't
@@ -312,20 +312,10 @@ def run(n_trials: int = DEFAULT_N_TRIALS, bootstrap_n: int = DEFAULT_BOOTSTRAPS,
     # Seed ensemble: average risk predictions across 10 seeds for stable CI and RMST.
     FINAL_SEEDS = [7, 13, 21, 37, 53, 71, 89, 97, 113, 127]
     ens_risks, ens_risks_treated, ens_risks_untreated = [], [], []
-    tl_risks_treated, tl_risks_control = [], []
     seed_cis, seed_rmsts = [], []
     last_model, feat_names = None, None
     valid_tr = valid_df.copy(); valid_tr["Adjuvant Chemo"] = 1
     valid_co = valid_df.copy(); valid_co["Adjuvant Chemo"] = 0
-    # T-learner: separate RSFs per treatment arm, no interactions, no ACT feature.
-    tl_feat_names = genes_main + clin_pretx
-    train_act = train_df[train_df["Adjuvant Chemo"] == 1].copy()
-    train_obs = train_df[train_df["Adjuvant Chemo"] == 0].copy()
-    X_act_fit = prepare.build_matrix_from_feature_names(train_act, tl_feat_names)
-    X_obs_fit = prepare.build_matrix_from_feature_names(train_obs, tl_feat_names)
-    y_act_fit = Surv.from_arrays(event=train_act["OS_STATUS"].astype(bool).values, time=train_act["OS_MONTHS"].astype(float).values)
-    y_obs_fit = Surv.from_arrays(event=train_obs["OS_STATUS"].astype(bool).values, time=train_obs["OS_MONTHS"].astype(float).values)
-    X_val_tl = prepare.build_matrix_from_feature_names(valid_df, tl_feat_names)
     for fs in FINAL_SEEDS:
         meta_seed = dict(metadata)
         meta_seed["rsf_params"] = dict(rsf_params)
@@ -342,23 +332,12 @@ def run(n_trials: int = DEFAULT_N_TRIALS, bootstrap_n: int = DEFAULT_BOOTSTRAPS,
         vr = prepare.evaluate_on_valid(m, valid_df, genes_main, genes_inter, dup_inter, fn, clin_cols)
         seed_rmsts.append(float(vr["val_rmst_diff"]))
         last_model, feat_names = m, fn
-        # T-learner arm fits (no IPTW: arm subsets are internally homogeneous on treatment).
-        tl_p = dict(rsf_params); tl_p["n_jobs"] = 1
-        tl_p["random_state"] = int(fs) + 1000
-        m_tl_act = make_rsf(**tl_p); m_tl_act.fit(X_act_fit, y_act_fit)
-        tl_p["random_state"] = int(fs) + 2000
-        m_tl_obs = make_rsf(**tl_p); m_tl_obs.fit(X_obs_fit, y_obs_fit)
-        tl_risks_treated.append(prepare.predict_rsf_risk(m_tl_act, X_val_tl))
-        tl_risks_control.append(prepare.predict_rsf_risk(m_tl_obs, X_val_tl))
-    # Ensemble predictions: combine S-learner and T-learner deltas equally.
+    # Ensemble predictions
     ens_r = np.mean(ens_risks, axis=0)
     ens_r_tr = np.mean(ens_risks_treated, axis=0)
     ens_r_co = np.mean(ens_risks_untreated, axis=0)
-    tl_r_tr = np.mean(tl_risks_treated, axis=0)
-    tl_r_co = np.mean(tl_risks_control, axis=0)
     ens_ci = prepare.cindex(ens_r, valid_df["OS_MONTHS"].to_numpy(float), valid_df["OS_STATUS"].to_numpy(int))
-    combined_delta = 0.5 * (ens_r_tr - ens_r_co) + 0.5 * (tl_r_tr - tl_r_co)
-    model_rec = np.where(combined_delta < 0, 1, 0)
+    model_rec = np.where(ens_r_tr < ens_r_co, 1, 0)
     alignment = valid_df["Adjuvant Chemo"].to_numpy(int) == model_rec
     if int(alignment.sum()) > 0 and int((~alignment).sum()) > 0:
         km_a = KaplanMeierFitter().fit(valid_df.loc[alignment, "OS_MONTHS"], event_observed=valid_df.loc[alignment, "OS_STATUS"])

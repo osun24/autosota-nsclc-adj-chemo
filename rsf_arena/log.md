@@ -178,3 +178,16 @@ Structured autonomous-loop entries start below this header. Phase 1 smoke tests 
 - hypothesis: Fitting separate T-learner RSFs on the ACT=1 and ACT=0 training arms (using the same hyperparams as the S-learner best trial) and averaging the T-learner risk delta with the S-learner counterfactual delta at final eval will provide stronger HTE signal, boosting ensemble RMST above the ~7–8 mo ceiling while keeping CI stable.
 - changed_files: rsf_arena/train.py
 - red_line_audit: T-learner models fit exclusively on train_df subsets (ACT==1 and ACT==0 rows); counterfactual evaluation still on valid_df with ACT flipped; metric definitions unchanged; no test access; treated arm n=114 is small but sufficient for tree-based method with min_samples_leaf≥10
+- val_ci: 0.6455 ± 0.0029 (ensemble of 10 seeds)
+- val_rmst_diff: 6.53 months (seed panel: [6.67, 9.87, 3.43, 4.84, 1.12, 0.73, 7.63, 8.88, 2.32, 4.19])
+- n_features: 69
+- verdict: WORSE — reverted (optimizer selected trial 22 over trial 14; CI −0.033 >> SE vs iter_011 best; T-learner combination reduced RMST 7.38→6.53 even vs trial-22-only iter_012; root cause: RMST-biased Pareto (0.40/0.60) favors trial 22 when its optimization RMST estimate happens to be high)
+- one_line_lesson: T-learner hurt RMST (6.53 vs 7.38) with same trial 22 config; optimizer inconsistently picks trial 22 vs 14 because RMST-biased Pareto sometimes scores trial 22's optimization RMST above trial 14; fix: rebalance Pareto weights toward CI to consistently select trial 14 which gives ensemble CI=0.679 vs 0.645
+
+### iter_015 — ci_biased_pareto
+
+- type: CODE
+- idea_id: ci_biased_pareto
+- hypothesis: Changing Pareto compromise weights from (0.40 CI, 0.60 RMST) to (0.55 CI, 0.45 RMST) will reliably select trial 14 (k_main=16/k_int=14, CI=0.650 in optim) over trial 22 (k_main=32/k_int=19, CI=0.633) — the higher-CI trial has ensemble CI=0.679 vs 0.645, and the normalized CI gap always dominates the RMST gap at 0.55/0.45 weighting.
+- changed_files: rsf_arena/train.py
+- red_line_audit: selection logic change only; data, features, training procedure, and metric definitions unchanged; no test access
