@@ -78,4 +78,37 @@ Structured autonomous-loop entries start below this header. The Phase 1 smoke te
 - Counterfactual: predict_0(x) and predict_1(x) for all val patients; recommend ACT if risk_1 < risk_0. ✓
 - CI: computed from average risk (predict_0 + predict_1)/2 across val patients. ✓
 
+- val_ci: 0.6633 ± 0.0367
+- val_rmst_diff: 6.98 ± 1.90 (months)
+- n_features: 113 (k_main=96, best_ntree_arm0=96, best_ntree_arm1=1)
+- verdict: MIXED (RMST +3.16 months vs baseline; CI −0.016 vs baseline) — kept in place
+- one_line_lesson: T-learner broke RMST lock (3.82→6.98, now recommends ACT for ~61% of patients) but arm1 model stops at best_ntree=1 — arm1 has 70 events for 113 features, severe overfit; follow-up to fix arm1 instability.
+
+---
+
+### iter_005 — t_learner_arm1_budget
+- type: PARAM
+- idea_id: t_learner_arm1_budget (extends t_learner_split)
+- hypothesis: Constraining feature budget to arm1 event count (70 events → 35 features) prevents arm1 overfitting.
+- changed_files: xgb_arena/train.py
+
+- val_ci: 0.6494 ± 0.0153
+- val_rmst_diff: 5.47 ± 0.63 (months)
+- n_features: 33 (k_main=16, best_ntree_arm0=24, best_ntree_arm1=1)
+- verdict: WORSE (both CI and RMST lower than iter_004) → REVERTED
+- one_line_lesson: Smaller feature budget still gives arm1 best_ntree=1; the problem is that arm1 model's predictions on val_df (mostly OBS patients) don't improve after 1 tree regardless of feature count — switching to model_0 alone for CI may help.
+
+---
+
+### iter_006 — tlearner_ci_from_arm0
+- type: CODE
+- idea_id: tlearner_ci_from_arm0 (extends t_learner_split)
+- hypothesis: Using model_0 risk alone (not average) for CI computation will improve val_ci since model_0 (n=661) is far more stable than model_1 (n=114); model_1 is retained for counterfactual RMST computation only.
+- changed_files: xgb_arena/train.py
+
+**Red-line audit (pre-edit):**
+- Only changes which model's risk score is used for CI; RMST counterfactual logic unchanged. ✓
+- No test-set paths introduced. ✓
+- Counterfactual: predict_0(x) and predict_1(x) both still computed; recommend ACT if risk_1 < risk_0. ✓
+
 *Result to be filled in after run.*
