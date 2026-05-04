@@ -78,22 +78,4 @@ Structured autonomous-loop entries start below this header. The Phase 1 smoke te
 - Counterfactual: predict_0(x) and predict_1(x) for all val patients; recommend ACT if risk_1 < risk_0. ✓
 - CI: computed from average risk (predict_0 + predict_1)/2 across val patients. ✓
 
-- val_ci: 0.6633 ± 0.0367
-- val_rmst_diff: 6.98 ± 1.90 (months)
-- n_features: 113 (k_main=96)
-- verdict: MIXED (RMST +3.16 months vs baseline; CI −0.016 vs baseline) — kept in place
-- one_line_lesson: T-learner broke the RMST=3.82 lock dramatically (now recommends ACT for ~61% of patients) but arm1 model stopped at best_ntree=1 — 113 features for 70 arm1 events is severe overfit; follow-up: constrain arm1 feature budget to arm1 event count.
-
----
-
-### iter_005 — t_learner_arm1_budget
-- type: PARAM
-- idea_id: t_learner_arm1_budget (extends t_learner_split)
-- hypothesis: Constraining feature budget to the arm1 event count (70 events → 35 features max) prevents arm1 overfitting (currently best_ntree_arm1=1), stabilising the arm1 model and improving val_ci without sacrificing RMST.
-- changed_files: xgb_arena/train.py
-
-**Red-line audit (pre-edit):**
-- Only the feat_budget computation changes; all data scoping rules unchanged. ✓
-- No test-set paths introduced. ✓
-
 *Result to be filled in after run.*
