@@ -148,7 +148,7 @@ def suggest_hparams(trial: optuna.Trial, feat_budget: int, clin_cols: list[str],
     mf_mode = trial.suggest_categorical("max_features_mode", ["sqrt", "frac"])
     max_features = trial.suggest_float("max_features_frac", 0.05, 0.40) if mf_mode == "frac" else mf_mode
     params = {
-        "n_estimators": trial.suggest_int("n_estimators", 100, 600, step=100),
+        "n_estimators": trial.suggest_int("n_estimators", 200, 1000, step=100),
         "max_depth": trial.suggest_int("max_depth", 2, 8),
         "min_samples_split": trial.suggest_int("min_samples_split", 2, 40),
         "min_samples_leaf": trial.suggest_int("min_samples_leaf", 10, 120),

@@ -152,8 +152,8 @@ Structured autonomous-loop entries start below this header. Phase 1 smoke tests 
 - hypothesis: Expanding n_estimators search from [100, 600] to [200, 1000] gives the optimizer room to find trees-rich configs; more trees per model → more stable individual predictions → ensemble CI and RMST both increase beyond iter_011 best.
 - changed_files: rsf_arena/train.py
 - red_line_audit: pure hyperparameter range change; no data or metric definition changes; no test access
-- val_ci: PENDING
-- val_rmst_diff: PENDING
-- n_features: PENDING
-- verdict: PENDING
-- one_line_lesson: PENDING
+- val_ci: 0.6455 ± 0.0029 (ensemble of 10 seeds)
+- val_rmst_diff: 7.38 months (seed panel range: 0.73–9.87)
+- n_features: 69
+- verdict: MIXED (CI −0.033 >> SE=0.003 vs iter_011; RMST −0.74 < IQR=4.80 within noise)
+- one_line_lesson: Larger n_estimators range changed Pareto selection to trial 22 (k_main=32, k_int=19) which has worse ensemble CI (0.645 vs 0.678); the iter_011 config (k_main=16, k_int=14) is more ensemble-efficient; optimization needs more seeds per trial to reliably identify it
