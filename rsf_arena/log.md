@@ -27,3 +27,16 @@ Structured autonomous-loop entries start below this header. Phase 1 smoke tests 
 - n_features: 47
 - verdict: MIXED (CI +0.024 > SE=0.012; RMST_diff −2.44 < −IQR=2.02)
 - one_line_lesson: Gene×ACT interactions lifted CI to 0.649 but hurt RMST alignment (1.97 vs 4.41); interaction-heavy config (k_int=13, k_main=16) apparently overfit treatment signal in optimization but underdelivered in full-train refit
+
+### iter_003 — aggressive_mtry
+
+- type: PARAM
+- idea_id: aggressive_mtry
+- hypothesis: Narrowing max_features_frac from [0.25, 0.90] to [0.05, 0.40] forces more randomized trees, reducing inter-tree correlation; with interactions active this should stabilize RMST alignment without sacrificing CI.
+- changed_files: rsf_arena/train.py
+- red_line_audit: pure hyperparameter change; no data or metric definition changes; no test access
+- val_ci: PENDING
+- val_rmst_diff: PENDING
+- n_features: PENDING
+- verdict: PENDING
+- one_line_lesson: PENDING
