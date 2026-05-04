@@ -1,0 +1,18 @@
+{
+  "best_ntree": 12,
+  "best_ntree_arm0": 24,
+  "best_ntree_arm1": 1,
+  "bootstrap_n": 2,
+  "chosen_trial": 0,
+  "dup_inter": 1,
+  "k_int": 0,
+  "k_main": 16,
+  "n_features": 33,
+  "n_trials": 10,
+  "notes": "iter_005: t_learner_arm1_budget \u2014 feat_budget constrained to arm1 events to prevent arm1 overfit.",
+  "rmst_iqr": 0.625672840651017,
+  "val_ci": 0.6494374293715914,
+  "val_ci_se": 0.015251799584380343,
+  "val_rmst_diff": 5.470629182054559,
+  "wall_clock_sec": 46.29
+}

@@ -111,4 +111,29 @@ Structured autonomous-loop entries start below this header. The Phase 1 smoke te
 - No test-set paths introduced. ✓
 - Counterfactual: predict_0(x) and predict_1(x) both still computed; recommend ACT if risk_1 < risk_0. ✓
 
+- val_ci: 0.6633 ± 0.0367
+- val_rmst_diff: 6.98 ± 1.90 (months)
+- n_features: 113 (k_main=96, best_ntree_arm0=96, best_ntree_arm1=1)
+- verdict: MIXED (same as iter_004 — CI from arm0-only produces identical result when arm1=1 tree)
+- one_line_lesson: Using model_0 alone for CI didn't help because best_ntree_arm1=1 means avg_risk ≈ model_0_risk (rank-invariant constant shift); the fundamental issue is arm1 always stopping at 1 tree due to poor val_df signal.
+
+**Anti-Stagnation:** 6 iterations without BETTER verdict — next iteration MUST be ALGO.
+
+---
+
+### iter_007 — s_t_ensemble
+- type: ALGO
+- idea_id: s_t_ensemble
+- hypothesis: Averaging ITE predictions from S-learner (better CI=0.679) and T-learner (better RMST=6.98) will combine their complementary strengths, improving both objectives jointly.
+- changed_files: xgb_arena/train.py
+
+**Red-line audit (pre-edit):**
+- S-learner trained on bootstrap(train_df) with ACT feature + interactions (same as iter_001). ✓
+- T-learner trained on arm0/arm1 subsets of bootstrap(train_df) (same as iter_004). ✓
+- Ensemble ITE = (ITE_S + ITE_T) / 2; recommend ACT if ensemble ITE < 0. ✓
+- CI uses S-learner risk score (more patients, more stable). ✓
+- val_df never used for fitting or early stopping in any sub-model. ✓
+- No test-set paths introduced. ✓
+- Counterfactual: both models predict risk_0 and risk_1 independently, then averaged. ✓
+
 *Result to be filled in after run.*
