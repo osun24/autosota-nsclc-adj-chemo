@@ -118,3 +118,16 @@ Structured autonomous-loop entries start below this header. Phase 1 smoke tests 
 - n_features: 45
 - verdict: MIXED (CI −0.008 < SE=0.017 → within noise; RMST −0.44 < IQR=0.75 → within noise vs iter_003 best; best deterministic result so far)
 - one_line_lesson: Full-train ranking + deterministic final fit + 30 trials gives RMST=4.05 ± 0.75, much tighter than iter_003's 4.49 ± 2.02; CI 0.6382 within noise of best; optimal config is k_main=16, k_int=11, n_features=45
+
+### iter_010 — seed_panel_report
+
+- type: CODE
+- idea_id: seed_panel_report
+- hypothesis: Fitting 5 final models with different random seeds (all n_jobs=1, deterministic) and reporting the median val_ci and val_rmst_diff reduces single-seed variance; median RMST across seeds should be higher than the iter_009 single-seed value of 4.05.
+- changed_files: rsf_arena/train.py
+- red_line_audit: final evaluation only; training data unchanged; no test access; metric definitions unchanged (still Harrell C and RMST at tau=60 from lifelines); 5 separate evaluations on valid_df — no leakage
+- val_ci: PENDING
+- val_rmst_diff: PENDING
+- n_features: PENDING
+- verdict: PENDING
+- one_line_lesson: PENDING
