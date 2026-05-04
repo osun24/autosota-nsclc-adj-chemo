@@ -12,6 +12,8 @@ See `red_lines.md`. The test set remains sealed; `prepare.py` and `train.py` mus
 ## Runtime Note
 This arena is GPU-friendly but CPU-safe. On this machine, base Python reports CUDA unavailable, so the default budget is conservative. If a CUDA GPU is available in a later session, the human may raise `DEEPSURV_ARENA_EPOCHS`, `DEEPSURV_ARENA_N_TRIALS`, and `DEEPSURV_ARENA_BOOTSTRAPS` before launch.
 
+If Colab is the only GPU source, use `../colab_bridge/local_colab_queue.py` locally and `../colab_bridge/colab_gpu_worker.py` in a manually started Colab runtime. Colab is a worker only; the local loop still chooses ideas, edits code, and appends `log.md` after collecting the returned artifact. The Colab data directory must contain train/validation and `LOOCV_Genes2.csv` only.
+
 ## Per-Iteration Workflow
 1. Read `log.md`. Identify the last 3 iterations and their `type` (PARAM | CODE | ALGO).
 2. If all 3 most recent COMPLETED iterations were PARAM, propose a CODE or ALGO idea this iteration.

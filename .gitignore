@@ -7,3 +7,7 @@ affyfRMATest.csv
 *.sqlite3
 __pycache__/
 .venv/
+colab_jobs/
+colab_jobs_collected/
+final_*comparison*.csv
+final_comparison_km.png
