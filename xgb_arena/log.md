@@ -199,4 +199,10 @@ Structured autonomous-loop entries start below this header. The Phase 1 smoke te
 - Gene selection, IPTW, val split unchanged. ✓
 - No test-set paths introduced. ✓
 
-*Result to be filled in after run.*
+- val_ci: 0.6555 ± 0.0321
+- val_rmst_diff: 8.43 ± 3.01 (months, IQR)
+- n_features: 113 (k_main=96, best_ntree_arm0=41, best_ntree_arm1=1)
+- verdict: MIXED (RMST new record +1.45 months vs best T-learner, but within IQR; CI −0.0078 vs iter_008) — kept
+- one_line_lesson: Aggressive column subsampling colsample_bytree [0.3,0.7] pushed RMST to 8.43 (new best) but arm1 best_ntree returned to 1 again (arm1 inbag ES must interact poorly with very sparse column sampling); trade-off between CI and RMST remains unresolved across all 10 iterations.
+
+**Loop complete (10 iterations). No BETTER verdict on both objectives simultaneously. Best validated CI: 0.6792 (iter_001, S-learner). Best validated RMST: 8.43 (iter_010). Best balanced run: iter_008 (CI=0.6633, RMST=6.86, run_dir=xgb_arena/runs/smoke_20260503_231443). Current code state: T-learner + arm1_inbag_es + stronger_subsample (iter_010).**

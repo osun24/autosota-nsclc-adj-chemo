@@ -1,0 +1,18 @@
+{
+  "best_ntree": 21,
+  "best_ntree_arm0": 41,
+  "best_ntree_arm1": 1,
+  "bootstrap_n": 2,
+  "chosen_trial": 6,
+  "dup_inter": 1,
+  "k_int": 0,
+  "k_main": 96,
+  "n_features": 113,
+  "n_trials": 10,
+  "notes": "iter_010: stronger_subsample \u2014 colsample_bytree [0.3,0.7], bylevel/bynode [0.4,0.9].",
+  "rmst_iqr": 3.007541652597002,
+  "val_ci": 0.655480764506461,
+  "val_ci_se": 0.032066995481510444,
+  "val_rmst_diff": 8.425882073333618,
+  "wall_clock_sec": 37.92
+}
