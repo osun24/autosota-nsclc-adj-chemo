@@ -92,3 +92,16 @@ Structured autonomous-loop entries start below this header. Phase 1 smoke tests 
 - n_features: 48
 - verdict: MIXED (CI +0.001 and RMST −1.43 both within SE/IQR noise vs iter_003 best; half-data ranking reduced runtime to 271s)
 - one_line_lesson: Honest split gives CI=0.6475 (marginally above best) but RMST=3.06 with high variance (IQR=1.69); faster runtime (271s) leaves budget for more trials/bootstraps in next iter
+
+### iter_008 — more_trials
+
+- type: PARAM
+- idea_id: more_trials
+- hypothesis: Increasing n_trials 20→30 and bootstrap_n 2→3 exploits the speed dividend from the honest split (271s runtime) to build a denser Pareto front with more stable RMST estimates, improving both CI and RMST in the final eval.
+- changed_files: rsf_arena/train.py
+- red_line_audit: pure budget increase; data and metric definitions unchanged; no test access
+- val_ci: PENDING
+- val_rmst_diff: PENDING
+- n_features: PENDING
+- verdict: PENDING
+- one_line_lesson: PENDING
