@@ -136,4 +136,27 @@ Structured autonomous-loop entries start below this header. The Phase 1 smoke te
 - No test-set paths introduced. ✓
 - Counterfactual: both models predict risk_0 and risk_1 independently, then averaged. ✓
 
+- val_ci: 0.6619 ± 0.0215
+- val_rmst_diff: 6.46 ± 0.45 (months)
+- n_features: 115 (k_main=32, k_int=16, best_ntree_s=250, best_ntree_arm0=279, best_ntree_arm1=1)
+- verdict: WORSE (CI −0.0014 vs T-learner; RMST −0.52 vs T-learner) → REVERTED
+- one_line_lesson: ITE_S ≈ 0 in every trial (S-learner barely differentiates risk by flipping ACT); ensemble ≈ weakened T-learner — averaging in a near-zero signal diluted T-learner's RMST without recovering S-learner's CI.
+
+---
+
+### iter_008 — arm1_inbag_es
+- type: ALGO
+- idea_id: arm1_inbag_es
+- hypothesis: Using a 20% arm1-holdout from the bootstrap as arm1's early-stopping monitor (instead of val_df, which is OBS-dominated and gives misleading ES signal) will fix best_ntree_arm1=1, producing better arm1 risk estimates and improving T-learner RMST.
+- changed_files: xgb_arena/train.py
+
+**Red-line audit (pre-edit):**
+- arm1 ES rows come from bootstrap(train_df) arm1 subset (stratified 20% holdout), not from val_df. ✓
+- arm0 ES unchanged: still uses val_df as ES monitor. ✓
+- val_df used only for final evaluation (CI and RMST); no val_df rows enter arm1 training or ES. ✓
+- arm1 feature list unchanged; still clin_pretx + genes_main. ✓
+- IPTW, scalers still fitted on bootstrap train rows only. ✓
+- No test-set paths introduced. ✓
+- Counterfactual: predict_0(x) and predict_1(x) for all val patients; recommend ACT if risk_1 < risk_0. ✓
+
 *Result to be filled in after run.*
