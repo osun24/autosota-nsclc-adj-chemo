@@ -40,26 +40,4 @@ Structured autonomous-loop entries start below this header. The Phase 1 smoke te
 - Gene selection, IPTW, val split all unchanged. ✓
 - No test-set paths introduced. ✓
 
-- val_ci: 0.6599 ± 0.0355
-- val_rmst_diff: 3.82 ± 1.46 (months)
-- n_features: 58 (k_main=32, k_int=8)
-- verdict: MIXED (val_ci dropped 0.019 vs baseline; rmst same)
-- one_line_lesson: Wider eta made things slightly worse on CI (best_ntree 8→12, still anomalously low); the root cause is not the eta range but likely the ES-vs-validation overlap — val_df is used for both early stopping and evaluation.
-
----
-
-### iter_003 — stratified_es_split
-- type: CODE
-- idea_id: stratified_es_split
-- hypothesis: Carving a 20% ES monitor from train_df (stratified by event×ACT), using it for all early stopping, and reserving val_df purely for evaluation will eliminate the ES/eval overlap that causes best_ntree=8 anomaly and inflated/deflated val_ci.
-- changed_files: xgb_arena/train.py
-
-**Red-line audit (pre-edit):**
-- ES monitor is carved from train_df before bootstrapping; val_df is never touched during training. ✓
-- StabSel and gene ranking will use train_fit_df (the 80% fit partition) only. ✓
-- IPTW fitted on bootstrap(train_fit_df) rows only; val rows pass through unchanged. ✓
-- No test-set paths introduced. ✓
-- Censored patients are not dropped (unchanged). ✓
-- Counterfactual RMST logic unchanged. ✓
-
 *Result to be filled in after run.*
