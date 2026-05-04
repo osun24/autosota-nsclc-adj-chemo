@@ -126,8 +126,8 @@ Structured autonomous-loop entries start below this header. Phase 1 smoke tests 
 - hypothesis: Fitting 5 final models with different random seeds (all n_jobs=1, deterministic) and reporting the median val_ci and val_rmst_diff reduces single-seed variance; median RMST across seeds should be higher than the iter_009 single-seed value of 4.05.
 - changed_files: rsf_arena/train.py
 - red_line_audit: final evaluation only; training data unchanged; no test access; metric definitions unchanged (still Harrell C and RMST at tau=60 from lifelines); 5 separate evaluations on valid_df — no leakage
-- val_ci: PENDING
-- val_rmst_diff: PENDING
-- n_features: PENDING
-- verdict: PENDING
-- one_line_lesson: PENDING
+- val_ci: 0.6361 ± 0.0035 (median of 5 seeds)
+- val_rmst_diff: 2.56 ± 1.95 (months; median of seeds [3.82, 1.87, 1.05, 3.82, 2.56])
+- n_features: 107
+- verdict: MIXED (CI −0.010 > SE=0.0035; RMST −1.93 < IQR=1.95 → within noise; seed panel reveals 3-month seed-level RMST variance)
+- one_line_lesson: Seed panel exposes that RMST has fundamental ≈3 mo seed variance for any single RSF config; "best" prior RMST values (4.05–4.49) were high-seed runs; true median RMST is ≈2.5–3 mo; CI is stable at 0.63–0.64

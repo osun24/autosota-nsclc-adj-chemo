@@ -307,13 +307,30 @@ def run(n_trials: int = DEFAULT_N_TRIALS, bootstrap_n: int = DEFAULT_BOOTSTRAPS,
         "rsf_params": rsf_params,
         "chosen_trial_params": dict(chosen.params),
     }
-    model, feat_names, _, _, _ = fit_model_from_metadata(metadata, train_df, valid_df, refit_train_valid=False)
-    valid_result = prepare.evaluate_on_valid(model, valid_df, genes_main, genes_inter, dup_inter, feat_names, clin_cols)
+    # Seed panel: fit 5 deterministic models and report medians for stable final metrics.
+    FINAL_SEEDS = [7, 13, 21, 37, 53]
+    seed_cis, seed_rmsts = [], []
+    last_model, feat_names = None, None
+    for fs in FINAL_SEEDS:
+        meta_seed = dict(metadata)
+        meta_seed["rsf_params"] = dict(rsf_params)
+        meta_seed["rsf_params"]["random_state"] = int(fs)
+        m, fn, _, _, _ = fit_model_from_metadata(meta_seed, train_df, valid_df, refit_train_valid=False)
+        vr = prepare.evaluate_on_valid(m, valid_df, genes_main, genes_inter, dup_inter, fn, clin_cols)
+        seed_cis.append(float(vr["val_ci"]))
+        seed_rmsts.append(float(vr["val_rmst_diff"]))
+        last_model, feat_names = m, fn
+    print(f"[Seed Panel] val_ci per seed: {[round(v,4) for v in seed_cis]}")
+    print(f"[Seed Panel] val_rmst_diff per seed: {[round(v,3) for v in seed_rmsts]}")
+    valid_result = {"val_ci": float(np.median(seed_cis)), "val_rmst_diff": float(np.median(seed_rmsts)), "n_features": len(feat_names)}
+    model = last_model
     result = {
         "val_ci": float(valid_result["val_ci"]),
         "val_rmst_diff": float(valid_result["val_rmst_diff"]),
-        "val_ci_se": float(chosen.user_attrs.get("val_ci_boot_se", 0.0)),
-        "rmst_iqr": float(chosen.user_attrs.get("rmst_diff_boot_iqr", 0.0)),
+        "val_ci_se": float(np.std(seed_cis, ddof=1)),
+        "rmst_iqr": float(np.percentile(seed_rmsts, 75) - np.percentile(seed_rmsts, 25)),
+        "seed_panel_cis": seed_cis,
+        "seed_panel_rmsts": seed_rmsts,
         "n_features": int(valid_result["n_features"]),
         "k_main": k_main,
         "k_int": k_int,
