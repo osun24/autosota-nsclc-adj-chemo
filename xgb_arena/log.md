@@ -179,4 +179,24 @@ Structured autonomous-loop entries start below this header. The Phase 1 smoke te
 - Gene selection, IPTW, val split all unchanged. ✓
 - No test-set paths introduced. ✓
 
+- val_ci: 0.6578 ± 0.0043
+- val_rmst_diff: 0.59 ± 0.88 (months)
+- n_features: 33 (k_main=16, best_ntree_arm0=16, best_ntree_arm1=1)
+- verdict: WORSE (CI −0.0055 vs iter_008; RMST −6.27 vs iter_008) → REVERTED
+- one_line_lesson: Restricting max_depth [2,4] with min_child_weight [5,50] re-triggered arm1=1-tree and collapsed RMST — the selected k_main=16 region causes near-universal ACT recommendations (247/259), giving near-zero observational RMST diff.
+
+---
+
+### iter_010 — stronger_subsample
+- type: PARAM
+- idea_id: stronger_subsample
+- hypothesis: Setting colsample_bytree to [0.3, 0.7] (from [0.5, 0.9]) with colsample_bylevel/bynode [0.4, 0.9] forces more diverse trees through aggressive random column selection, reducing variance in the arm1 model that now trains 32 trees via inbag ES.
+- changed_files: xgb_arena/train.py
+
+**Red-line audit (pre-edit):**
+- Hyperparameter range change only; no new data paths or features introduced. ✓
+- arm1_inbag_es from iter_008 unchanged. ✓
+- Gene selection, IPTW, val split unchanged. ✓
+- No test-set paths introduced. ✓
+
 *Result to be filled in after run.*
