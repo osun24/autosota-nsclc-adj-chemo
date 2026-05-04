@@ -22,8 +22,8 @@ Structured autonomous-loop entries start below this header. Phase 1 smoke tests 
 - hypothesis: Exposing k_int (gene×ACT interaction count, 0–32) as an Optuna hyperparameter will let the optimizer find configs where interaction terms directly encode treatment-effect heterogeneity, increasing val_rmst_diff while keeping val_ci stable.
 - changed_files: rsf_arena/train.py
 - red_line_audit: interaction features are g*ACT computed from train rows only; counterfactual eval sets ACT=1/0 on valid rows then uses predict_rsf_risk; no test access; metric definitions unchanged
-- val_ci: PENDING
-- val_rmst_diff: PENDING
-- n_features: PENDING
-- verdict: PENDING
-- one_line_lesson: PENDING
+- val_ci: 0.6492 ± 0.0146
+- val_rmst_diff: 1.97 ± 0.55 (months)
+- n_features: 47
+- verdict: MIXED (CI +0.024 > SE=0.012; RMST_diff −2.44 < −IQR=2.02)
+- one_line_lesson: Gene×ACT interactions lifted CI to 0.649 but hurt RMST alignment (1.97 vs 4.41); interaction-heavy config (k_int=13, k_main=16) apparently overfit treatment signal in optimization but underdelivered in full-train refit

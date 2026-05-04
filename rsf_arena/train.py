@@ -133,12 +133,15 @@ def build_trial_mats_for_splits(
 
 def suggest_hparams(trial: optuna.Trial, feat_budget: int, clin_cols: list[str], max_genes: int):
     max_nonclin = max(8, feat_budget - len(clin_cols))
+    # Reserve budget headroom for interaction terms: main + inter <= max_nonclin
     base_main = [16, 32, 64, 96, 128, 192, max_genes]
     topk_main_choices = tuple(sorted({k for k in base_main if 1 <= k <= min(max_genes, max_nonclin)}))
     if not topk_main_choices:
         topk_main_choices = (min(max_genes, max_nonclin),)
     k_main = int(trial.suggest_categorical("top_k_genes", topk_main_choices))
-    k_int = 0
+    # Allow optimizer to choose interaction count within remaining budget
+    max_k_int = min(k_main, max(0, max_nonclin - k_main), 32)
+    k_int = int(trial.suggest_int("k_int", 0, max_k_int)) if max_k_int > 0 else 0
     dup_inter = 1
     mf_mode = trial.suggest_categorical("max_features_mode", ["sqrt", "log2", "frac"])
     max_features = trial.suggest_float("max_features_frac", 0.25, 0.9) if mf_mode == "frac" else mf_mode
