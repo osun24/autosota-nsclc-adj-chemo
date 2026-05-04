@@ -40,3 +40,16 @@ Structured autonomous-loop entries start below this header. Phase 1 smoke tests 
 - n_features: 75
 - verdict: BETTER (CI +0.022 > SE_001=0.012; RMST 4.49 vs 4.41 baseline, +2.52 vs iter_002 state >> IQR_002=0.55; best combined so far)
 - one_line_lesson: Aggressive mtry (0.05–0.40 frac) restored RMST to 4.49 while keeping CI at 0.647; k_int=25 interactions still selected, suggesting interaction features need low mtry to avoid in-tree collinearity
+
+### iter_004 — smaller_leaf
+
+- type: PARAM
+- idea_id: smaller_leaf
+- hypothesis: Shrinking min_samples_leaf search range from [10, 120] to [3, 15] allows finer HTE splits with the 75-feature interaction-enabled input, improving both CI and RMST_diff over the iter_003 best.
+- changed_files: rsf_arena/train.py
+- red_line_audit: pure hyperparameter range change; no data/metric changes; no test access
+- val_ci: PENDING
+- val_rmst_diff: PENDING
+- n_features: PENDING
+- verdict: PENDING
+- one_line_lesson: PENDING
