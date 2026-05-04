@@ -66,3 +66,16 @@ Structured autonomous-loop entries start below this header. Phase 1 smoke tests 
 - n_features: 75
 - verdict: MIXED (CI identical to iter_003; RMST declined — not due to selection logic but run-to-run RSF non-determinism via n_jobs=-1)
 - one_line_lesson: RMST-biased selection correctly chose k_main=32/k_int=25 again, but RSF non-determinism (n_jobs=-1 parallel trees) flips treatment recommendations → RMST swings from +4.49 to −0.22; need larger n_trials or seed averaging to stabilize
+
+### iter_006 — deterministic_final_fit
+
+- type: CODE
+- idea_id: deterministic_final_fit
+- hypothesis: (1) Setting n_jobs=1 for the final model fit makes random_state fully deterministic, stabilizing RMST; (2) increasing n_trials to 20 expands the Pareto front so the weighted selection picks a genuinely better config.
+- changed_files: rsf_arena/train.py
+- red_line_audit: final model training change only; no data or metric definition changes; no test access
+- val_ci: PENDING
+- val_rmst_diff: PENDING
+- n_features: PENDING
+- verdict: PENDING
+- one_line_lesson: PENDING
