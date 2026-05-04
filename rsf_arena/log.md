@@ -113,8 +113,8 @@ Structured autonomous-loop entries start below this header. Phase 1 smoke tests 
 - hypothesis: Reverting the honest split (rank genes on all 775 training rows, bootstrap from full train) while keeping n_jobs=1 determinism and 30-trial/3-bootstrap optimization will let the optimizer find configs with higher RMST — the honest-split's half-data ranking was likely selecting genes too weak to drive RMST above 4 months.
 - changed_files: rsf_arena/train.py
 - red_line_audit: gene ranking and bootstrapping back to train-only; no valid/test leakage; metric definitions unchanged; no test access
-- val_ci: PENDING
-- val_rmst_diff: PENDING
-- n_features: PENDING
-- verdict: PENDING
-- one_line_lesson: PENDING
+- val_ci: 0.6382 ± 0.0167
+- val_rmst_diff: 4.05 ± 0.75 (months)
+- n_features: 45
+- verdict: MIXED (CI −0.008 < SE=0.017 → within noise; RMST −0.44 < IQR=0.75 → within noise vs iter_003 best; best deterministic result so far)
+- one_line_lesson: Full-train ranking + deterministic final fit + 30 trials gives RMST=4.05 ± 0.75, much tighter than iter_003's 4.49 ± 2.02; CI 0.6382 within noise of best; optimal config is k_main=16, k_int=11, n_features=45
