@@ -157,3 +157,24 @@ Structured autonomous-loop entries start below this header. Phase 1 smoke tests 
 - n_features: 69
 - verdict: MIXED (CI −0.033 >> SE=0.003 vs iter_011; RMST −0.74 < IQR=4.80 within noise)
 - one_line_lesson: Larger n_estimators range changed Pareto selection to trial 22 (k_main=32, k_int=19) which has worse ensemble CI (0.645 vs 0.678); the iter_011 config (k_main=16, k_int=14) is more ensemble-efficient; optimization needs more seeds per trial to reliably identify it
+
+### iter_013 — more_seeds_per_trial
+
+- type: PARAM
+- idea_id: more_seeds_per_trial
+- hypothesis: Increasing seed_eval_n 2→3 per bootstrap gives more stable per-trial RMST estimates, helping the Pareto selection reliably prefer the small-feature (k_main=16/k_int=14) configs that give superior ensemble CI and RMST over noisier large-feature configs.
+- changed_files: rsf_arena/train.py
+- red_line_audit: pure computation budget increase; no data or metric definition changes; no test access
+- val_ci: 0.6789 ± 0.0020 (ensemble of 10 seeds)
+- val_rmst_diff: 7.63 months (seed panel: [7.15, 4.28, 3.82, 6.25, 7.78, 8.14, 9.54, 3.82, 5.65, 3.60])
+- n_features: 48
+- verdict: MIXED (CI +0.0005 < SE=0.002 vs iter_011; RMST −0.49 < IQR=3.68 → within noise; key win: 3 seeds reliably selects trial 14 as expected)
+- one_line_lesson: 3 seeds per trial consistently picks k_main=16/k_int=14 (trial 14), confirming the fix for iter_012's mis-selection; ensemble CI=0.6789/RMST=7.63 within noise of iter_011 best; RMST ceiling ~7–8 mo with current approach
+
+### iter_014 — s_t_ensemble
+
+- type: ALGO
+- idea_id: s_t_ensemble
+- hypothesis: Fitting separate T-learner RSFs on the ACT=1 and ACT=0 training arms (using the same hyperparams as the S-learner best trial) and averaging the T-learner risk delta with the S-learner counterfactual delta at final eval will provide stronger HTE signal, boosting ensemble RMST above the ~7–8 mo ceiling while keeping CI stable.
+- changed_files: rsf_arena/train.py
+- red_line_audit: T-learner models fit exclusively on train_df subsets (ACT==1 and ACT==0 rows); counterfactual evaluation still on valid_df with ACT flipped; metric definitions unchanged; no test access; treated arm n=114 is small but sufficient for tree-based method with min_samples_leaf≥10
