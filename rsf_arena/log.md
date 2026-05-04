@@ -100,8 +100,8 @@ Structured autonomous-loop entries start below this header. Phase 1 smoke tests 
 - hypothesis: Increasing n_trials 20→30 and bootstrap_n 2→3 exploits the speed dividend from the honest split (271s runtime) to build a denser Pareto front with more stable RMST estimates, improving both CI and RMST in the final eval.
 - changed_files: rsf_arena/train.py
 - red_line_audit: pure budget increase; data and metric definitions unchanged; no test access
-- val_ci: PENDING
-- val_rmst_diff: PENDING
-- n_features: PENDING
-- verdict: PENDING
-- one_line_lesson: PENDING
+- val_ci: 0.6475 ± 0.0130
+- val_rmst_diff: 3.06 ± 4.13 (months)
+- n_features: 48
+- verdict: MIXED (identical to iter_007; CI within noise of best, RMST −1.43 < IQR=4.13 → within noise; result is now deterministic)
+- one_line_lesson: 30 trials / 3 bootstraps consistently selects trial 14 (k_main=16, k_int=14) and gives exactly CI=0.6475, RMST=3.06 — system is now deterministic but RMST ceiling of ~3 mo with honest split; full-train ranking may do better
