@@ -33,7 +33,7 @@ random.seed(42)
 
 ARENA_DIR = Path(__file__).resolve().parent
 RUNS_DIR = ARENA_DIR / "runs"
-DEFAULT_N_TRIALS = int(os.environ.get("RSF_ARENA_N_TRIALS", "10"))
+DEFAULT_N_TRIALS = int(os.environ.get("RSF_ARENA_N_TRIALS", "20"))
 DEFAULT_BOOTSTRAPS = int(os.environ.get("RSF_ARENA_BOOTSTRAPS", "2"))
 DEFAULT_SEEDS = int(os.environ.get("RSF_ARENA_SEEDS", "2"))
 BOOTSTRAP_BASE_SEED = 31415
@@ -228,6 +228,7 @@ def fit_model_from_metadata(metadata: dict, train_df: pd.DataFrame, valid_df: pd
     genes_inter = list(metadata.get("genes_inter", []))
     dup_inter = int(metadata.get("dup_inter", 1))
     params = dict(metadata["rsf_params"])
+    params["n_jobs"] = 1  # deterministic final fit: random_state fully controls tree ordering
     fit_df = pd.concat([train_df, valid_df], axis=0, ignore_index=True) if refit_train_valid else train_df
     eval_df = valid_df
     fit_df = fit_df.sort_values(["OS_MONTHS", "OS_STATUS"], ascending=[False, False]).reset_index(drop=True)

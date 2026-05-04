@@ -74,8 +74,8 @@ Structured autonomous-loop entries start below this header. Phase 1 smoke tests 
 - hypothesis: (1) Setting n_jobs=1 for the final model fit makes random_state fully deterministic, stabilizing RMST; (2) increasing n_trials to 20 expands the Pareto front so the weighted selection picks a genuinely better config.
 - changed_files: rsf_arena/train.py
 - red_line_audit: final model training change only; no data or metric definition changes; no test access
-- val_ci: PENDING
-- val_rmst_diff: PENDING
-- n_features: PENDING
-- verdict: PENDING
-- one_line_lesson: PENDING
+- val_ci: 0.6339 ± 0.0141
+- val_rmst_diff: 3.82 ± 0.04 (months)
+- n_features: 107
+- verdict: MIXED (CI within noise; RMST 3.82 < best 4.49 by 0.67 mo > IQR_006=0.04; now deterministic)
+- one_line_lesson: Deterministic final fit (n_jobs=1) and 20-trial optimization selected k_main=64/k_int=25 with RMST=6.88 during optim but 3.82 final — bootstrap-to-full-train RMST gap still large; optimization needs more representative training samples per trial
