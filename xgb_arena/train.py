@@ -267,7 +267,7 @@ def suggest_hparams(
         "booster": "gbtree",
         "tree_method": "hist",
         "disable_default_eval_metric": True,
-        "eta": trial.suggest_float("eta", 0.01, 0.12, log=True),
+        "eta": trial.suggest_float("eta", 0.005, 0.15, log=True),
         "max_depth": trial.suggest_int("max_depth", 3, 6),
         "min_child_weight": trial.suggest_float("min_child_weight", 2.0, 30.0, log=True),
         "gamma": trial.suggest_float("gamma", 0.0, 6.0),
@@ -561,7 +561,7 @@ def run(n_trials: int = DEFAULT_N_TRIALS, bootstrap_n: int = DEFAULT_BOOTSTRAPS,
         "bootstrap_n": int(bootstrap_n),
         "n_trials": int(n_trials),
         "chosen_trial": int(chosen.number),
-        "notes": "iter_001: stability_selection_genes — LASSO-Cox stability selection replaces univariate ranking.",
+        "notes": "iter_002: wider_eta [0.005, 0.15] — allow slower learning rates to use more trees.",
         "wall_clock_sec": round(time.time() - start, 2),
     }
     metadata = {
