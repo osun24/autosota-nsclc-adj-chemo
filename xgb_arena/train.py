@@ -400,6 +400,50 @@ def fit_model_from_metadata(
     return booster_best, int(best_ntree), feat_names, genes_main, genes_inter, clin_cols
 
 
+def _evaluate_tlearner_on_valid(
+    booster0: xgb.Booster,
+    booster1: xgb.Booster,
+    valid_df: pd.DataFrame,
+    feat_names: list[str],
+    best_ntree0: int,
+    best_ntree1: int,
+    tau: float = 60,
+) -> dict:
+    """Evaluate T-learner pair: CI from avg risk, RMST from counterfactual recs."""
+    from lifelines import KaplanMeierFitter
+    from lifelines.utils import restricted_mean_survival_time
+
+    X_val = valid_df[feat_names].to_numpy(dtype=np.float32)
+    d = xgb.DMatrix(X_val, feature_names=feat_names)
+    risk_0 = booster0.predict(d, iteration_range=(0, int(best_ntree0)), output_margin=True)
+    risk_1 = booster1.predict(d, iteration_range=(0, int(best_ntree1)), output_margin=True)
+
+    risk_avg = (risk_0 + risk_1) / 2
+    val_ci = prepare.cindex(
+        risk_avg,
+        valid_df["OS_MONTHS"].to_numpy(dtype=float),
+        valid_df["OS_STATUS"].to_numpy(dtype=int),
+    )
+
+    model_rec = (risk_1 < risk_0).astype(int)
+    actual = valid_df["Adjuvant Chemo"].astype(int).to_numpy()
+    alignment = actual == model_rec
+    if int(alignment.sum()) == 0 or int((~alignment).sum()) == 0:
+        val_rmst_diff = 0.0
+    else:
+        kmf_a = KaplanMeierFitter()
+        kmf_b = KaplanMeierFitter()
+        kmf_a.fit(valid_df.loc[alignment, "OS_MONTHS"], event_observed=valid_df.loc[alignment, "OS_STATUS"])
+        kmf_b.fit(valid_df.loc[~alignment, "OS_MONTHS"], event_observed=valid_df.loc[~alignment, "OS_STATUS"])
+        val_rmst_diff = float(
+            restricted_mean_survival_time(kmf_a, t=tau) - restricted_mean_survival_time(kmf_b, t=tau)
+        )
+
+    n_rec_act = int(model_rec.sum())
+    print(f"  [T-learner] Recommends ACT for {n_rec_act}/{len(model_rec)} val patients")
+    return {"val_ci": float(val_ci), "val_rmst_diff": float(val_rmst_diff), "n_features": len(feat_names)}
+
+
 def _save_run_artifacts(
     result: dict,
     booster: xgb.Booster,
@@ -421,83 +465,101 @@ def _save_run_artifacts(
     return run_dir
 
 
+def _save_tlearner_artifacts(
+    result: dict,
+    booster0: xgb.Booster,
+    booster1: xgb.Booster,
+    metadata: dict,
+    feat_names: list[str],
+    genes_main: list[str],
+) -> Path:
+    RUNS_DIR.mkdir(parents=True, exist_ok=True)
+    run_id = time.strftime("smoke_%Y%m%d_%H%M%S")
+    run_dir = RUNS_DIR / run_id
+    run_dir.mkdir(parents=True, exist_ok=False)
+    booster0.save_model(run_dir / "xgb_model_arm0.json")
+    booster1.save_model(run_dir / "xgb_model_arm1.json")
+    (run_dir / "feature_names.txt").write_text("\n".join(feat_names) + "\n")
+    (run_dir / "genes_main.txt").write_text("\n".join(genes_main) + "\n")
+    (run_dir / "genes_inter.txt").write_text("\n")
+    (run_dir / "metadata.json").write_text(json.dumps(metadata, indent=2, sort_keys=True) + "\n")
+    (run_dir / "result.json").write_text(json.dumps(result, indent=2, sort_keys=True) + "\n")
+    return run_dir
+
+
 def run(n_trials: int = DEFAULT_N_TRIALS, bootstrap_n: int = DEFAULT_BOOTSTRAPS, save_artifacts: bool = True) -> dict:
     start = time.time()
     train_df, valid_df = prepare.load_train_valid()
     clin_cols, clin_pretx, gene_feats = prepare.clinical_and_gene_columns(train_df, valid_df)
     gene_rank = stability_selection_genes(train_df, gene_feats)
     max_genes = len(gene_rank)
-    n_events_tr = int(train_df["OS_STATUS"].sum())
-    feat_budget = max(24, int(FEAT_EVENT_FRACTION * n_events_tr))
+
+    # T-learner: feature budget from the smaller ACT arm (conservative)
+    n_events_arm1 = int(train_df.loc[train_df["Adjuvant Chemo"].astype(int) == 1, "OS_STATUS"].sum())
+    n_events_arm0 = int(train_df.loc[train_df["Adjuvant Chemo"].astype(int) == 0, "OS_STATUS"].sum())
+    feat_budget = max(24, int(FEAT_EVENT_FRACTION * (n_events_arm1 + n_events_arm0)))
     print(f"[Gene Ranking] Ranked {max_genes} genes on TRAIN")
-    print(f"[Budgets] events(train)={n_events_tr} -> feature budget <= {feat_budget}")
-    print(f"Starting bootstrap optimization: {n_trials} trials x {bootstrap_n} bootstraps/trial")
+    print(f"[T-learner] arm0 events={n_events_arm0}, arm1 events={n_events_arm1}, feat_budget={feat_budget}")
+    print(f"Starting T-learner bootstrap optimization: {n_trials} trials x {bootstrap_n} bootstraps/trial")
 
     def objective(trial: optuna.Trial) -> tuple[float, float]:
-        k_main, k_int, dup_inter, params, num_boost_round, esr = suggest_hparams(
-            trial, feat_budget=feat_budget, clin_cols=clin_cols, max_genes=max_genes
+        # Use clin_pretx (no ACT) as the clinical feature set for T-learner
+        k_main, _k_int, _dup, params, num_boost_round, esr = suggest_hparams(
+            trial, feat_budget=feat_budget, clin_cols=clin_pretx, max_genes=max_genes
         )
-        boot_val_cis = []
-        boot_rmst_diffs = []
-        boot_best_ntrees = []
-        n_features = None
+        genes_main_t = gene_rank[:k_main]
+        feat_names_t = list(clin_pretx) + list(genes_main_t)
+
+        boot_val_cis: list[float] = []
+        boot_rmst_diffs: list[float] = []
+        boot_best_ntrees: list[int] = []
 
         for b in range(int(bootstrap_n)):
             boot_seed = BOOTSTRAP_BASE_SEED + trial.number * 1000 + b
-            boot_train_df = prepare.bootstrap_resample_df(
-                train_df,
-                seed=boot_seed,
-                require_two_arms=True,
-                require_event=True,
+            boot_df = prepare.bootstrap_resample_df(
+                train_df, seed=boot_seed, require_two_arms=True, require_event=True,
             )
-            w_tr_boot, _, _ = prepare.compute_iptw(
-                boot_train_df,
-                covariate_cols=clin_pretx,
-                act_col="Adjuvant Chemo",
-            )
-            dtr, dva, feat_names, genes_main, genes_inter = build_trial_mats_for_splits(
-                boot_train_df,
-                valid_df,
-                w_fit=w_tr_boot,
-                k_main=k_main,
-                k_int=k_int,
-                dup_inter=dup_inter,
-                gene_rank=gene_rank,
-                clin_cols=clin_cols,
-            )
-            params_boot = dict(params)
-            params_boot["seed"] = int(boot_seed)
-            booster, _ = train_xgb_cox(dtr, dva, params_boot, num_boost_round, esr)
-            best_ntree = booster.best_iteration + 1 if booster.best_iteration is not None else num_boost_round
-            scored = prepare.evaluate_on_valid(
-                booster,
-                valid_df,
-                genes_main=genes_main,
-                genes_inter=genes_inter,
-                dup_inter=dup_inter,
-                feature_names=feat_names,
-                best_ntree=best_ntree,
-                clin_cols=clin_cols,
-            )
+            boot_arm0 = boot_df[boot_df["Adjuvant Chemo"].astype(int) == 0].reset_index(drop=True)
+            boot_arm1 = boot_df[boot_df["Adjuvant Chemo"].astype(int) == 1].reset_index(drop=True)
+
+            w_full, _, _ = prepare.compute_iptw(boot_df, covariate_cols=clin_pretx, act_col="Adjuvant Chemo")
+            act_vals = boot_df["Adjuvant Chemo"].astype(int).values
+            w_arm0 = w_full[act_vals == 0]
+            w_arm1 = w_full[act_vals == 1]
+
+            X_arm0 = boot_arm0[feat_names_t].to_numpy(dtype=np.float32)
+            X_arm1 = boot_arm1[feat_names_t].to_numpy(dtype=np.float32)
+            X_val = valid_df[feat_names_t].to_numpy(dtype=np.float32)
+
+            dtr0 = make_dmatrix(X_arm0, boot_arm0["OS_MONTHS"].values, boot_arm0["OS_STATUS"].values, w_arm0, feat_names_t)
+            dtr1 = make_dmatrix(X_arm1, boot_arm1["OS_MONTHS"].values, boot_arm1["OS_STATUS"].values, w_arm1, feat_names_t)
+            dva = make_dmatrix(X_val, valid_df["OS_MONTHS"].values, valid_df["OS_STATUS"].values, None, feat_names_t)
+
+            p0 = dict(params); p0["seed"] = int(boot_seed)
+            p1 = dict(params); p1["seed"] = int(boot_seed) + 1
+            booster0, _ = train_xgb_cox(dtr0, dva, p0, num_boost_round, esr)
+            booster1, _ = train_xgb_cox(dtr1, dva, p1, num_boost_round, esr)
+            best0 = booster0.best_iteration + 1 if booster0.best_iteration is not None else num_boost_round
+            best1 = booster1.best_iteration + 1 if booster1.best_iteration is not None else num_boost_round
+
+            scored = _evaluate_tlearner_on_valid(booster0, booster1, valid_df, feat_names_t, best0, best1)
             boot_val_cis.append(float(scored["val_ci"]))
             boot_rmst_diffs.append(float(scored["val_rmst_diff"]))
-            boot_best_ntrees.append(int(best_ntree))
-            n_features = int(scored["n_features"])
+            boot_best_ntrees.append((int(best0) + int(best1)) // 2)
 
         median_val_ci = float(np.median(boot_val_cis))
         median_rmst_diff = float(np.median(boot_rmst_diffs))
         val_ci_se = float(np.std(boot_val_cis, ddof=1)) if len(boot_val_cis) > 1 else 0.0
         rmst_iqr = (
             float(np.percentile(boot_rmst_diffs, 75) - np.percentile(boot_rmst_diffs, 25))
-            if len(boot_rmst_diffs) > 1
-            else 0.0
+            if len(boot_rmst_diffs) > 1 else 0.0
         )
-        best_ntree_median = int(round(np.median(boot_best_ntrees))) if boot_best_ntrees else int(num_boost_round)
+        best_ntree_median = int(round(np.median(boot_best_ntrees))) if boot_best_ntrees else num_boost_round
 
-        trial.set_user_attr("n_features", int(n_features))
+        trial.set_user_attr("n_features", len(feat_names_t))
         trial.set_user_attr("k_main", int(k_main))
-        trial.set_user_attr("k_int", int(k_int))
-        trial.set_user_attr("dup_inter", int(dup_inter))
+        trial.set_user_attr("k_int", 0)
+        trial.set_user_attr("dup_inter", 1)
         trial.set_user_attr("best_ntree", int(best_ntree_median))
         trial.set_user_attr("val_ci_boot_se", float(val_ci_se))
         trial.set_user_attr("rmst_diff_boot_iqr", float(rmst_iqr))
@@ -505,7 +567,7 @@ def run(n_trials: int = DEFAULT_N_TRIALS, bootstrap_n: int = DEFAULT_BOOTSTRAPS,
         print(
             f"[Trial {trial.number:03d}] Boot Val CI median({bootstrap_n})={median_val_ci:.4f} "
             f"(SE={val_ci_se:.4f}), RMST diff median({bootstrap_n})={median_rmst_diff:.4f} "
-            f"(IQR={rmst_iqr:.4f}), N_feats={n_features}, K_main={k_main}, K_int={k_int}, "
+            f"(IQR={rmst_iqr:.4f}), N_feats={len(feat_names_t)}, K_main={k_main}, "
             f"N_tree={best_ntree_median}"
         )
         return median_val_ci, median_rmst_diff
@@ -519,34 +581,35 @@ def run(n_trials: int = DEFAULT_N_TRIALS, bootstrap_n: int = DEFAULT_BOOTSTRAPS,
     params_fin, num_boost_round_fin, esr_fin = _xgb_params_from_trial_attrs(chosen, seed=7)
 
     k_main = int(chosen.user_attrs["k_main"])
-    k_int = int(chosen.user_attrs["k_int"])
-    dup_inter = int(chosen.user_attrs.get("dup_inter", 1))
     genes_main = gene_rank[:k_main]
-    genes_inter = genes_main[:k_int]
-    w_tr, _, _ = prepare.compute_iptw(train_df, covariate_cols=clin_pretx, act_col="Adjuvant Chemo")
-    dtr, dva, feat_names, _, _ = build_trial_mats_for_splits(
-        train_df,
-        valid_df,
-        w_fit=w_tr,
-        k_main=k_main,
-        k_int=k_int,
-        dup_inter=dup_inter,
-        gene_rank=gene_rank,
-        clin_cols=clin_cols,
-    )
-    booster, _ = train_xgb_cox(dtr, dva, params_fin, num_boost_round_fin, esr_fin)
-    best_ntree = booster.best_iteration + 1 if booster.best_iteration is not None else num_boost_round_fin
-    booster_best = prepare.slice_booster_to_best_iteration(booster, best_ntree)
-    valid_result = prepare.evaluate_on_valid(
-        booster_best,
-        valid_df,
-        genes_main=genes_main,
-        genes_inter=genes_inter,
-        dup_inter=dup_inter,
-        feature_names=feat_names,
-        best_ntree=best_ntree,
-        clin_cols=clin_cols,
-    )
+    feat_names = list(clin_pretx) + list(genes_main)
+
+    train_arm0 = train_df[train_df["Adjuvant Chemo"].astype(int) == 0].reset_index(drop=True)
+    train_arm1 = train_df[train_df["Adjuvant Chemo"].astype(int) == 1].reset_index(drop=True)
+    w_full, _, _ = prepare.compute_iptw(train_df, covariate_cols=clin_pretx, act_col="Adjuvant Chemo")
+    act_vals_tr = train_df["Adjuvant Chemo"].astype(int).values
+    w_arm0_fin = w_full[act_vals_tr == 0]
+    w_arm1_fin = w_full[act_vals_tr == 1]
+
+    X_arm0_fin = train_arm0[feat_names].to_numpy(dtype=np.float32)
+    X_arm1_fin = train_arm1[feat_names].to_numpy(dtype=np.float32)
+    X_val_fin = valid_df[feat_names].to_numpy(dtype=np.float32)
+
+    dtr0_fin = make_dmatrix(X_arm0_fin, train_arm0["OS_MONTHS"].values, train_arm0["OS_STATUS"].values, w_arm0_fin, feat_names)
+    dtr1_fin = make_dmatrix(X_arm1_fin, train_arm1["OS_MONTHS"].values, train_arm1["OS_STATUS"].values, w_arm1_fin, feat_names)
+    dva_fin = make_dmatrix(X_val_fin, valid_df["OS_MONTHS"].values, valid_df["OS_STATUS"].values, None, feat_names)
+
+    pf0 = dict(params_fin); pf0["seed"] = 7
+    pf1 = dict(params_fin); pf1["seed"] = 8
+    booster0_fin, _ = train_xgb_cox(dtr0_fin, dva_fin, pf0, num_boost_round_fin, esr_fin)
+    booster1_fin, _ = train_xgb_cox(dtr1_fin, dva_fin, pf1, num_boost_round_fin, esr_fin)
+    best0_fin = booster0_fin.best_iteration + 1 if booster0_fin.best_iteration is not None else num_boost_round_fin
+    best1_fin = booster1_fin.best_iteration + 1 if booster1_fin.best_iteration is not None else num_boost_round_fin
+    booster0_best = prepare.slice_booster_to_best_iteration(booster0_fin, best0_fin)
+    booster1_best = prepare.slice_booster_to_best_iteration(booster1_fin, best1_fin)
+
+    valid_result = _evaluate_tlearner_on_valid(booster0_best, booster1_best, valid_df, feat_names, best0_fin, best1_fin)
+    best_ntree = (best0_fin + best1_fin) // 2
 
     result = {
         "val_ci": float(valid_result["val_ci"]),
@@ -555,36 +618,38 @@ def run(n_trials: int = DEFAULT_N_TRIALS, bootstrap_n: int = DEFAULT_BOOTSTRAPS,
         "rmst_iqr": float(chosen.user_attrs.get("rmst_diff_boot_iqr", 0.0)),
         "n_features": int(valid_result["n_features"]),
         "k_main": int(k_main),
-        "k_int": int(k_int),
-        "dup_inter": int(dup_inter),
+        "k_int": 0,
+        "dup_inter": 1,
+        "best_ntree_arm0": int(best0_fin),
+        "best_ntree_arm1": int(best1_fin),
         "best_ntree": int(best_ntree),
         "bootstrap_n": int(bootstrap_n),
         "n_trials": int(n_trials),
         "chosen_trial": int(chosen.number),
-        "notes": "iter_001: stability_selection_genes — LASSO-Cox stability selection replaces univariate ranking.",
+        "notes": "iter_004: t_learner_split — arm-specific XGB-Cox; CI from avg risk; RMST from counterfactual recs.",
         "wall_clock_sec": round(time.time() - start, 2),
     }
     metadata = {
-        "arena": "xgb",
+        "arena": "xgb_tlearner",
         "created_by": "xgb_arena/train.py",
         "sealed_test_policy": "train.py uses train/validation data only; use finalize.py manually.",
-        "clin_cols": clin_cols,
         "clin_pretx": clin_pretx,
-        "genes_main": genes_main,
-        "genes_inter": genes_inter,
-        "dup_inter": int(dup_inter),
-        "feature_names": feat_names,
+        "genes_main": list(genes_main),
+        "genes_inter": [],
+        "dup_inter": 1,
+        "feature_names": list(feat_names),
         "xgb_params": params_fin,
         "num_boost_round": int(num_boost_round_fin),
         "early_stopping_rounds": int(esr_fin),
-        "best_ntree": int(best_ntree),
+        "best_ntree_arm0": int(best0_fin),
+        "best_ntree_arm1": int(best1_fin),
         "result": result,
         "chosen_trial_params": dict(chosen.params),
     }
     if save_artifacts:
-        run_dir = _save_run_artifacts(result, booster_best, metadata, feat_names, genes_main, genes_inter)
+        run_dir = _save_tlearner_artifacts(result, booster0_best, booster1_best, metadata, feat_names, genes_main)
         result["run_dir"] = str(run_dir.relative_to(ARENA_DIR.parent))
-        print(f"[Artifacts] Saved smoke-test artifacts to {run_dir}")
+        print(f"[Artifacts] Saved T-learner artifacts to {run_dir}")
 
     print("\n[Result Row]")
     print(json.dumps(result, indent=2, sort_keys=True))

@@ -1,0 +1,18 @@
+{
+  "best_ntree": 48,
+  "best_ntree_arm0": 96,
+  "best_ntree_arm1": 1,
+  "bootstrap_n": 2,
+  "chosen_trial": 3,
+  "dup_inter": 1,
+  "k_int": 0,
+  "k_main": 96,
+  "n_features": 113,
+  "n_trials": 10,
+  "notes": "iter_004: t_learner_split \u2014 arm-specific XGB-Cox; CI from avg risk; RMST from counterfactual recs.",
+  "rmst_iqr": 1.9013402035642102,
+  "val_ci": 0.6633420134623889,
+  "val_ci_se": 0.036687700139192966,
+  "val_rmst_diff": 6.98483641513662,
+  "wall_clock_sec": 41.8
+}

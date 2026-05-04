@@ -1,0 +1,16 @@
+{
+  "best_ntree": 342,
+  "bootstrap_n": 2,
+  "chosen_trial": 6,
+  "dup_inter": 1,
+  "k_int": 0,
+  "k_main": 96,
+  "n_features": 114,
+  "n_trials": 10,
+  "notes": "iter_003: stratified_es_split \u2014 carve 20% ES monitor from train; val_df is evaluation-only.",
+  "rmst_iqr": 0.0,
+  "val_ci": 0.6497813590134133,
+  "val_ci_se": 0.011395422012931127,
+  "val_rmst_diff": 2.5636898868489055,
+  "wall_clock_sec": 29.46
+}
