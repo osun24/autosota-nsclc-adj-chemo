@@ -79,3 +79,16 @@ Structured autonomous-loop entries start below this header. Phase 1 smoke tests 
 - n_features: 107
 - verdict: MIXED (CI within noise; RMST 3.82 < best 4.49 by 0.67 mo > IQR_006=0.04; now deterministic)
 - one_line_lesson: Deterministic final fit (n_jobs=1) and 20-trial optimization selected k_main=64/k_int=25 with RMST=6.88 during optim but 3.82 final — bootstrap-to-full-train RMST gap still large; optimization needs more representative training samples per trial
+
+### iter_007 — honest_rsf_split
+
+- type: ALGO
+- idea_id: honest_rsf_split
+- hypothesis: Splitting train into a ranking half (gene stability selection) and a fitting half (bootstrap RSF) reduces adaptive overfit: the RSF can no longer exploit the same patients used for gene ranking, shrinking the optimization-to-final RMST gap and giving more reliable trial selection.
+- changed_files: rsf_arena/train.py
+- red_line_audit: both halves derived from train only (no valid/test data); censored patients retained; gene ranking still on train sub-set; final model still fit on full train; metric definitions unchanged
+- val_ci: PENDING
+- val_rmst_diff: PENDING
+- n_features: PENDING
+- verdict: PENDING
+- one_line_lesson: PENDING
