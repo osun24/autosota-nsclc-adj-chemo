@@ -6,3 +6,4 @@ scikit-survival
 lifelines
 threadpoolctl
 optuna
+torch

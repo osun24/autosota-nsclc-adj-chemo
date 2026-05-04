@@ -1,0 +1,16 @@
+{
+  "bootstrap_n": 1,
+  "chosen_trial": 0,
+  "dup_inter": 1,
+  "k_int": 32,
+  "k_main": 32,
+  "max_epochs": 5,
+  "n_features": 82,
+  "n_trials": 1,
+  "notes": "Phase 1 DeepSurv scaffold: notebook logic converted to script with reduced search budget, no test access.",
+  "rmst_iqr": 0.0,
+  "val_ci": 0.662015427701076,
+  "val_ci_se": 0.0,
+  "val_rmst_diff": 9.196913023711552,
+  "wall_clock_sec": 129.38
+}
