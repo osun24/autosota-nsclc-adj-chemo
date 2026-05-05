@@ -37,3 +37,45 @@ python finalize-all.py \
 ```
 
 By default, finalization refits the chosen configuration on Train+Validation before evaluating the sealed test set. Use `--no-refit-train-valid` to evaluate saved validation model artifacts directly.
+
+## Colab GPU Bridge for DeepSurv
+
+If Colab is the only available GPU source, keep the local autoresearch loop in
+control and use Colab only as a manually started GPU worker. The bridge lives in
+`colab_bridge/`.
+
+Local side:
+
+```bash
+python colab_bridge/local_colab_queue.py submit \
+  --queue-root "/path/to/Google Drive/autosota_colab_queue" \
+  --job-id deepsurv_iter_001 \
+  --require-pushed \
+  --env DEEPSURV_ARENA_N_TRIALS=20 \
+  --env DEEPSURV_ARENA_BOOTSTRAPS=2 \
+  --env DEEPSURV_ARENA_EPOCHS=200
+python colab_bridge/local_colab_queue.py watch \
+  --queue-root "/path/to/Google Drive/autosota_colab_queue" \
+  --job-id deepsurv_iter_001
+python colab_bridge/local_colab_queue.py collect \
+  --queue-root "/path/to/Google Drive/autosota_colab_queue" \
+  --job-id deepsurv_iter_001
+```
+
+Colab side:
+
+```python
+from google.colab import drive
+drive.mount("/content/drive")
+
+!python /content/drive/MyDrive/path/to/colab_gpu_worker.py \
+  --queue-root /content/drive/MyDrive/autosota_colab_queue \
+  --data-dir /content/drive/MyDrive/nsclc_train_valid_only \
+  --repo-url https://github.com/osun24/autosota-nsclc-adj-chemo.git
+```
+
+The Colab data directory must contain only `affyfRMATrain.csv`,
+`affyfRMAValidation.csv`, and `LOOCV_Genes2.csv`. Do not put
+`affyfRMATest.csv` there. Jobs are leased with heartbeat files; stale running
+jobs are requeued after the lease expires, so a Colab disconnect can be picked
+up by restarting the worker.
