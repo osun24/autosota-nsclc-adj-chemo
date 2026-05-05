@@ -191,3 +191,8 @@ Structured autonomous-loop entries start below this header. Phase 1 smoke tests 
 - hypothesis: Changing Pareto compromise weights from (0.40 CI, 0.60 RMST) to (0.55 CI, 0.45 RMST) will reliably select trial 14 (k_main=16/k_int=14, CI=0.650 in optim) over trial 22 (k_main=32/k_int=19, CI=0.633) — the higher-CI trial has ensemble CI=0.679 vs 0.645, and the normalized CI gap always dominates the RMST gap at 0.55/0.45 weighting.
 - changed_files: rsf_arena/train.py
 - red_line_audit: selection logic change only; data, features, training procedure, and metric definitions unchanged; no test access
+- val_ci: 0.6455 ± 0.0029 (ensemble of 10 seeds)
+- val_rmst_diff: 7.38 months (seed panel: [6.67, 9.87, 3.43, 4.84, 1.12, 0.73, 7.63, 8.88, 2.32, 4.19])
+- n_features: 69
+- verdict: WORSE — reverted (CI −0.033 >> SE vs iter_011/013 best; 0.55/0.45 weights still select trial 22 because its optimization RMST=6.28 achieves normalized score=1.0, overwhelming the CI term; weight adjustment alone cannot fix selection when RMST normalization is dominated by a single high-RMST outlier trial)
+- one_line_lesson: RMST-biased Pareto selection is fundamentally fragile — whichever trial gets the highest optimization RMST in a given run achieves normalized RMST=1.0 and wins regardless of CI weight; reliable trial 14 selection needs a constraint (RMST IQR floor or multi-run averaging) rather than simple weight adjustment

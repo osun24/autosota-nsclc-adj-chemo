@@ -162,7 +162,7 @@ def suggest_hparams(trial: optuna.Trial, feat_budget: int, clin_cols: list[str],
     return k_main, k_int, dup_inter, params
 
 
-def _select_pareto_compromise(study: optuna.Study, w_ci: float = 0.55, w_rmst: float = 0.45) -> optuna.trial.FrozenTrial:
+def _select_pareto_compromise(study: optuna.Study, w_ci: float = 0.40, w_rmst: float = 0.60) -> optuna.trial.FrozenTrial:
     """Select from Pareto front using normalized weighted score over *all* completed trials.
 
     Normalization pools all trials (not just Pareto) so that two-member fronts don't
