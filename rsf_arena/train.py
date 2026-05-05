@@ -310,7 +310,7 @@ def run(n_trials: int = DEFAULT_N_TRIALS, bootstrap_n: int = DEFAULT_BOOTSTRAPS,
         "chosen_trial_params": dict(chosen.params),
     }
     # Seed ensemble: average risk predictions across 10 seeds for stable CI and RMST.
-    FINAL_SEEDS = [7, 13, 21, 37, 53, 71, 89, 97, 113, 127]
+    FINAL_SEEDS = list(range(10))
     ens_risks, ens_risks_treated, ens_risks_untreated = [], [], []
     seed_cis, seed_rmsts = [], []
     last_model, feat_names = None, None

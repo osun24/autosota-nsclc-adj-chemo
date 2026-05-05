@@ -35,8 +35,8 @@ REPO_ROOT = Path(__file__).resolve().parent
 TEST_CSV = REPO_ROOT / "affyfRMATest.csv"
 RSF_RUNS_DIR = REPO_ROOT / "rsf_arena" / "runs"
 
-# Must match train.py FINAL_SEEDS used in iter_011+
-FINAL_SEEDS = [7, 13, 21, 37, 53, 71, 89, 97, 113, 127]
+# Must match train.py FINAL_SEEDS. Sequential integers — no outcome-based selection.
+FINAL_SEEDS = list(range(10))
 
 
 def latest_run_dir(runs_dir: Path = RSF_RUNS_DIR) -> Path:
