@@ -1,4 +1,5 @@
 .DS_Store
+rsf_arena/runs/
 affyfRMATrain.csv
 affyfRMAValidation.csv
 affyfRMATest.csv
