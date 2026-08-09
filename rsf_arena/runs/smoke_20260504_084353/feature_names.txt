@@ -1,0 +1,47 @@
+Adjuvant Chemo
+Age
+IS_MALE
+Stage_IA
+Stage_IB
+Stage_II
+Stage_III
+Histology_Adenocarcinoma
+Histology_Large Cell Carcinoma
+Histology_Squamous Cell Carcinoma
+Race_African American
+Race_Asian
+Race_Caucasian
+Race_Native Hawaiian or Other Pacific Islander
+Race_Unknown
+Smoked?_No
+Smoked?_Unknown
+Smoked?_Yes
+AATK
+ACLY
+ACRV1
+ACSL5
+ADAMTSL3
+ADGRF5
+ADRA2A
+AFM
+ALPK1
+ANKRA2
+ANKRD36B
+ANOS2P
+APPBP2
+AQR
+ARHGAP44
+ARMCX3
+AATK*ACT
+ACLY*ACT
+ACRV1*ACT
+ACSL5*ACT
+ADAMTSL3*ACT
+ADGRF5*ACT
+ADRA2A*ACT
+AFM*ACT
+ALPK1*ACT
+ANKRA2*ACT
+ANKRD36B*ACT
+ANOS2P*ACT
+APPBP2*ACT

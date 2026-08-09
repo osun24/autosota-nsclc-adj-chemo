@@ -1,0 +1,16 @@
+{
+  "bootstrap_n": 2,
+  "chosen_trial": 12,
+  "dup_inter": 1,
+  "k_int": 25,
+  "k_main": 64,
+  "n_features": 107,
+  "n_trials": 20,
+  "notes": "Phase 1 RSF scaffold: existing RSF logic with reduced Optuna/bootstrap/seed budget, no test access.",
+  "rmst_iqr": 0.03776822300357452,
+  "seed_eval_n": 2,
+  "val_ci": 0.6339114626836339,
+  "val_ci_se": 0.014087937884889002,
+  "val_rmst_diff": 3.8222788361114937,
+  "wall_clock_sec": 521.57
+}

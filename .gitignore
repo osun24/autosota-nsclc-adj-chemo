@@ -1,5 +1,5 @@
 .DS_Store
-rsf_arena/runs/
+*.pkl
 affyfRMATrain.csv
 affyfRMAValidation.csv
 affyfRMATest.csv
