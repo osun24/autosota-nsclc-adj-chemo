@@ -143,3 +143,54 @@ validation row was computed. Results are in the iteration 2 hypothesis.
   much stronger (train alignment +1.120 -> +8.738), so a gene block only helps
   if it is real; unstable genes are penalised twice, in the increment and in the
   `value_at_least_clinical` gates.
+
+### iter_003 — train-only subsampling stability selection
+- type: ALGO
+- hypothesis: A single DR ranking of 8,647 genes on ~516 patients is dominated
+  by selection noise, so ranking genes by how *often* they reach the top of an
+  independently recomputed DR ranking across stratified subsamples of the
+  fitting partition will recover whatever weak reproducible signal exists and
+  lift `gene_selection_jaccard` above 0.10 without changing the estimand.
+- changed: added `stability_select_genes` to `train.py` and passed it to
+  `prepare.evaluate_candidate(..., selector=...)`. It draws 40 stratified 70%
+  subsamples of the fitting partition (strata = OS_STATUS x ACT), recomputes the
+  locked `cross_fitted_benefit_pseudo_outcome` and `_gene_effect_scores` inside
+  each subsample, counts how often each gene lands in that subsample's top 100,
+  and returns the `n_genes` genes with the highest selection frequency, ties
+  broken by mean within-subsample rank then symbol. `CANDIDATE` is unchanged
+  from iter_002 so the selector is the only difference.
+- red_line_audit: the callback receives only the fitting partition, Reactome
+  membership, training gene symbols, and the validated spec; every subsample,
+  pseudo-outcome, nuisance fit, and score is computed inside the fitting
+  partition, so no assessment-fold or validation outcome is touched; the
+  pseudo-outcome is the locked train-only treatment-benefit target, satisfying
+  the predictive-not-prognostic rule; no gene symbols, patient indices, or
+  oracle features are hard-coded; no gene-by-ACT product columns are created;
+  the RNG seed is a fixed constant, not tuned against validation; estimand,
+  gates, bootstrap draws, and budget are untouched; no test artifact referenced.
+- run_id: run_003_20260821T223312Z
+- eligible: false
+- failed_gates: [gene_selection_jaccard_at_least_0_10, train_genomic_value_at_least_clinical, validation_genomic_alignment_positive, validation_genomic_value_at_least_best_constant, validation_genomic_value_at_least_clinical]
+- reward: -1000000.000
+- train_increment: -6.572 months
+- validation_increment: -5.331 months
+- absolute_gap: 1.241 months
+- train_cindex_cg: 0.673
+- validation_cindex_cg: 0.672
+- gene_jaccard: 0.048
+- train_act_usage_cg: tree_split=0.320; path_traversal=0.094; terminal_difference_mean=0.094, median=0.093, p10=0.066, p90=0.126, nonzero_patients=1.000
+- validation_act_usage_cg: tree_split=0.493; path_traversal=0.129; terminal_difference_mean=0.129, median=0.127, p10=0.096, p90=0.164, nonzero_patients=1.000
+
+- verdict: NOT_LEADER
+- lesson: Subsampling stability selection is directionally right — Jaccard rose
+  0.000 -> 0.048 (UQCRH survived in two of three folds) and the train/validation
+  gap halved from 2.789 to 1.241 months — but 40 draws of a gene-level ranking
+  is still too noisy to clear 0.10, and the four genes still cost the policy
+  ~6.6 months against the matched clinical comparator.
+- carried forward: the four remaining non-Jaccard gates are all the same
+  failure — the C+G policy is simply worse than the matched clinical policy
+  (C+G ACT rate 0.174/0.201 versus clinical 0.363/0.417). At `max_features=0.25`
+  the C+G forest sees only ~5 of 23 columns per node, so it is frequently forced
+  onto a noise gene when the clinical split that the comparator used is not in
+  the candidate set. Low `mtry` therefore buys ACT usage at the cost of
+  decorrelating the C+G forest from its own comparator.
