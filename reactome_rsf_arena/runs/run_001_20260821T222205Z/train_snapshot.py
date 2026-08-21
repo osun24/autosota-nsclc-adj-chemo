@@ -18,16 +18,16 @@ except ImportError:
 
 
 CANDIDATE = {
-    "name": "dr_gene_4_actcompetitive",
-    "selector": "dr_gene",
-    "n_genes": 4,
+    "name": "baseline_dr_pathway_12",
+    "selector": "dr_pathway",
+    "n_genes": 12,
     "benefit_threshold_months": 0.25,
     "rsf": {
-        "n_estimators": 600,
-        "max_depth": 9,
-        "min_samples_leaf": 8,
-        "min_samples_split": 16,
-        "max_features": 0.25,
+        "n_estimators": 300,
+        "max_depth": 6,
+        "min_samples_leaf": 16,
+        "min_samples_split": 32,
+        "max_features": 0.50,
     },
 }
 
