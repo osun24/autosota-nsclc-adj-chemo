@@ -1,0 +1,11 @@
+{
+  "files": {
+    "budget.json": "47746e45d6319e351d3e58cba558524cde467ef0bac6d88915962f56f4e6348d",
+    "integrity.py": "5321c4115439f7a6cd99473f60745f428e8b711fa45694194b00c742f60073a8",
+    "prepare.py": "cb5d39753275026a44bd63218ca64fa4b9fcf76ed1b415461f5a0aa7b4f0115d",
+    "red_lines.md": "23ac25d2c0b758b66f6dd023036779bc93f942821c044a3497b6eaf3f6faf145",
+    "run.py": "34f67f9608eebd055f1d3031db7f3251a3c2152fb6ef2cec4fbf8e1b0df2f7c3"
+  },
+  "manifest_sha256": "62fa8abc428c0d273b07b6075bfc1f750f846d86aefb8aea6cae7edeeed614ca",
+  "schema_version": 1
+}

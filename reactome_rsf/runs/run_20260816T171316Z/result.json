@@ -1,0 +1,137 @@
+{
+  "schema_version": 1,
+  "run_id": "run_20260816T171316Z",
+  "created_at_utc": "2026-08-16T17:13:16.818132+00:00",
+  "analysis": "Random Survival Forest: MSigDB Reactome genes + clinical covariates",
+  "collection": {
+    "schema_version": 1,
+    "source": "Molecular Signatures Database (MSigDB), Broad Institute",
+    "collection": "C2:CP:REACTOME",
+    "msigdb_version": "2026.1.Hs",
+    "gene_identifier_type": "HGNC gene symbols",
+    "source_url": "https://data.broadinstitute.org/gsea-msigdb/msigdb/release/2026.1.Hs/c2.cp.reactome.v2026.1.Hs.symbols.gmt",
+    "release_catalog_url": "https://data.broadinstitute.org/gsea-msigdb/msigdb/release/msigdb_releases.json",
+    "release_notes_url": "https://docs.gsea-msigdb.org/MSigDB/Release_Notes/MSigDB_2026.1.Hs/",
+    "gmt_filename": "c2.cp.reactome.v2026.1.Hs.symbols.gmt",
+    "gmt_sha256": "5d61f289a2400cddfbb3a3353829fd2284a360bbe50f2093b566c4b7bea93341",
+    "gene_set_count": 1839,
+    "unique_gene_count": 11448,
+    "downloaded_at_utc": "2026-08-16T17:02:59.632728+00:00",
+    "verified_at_utc": "2026-08-16T17:11:43.181086+00:00",
+    "downloaded_this_run": false,
+    "license_note": "MSigDB content use is subject to the MSigDB license/terms.",
+    "gmt_path": "/Users/owensun/Downloads/code/autosota-nsclc-adj-chemo/reactome_rsf/data/c2.cp.reactome.v2026.1.Hs.symbols.gmt",
+    "genes_path": "/Users/owensun/Downloads/code/autosota-nsclc-adj-chemo/reactome_rsf/data/reactome_unique_genes.v2026.1.Hs.txt"
+  },
+  "inputs": {
+    "train_csv": "/Users/owensun/Downloads/code/autosota-nsclc-adj-chemo/affyfRMATrain.csv",
+    "train_sha256": "b93f3cee3858716bca8add447bc837c734e203f6cb37962b1081e3c118d2c65d",
+    "validation_csv": "/Users/owensun/Downloads/code/autosota-nsclc-adj-chemo/affyfRMAValidation.csv",
+    "validation_sha256": "824689aeaa34984727f2551bd512214164d0559d05cbec5817b0f88c9adb15a9",
+    "test_data_used": false
+  },
+  "cohorts": {
+    "training": {
+      "n": 775,
+      "events": 348,
+      "censored": 427,
+      "treatment_counts": {
+        "0": 661,
+        "1": 114
+      }
+    },
+    "validation": {
+      "n": 259,
+      "events": 117,
+      "censored": 142,
+      "treatment_counts": {
+        "0": 221,
+        "1": 38
+      }
+    }
+  },
+  "features": {
+    "clinical_covariates": [
+      "Adjuvant Chemo",
+      "Age",
+      "IS_MALE",
+      "Stage_IA",
+      "Stage_IB",
+      "Stage_II",
+      "Stage_III",
+      "Histology_Adenocarcinoma",
+      "Histology_Adenosquamous Carcinoma",
+      "Histology_Large Cell Carcinoma",
+      "Histology_Squamous Cell Carcinoma",
+      "Race_African American",
+      "Race_Asian",
+      "Race_Caucasian",
+      "Race_Native Hawaiian or Other Pacific Islander",
+      "Race_Unknown",
+      "Smoked?_No",
+      "Smoked?_Unknown",
+      "Smoked?_Yes"
+    ],
+    "n_clinical_covariates": 19,
+    "n_unique_genes_in_collection": 11448,
+    "n_genes_shared_with_expression_data": 8647,
+    "n_training_constant_genes_dropped": 0,
+    "training_constant_genes_dropped": [],
+    "n_reactome_genes_used": 8647,
+    "n_total_features": 8666,
+    "selection_rule": "Union of pinned GMT symbols present in both train and validation; training-constant genes removed without using outcomes",
+    "imputation": "training-set median; applied unchanged to validation"
+  },
+  "model": {
+    "class": "sksurv.ensemble.RandomSurvivalForest",
+    "parameters": {
+      "n_estimators": 500,
+      "min_samples_split": 20,
+      "min_samples_leaf": 10,
+      "max_features": "sqrt",
+      "max_depth": null,
+      "n_jobs": -1,
+      "random_state": 42,
+      "oob_score": false,
+      "low_memory": true
+    },
+    "fit_seconds": 76.1055270829238,
+    "saved": false
+  },
+  "validation": {
+    "harrell_cindex": 0.6389230088930379,
+    "metric": "sksurv.metrics.concordance_index_censored",
+    "confidence_interval": {
+      "method": "patient-level percentile bootstrap",
+      "requested_draws": 1000,
+      "valid_draws": 1000,
+      "seed": 20260816,
+      "lower_95": 0.5889896149949829,
+      "upper_95": 0.6910436059745663
+    },
+    "delta_rmst": {
+      "tau_months": 60.0,
+      "aligned_n": 163,
+      "not_aligned_n": 96,
+      "aligned_rmst_months": 47.32842421640557,
+      "not_aligned_rmst_months": 43.937664674756164,
+      "delta_rmst_months": 3.390759541649409,
+      "definition": "RMST(observed treatment matches RSF recommendation) - RMST(observed treatment does not match RSF recommendation)",
+      "confidence_interval": {
+        "method": "patient-level percentile bootstrap",
+        "requested_draws": 1000,
+        "valid_draws": 1000,
+        "seed": 20260816,
+        "lower_95": -2.1721037569942494,
+        "upper_95": 8.388096875103955
+      }
+    }
+  },
+  "software": {
+    "python": "3.10.9",
+    "numpy": "1.23.2",
+    "pandas": "2.2.3",
+    "scikit_learn": "1.3.1",
+    "scikit_survival": "0.22.2"
+  }
+}

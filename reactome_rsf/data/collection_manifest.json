@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "source": "Molecular Signatures Database (MSigDB), Broad Institute",
+  "collection": "C2:CP:REACTOME",
+  "msigdb_version": "2026.1.Hs",
+  "gene_identifier_type": "HGNC gene symbols",
+  "source_url": "https://data.broadinstitute.org/gsea-msigdb/msigdb/release/2026.1.Hs/c2.cp.reactome.v2026.1.Hs.symbols.gmt",
+  "release_catalog_url": "https://data.broadinstitute.org/gsea-msigdb/msigdb/release/msigdb_releases.json",
+  "release_notes_url": "https://docs.gsea-msigdb.org/MSigDB/Release_Notes/MSigDB_2026.1.Hs/",
+  "gmt_filename": "c2.cp.reactome.v2026.1.Hs.symbols.gmt",
+  "gmt_sha256": "5d61f289a2400cddfbb3a3353829fd2284a360bbe50f2093b566c4b7bea93341",
+  "gene_set_count": 1839,
+  "unique_gene_count": 11448,
+  "downloaded_at_utc": "2026-08-16T17:02:59.632728+00:00",
+  "verified_at_utc": "2026-08-21T22:00:13.721344+00:00",
+  "downloaded_this_run": false,
+  "license_note": "MSigDB content use is subject to the MSigDB license/terms."
+}
