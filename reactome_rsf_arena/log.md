@@ -925,3 +925,66 @@ Constraint map after twelve experiments (train and validation only):
   gene choice has to become reproducible: two folds that share a pathway
   currently pick different members of it, which is exactly why eight genes gave
   Jaccard 0.022 in iter_013 while sixteen gave 0.122.
+
+### iter_017 — reproducible within-pathway members at half the block width
+- type: ALGO
+- hypothesis: Pathway *choice* is already DR-driven and partly reproducible —
+  two folds share a pathway — but which members they then take is decided by
+  per-gene DR scores that do not reproduce, which is why eight genes gave
+  Jaccard 0.022 while sixteen gave 0.122. Ordering the members of an already
+  chosen pathway by a covariate summary that is near-identical across fitting
+  partitions makes two folds that share a pathway take the *same* genes from it,
+  so one shared pathway yields 4/(16-4) = 0.333 for that pair and a mean of
+  0.111 at only eight genes — narrow enough for the validation c-index gate that
+  closed the sixteen-gene branch.
+- changed: within-pathway member ordering switched from mean DR score to
+  descending within-partition expression IQR (`_detectable_genes` now returns
+  the spreads it already computes, and the pathway walk sorts members by them);
+  the final outside-pathway fallback keeps the DR ordering. `CANDIDATE["n_genes"]`
+  16 -> 8. Pathway ranking, the complementary-pairs simultaneous criterion,
+  winsorization, the detectability filter, and every forest parameter are
+  unchanged from iter_016.
+- red_line_audit: this is the one change that needs care against red line 9, so
+  to be explicit — *which* pathways are eligible and how they rank is still
+  decided entirely by the locked train-only treatment-benefit pseudo-outcome
+  through the winsorized DR scores and the simultaneous top-20 criterion, so
+  selection continues to target treatment benefit rather than prognosis; the IQR
+  ordering only breaks the choice *among members of a pathway the DR signal has
+  already chosen*, and it uses expression alone, never an outcome, treatment,
+  survival time, or validation quantity. It is computed inside the fitting
+  partition, so it stays fit-only. No gene symbol, patient index, or oracle
+  feature is hard-coded; no gene-by-ACT products; 8 genes plus 19 clinical
+  columns is 27 features; matched comparator, estimand, gates, bootstrap, and
+  budget untouched; no test artifact referenced.
+- run_id: run_017_20260821T235452Z
+- eligible: false
+- failed_gates: [train_genomic_value_at_least_clinical, validation_genomic_alignment_positive, validation_genomic_value_at_least_best_constant, validation_genomic_value_at_least_clinical]
+- reward: -1000000.000
+- train_increment: -5.682 months
+- validation_increment: -2.411 months
+- absolute_gap: 3.271 months
+- train_cindex_cg: 0.663
+- validation_cindex_cg: 0.696
+- gene_jaccard: 0.111
+- train_act_usage_cg: tree_split=0.132; path_traversal=0.038; terminal_difference_mean=0.038, median=0.030, p10=0.012, p90=0.075, nonzero_patients=1.000
+- validation_act_usage_cg: tree_split=0.153; path_traversal=0.032; terminal_difference_mean=0.032, median=0.032, p10=0.014, p90=0.049, nonzero_patients=1.000
+
+- verdict: NOT_LEADER
+- lesson: Confirmed, and it reopens the narrow-block branch. Stabilising the
+  within-pathway choice gave **Jaccard 0.111 at eight genes** — folds 2 and 3 now
+  take the *same* immunoglobulin members (IGKV1-17, IGKV2D-28, IGKV4-1,
+  IGLV3-25) instead of different ones — and halving the block width collapsed
+  the validation c-index drop from 0.042 to **0.005**, clearing the gate that
+  closed the sixteen-gene branch. ACT use stayed healthy (0.132 train, 0.153
+  validation), and train alignment (+0.694) and the train best-constant gate
+  both pass. Eight genes is where stability, discrimination, and ACT use finally
+  coexist.
+- carried forward: the four remaining failures are all value gates, and they
+  have swapped cohorts relative to iter_016 — validation is now the weak side
+  (alignment -0.729, value 44.93) where it was the strong one, which is the
+  signature of noise rather than of a systematic defect. The one confirmed lever
+  not currently applied is `max_features=1.00`, which in iter_004 cut the failed
+  gates from five to three by making both matched forests greedy over the same
+  columns so the C+G policy tracks its comparator; it also lowers the comparator
+  itself, since the train clinical value runs 49.02 at `mtry=0.50` against 48.18
+  at `mtry=1.00`, moving both sides of `value_at_least_clinical` the right way.
