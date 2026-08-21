@@ -302,3 +302,56 @@ validation row was computed. Results are in the iteration 2 hypothesis.
   squared variation, and the gene-versus-gamma correlation is decided by which
   extreme patients happen to have high expression — which differs in every
   fold. The instability is in the target, not in the aggregation.
+
+### iter_006 — winsorized DR pseudo-outcome for gene scoring
+- type: ALGO
+- hypothesis: Gene-selection instability comes from the heavy tail of the DR
+  pseudo-outcome rather than from how selections are aggregated, so winsorizing
+  gamma at its within-partition 5th and 95th percentiles before scoring —
+  leaving the locked scoring math and the locked pseudo-outcome construction
+  untouched — will make the same complementary-pairs machinery reproduce the
+  same genes across folds and lift Jaccard past 0.10, and should also recover
+  the c-index the noise genes just cost.
+- changed: added `WINSOR_PERCENT = 5.0` and a `_robust_gamma` helper; `_dr_ranking`
+  now clips the locked `cross_fitted_benefit_pseudo_outcome` output to its own
+  5th/95th percentiles before handing it to the locked
+  `prepare._gene_effect_scores`. Nothing else changes: same complementary-pairs
+  criterion, same 40 draws, same top-300 rule, same `CANDIDATE`.
+- red_line_audit: the pseudo-outcome remains the locked train-only
+  treatment-benefit target, so selection stays predictive rather than
+  prognostic; percentiles are computed inside the half-sample being scored, so
+  the transform is strictly fit-only and no assessment-fold or validation
+  outcome is used; no censored patient is dropped — winsorizing bounds each
+  patient's contribution but keeps all of them; the locked scoring routine and
+  its clinical adjustment are reused unmodified; no hard-coded genes, patient
+  indices, or gene-by-ACT products; estimand, gates, bootstrap, and budget
+  untouched; no test artifact referenced.
+- run_id: run_006_20260821T224914Z
+- eligible: false
+- failed_gates: [train_genomic_alignment_positive, train_genomic_value_at_least_best_constant, train_genomic_value_at_least_clinical, validation_genomic_value_at_least_best_constant]
+- reward: -1000000.000
+- train_increment: -5.204 months
+- validation_increment: -1.620 months
+- absolute_gap: 3.584 months
+- train_cindex_cg: 0.651
+- validation_cindex_cg: 0.666
+- gene_jaccard: 0.111
+- train_act_usage_cg: tree_split=0.248; path_traversal=0.050; terminal_difference_mean=0.050, median=0.047, p10=0.015, p90=0.082, nonzero_patients=1.000
+- validation_act_usage_cg: tree_split=0.420; path_traversal=0.070; terminal_difference_mean=0.070, median=0.048, p10=0.019, p90=0.167, nonzero_patients=1.000
+
+- verdict: NOT_LEADER
+- lesson: Confirmed and decisive for stability — winsorizing gamma lifted
+  Jaccard 0.048 -> **0.111**, clearing the gene-stability gate for the first
+  time (IL9 and IL22 both reproduce across folds), and it also recovered the
+  validation c-index gate and passed `validation_genomic_value_at_least_clinical`
+  (46.26 vs 46.16). The instability was in the target, exactly as diagnosed.
+- carried forward: the binding constraint has moved. The winsorized genes raise
+  the genomic model's estimated ATE (train +2.272, validation +3.032), so
+  all-ACT becomes a strong constant and
+  `*_genomic_value_at_least_best_constant` now demands that the
+  observation-recommended group carry non-positive mean DR benefit against a
+  large positive average. The C+G forest's predicted benefits are also strongly
+  attenuated relative to the clinical comparator (median |benefit| 0.378 vs
+  1.190 on train), so the shared 0.25-month threshold silences the genomic
+  policy while barely touching the clinical one — an effectively unmatched
+  comparison that the next iteration tests directly.
