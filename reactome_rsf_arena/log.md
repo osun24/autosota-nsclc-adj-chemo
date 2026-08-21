@@ -698,3 +698,63 @@ Constraint map after twelve experiments (train and validation only):
   iteration-2 probe measured tree-split 0.100 at 8 genes with `leaf=8` but 0.005
   at 8 genes with `leaf=16`, so heavy leaf regularisation and a wide gene block
   cannot be combined.
+
+### iter_013 — regularised forest with a restored shared-pathway block
+- type: PARAM
+- hypothesis: The gate that has never passed is set by the comparator's ability
+  to overfit AIPW noise, not by gene quality, so pulling the forest back toward
+  the anchor's regularised geometry (depth 6, `max_features=0.50`) should shrink
+  the clinical train value from 48.18 toward the 46.34 seen at that geometry and
+  bring the C+G deficit back to the 0.49 months of run_001; simultaneously
+  restoring a four-gene-per-pathway cap at eight genes lets each fold reach its
+  second pathway, which is where the shared immunoglobulin block lives, so one
+  shared pathway gives 4/(16-4) = 0.333 for that pair and a mean of 0.111.
+- changed: `MAX_GENES_PER_PATHWAY` 2 -> 4 and `CANDIDATE["n_genes"]` 4 -> 8, so
+  the block spans two pathways of four; `rsf.max_depth` 9 -> 6 and
+  `rsf.max_features` 1.00 -> 0.50. `min_samples_leaf` stays at 8 deliberately —
+  the iteration-2 probe measured ACT tree-split collapsing from 0.100 to 0.005
+  at eight genes when leaf went 8 -> 16, so leaf size is the one regularisation
+  knob that cannot be turned here. Trees, split, selector scoring, winsorization,
+  detectability filter, and threshold are unchanged.
+- attribution note: the two changes again touch disjoint reported quantities —
+  Jaccard is a pure function of the selector and `n_genes`, while the comparator
+  value, c-index, and ACT-use diagnostics are pure functions of the forest.
+- red_line_audit: only the candidate name, `n_genes`, the per-pathway cap, and
+  two RSF hyperparameters change; the geometry is applied identically to the
+  clinical and C+G forests, preserving the matched comparator; no gene symbol is
+  hard-coded and membership remains the pinned Reactome collection passed to the
+  callback; selection stays fit-only against the locked train-only
+  treatment-benefit pseudo-outcome; 8 genes plus 19 clinical columns is 27
+  features, inside budget; depth 6 and `max_features` 0.50 are inside the locked
+  validation ranges; estimand, gates, bootstrap, and budget untouched; no test
+  artifact referenced.
+- run_id: run_013_20260821T233352Z
+- eligible: false
+- failed_gates: [gene_selection_jaccard_at_least_0_10, train_genomic_alignment_positive, train_genomic_value_at_least_best_constant, train_genomic_value_at_least_clinical, validation_cindex_drop_no_more_than_0_03]
+- reward: -1000000.000
+- train_increment: -4.746 months
+- validation_increment: -0.265 months
+- absolute_gap: 4.481 months
+- train_cindex_cg: 0.671
+- validation_cindex_cg: 0.667
+- gene_jaccard: 0.022
+- train_act_usage_cg: tree_split=0.090; path_traversal=0.024; terminal_difference_mean=0.024, median=0.022, p10=0.012, p90=0.042, nonzero_patients=1.000
+- validation_act_usage_cg: tree_split=0.153; path_traversal=0.032; terminal_difference_mean=0.032, median=0.032, p10=0.015, p90=0.046, nonzero_patients=1.000
+
+- verdict: NOT_LEADER
+- lesson: Failed gates fall to five and, for the first time, **all three
+  validation value gates pass together** — alignment +1.909, value 46.45 against
+  a 46.36 best constant and a 46.10 clinical comparator — with the validation
+  increment down to -0.265 months. Regularisation barely moved the train
+  comparator though (48.18 -> 48.05), so the train value gate still fails, and
+  the validation c-index now misses by 0.004 (drop 0.034 against the 0.03
+  allowance).
+- carried forward, and this is the sharpest diagnosis yet: the train failure is
+  a *decision-scale* failure, not a modelling failure. At this geometry the C+G
+  forest's median |benefit| is 0.163 months on train and 0.212 on validation
+  against the clinical forest's 0.937 and 1.279 — a sixfold mismatch — so the
+  shared 0.25-month threshold sits above the entire C+G benefit distribution and
+  silences it, leaving a train ACT rate of 0.017 and a policy that is
+  all-observation in all but name. That is exactly why train alignment is
+  -0.314, close to the -0.726 an all-observation policy would score. The
+  threshold, not the forest, is what pins the train side.
