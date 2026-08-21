@@ -194,3 +194,60 @@ validation row was computed. Results are in the iteration 2 hypothesis.
   onto a noise gene when the clinical split that the comparator used is not in
   the candidate set. Low `mtry` therefore buys ACT usage at the cost of
   decorrelating the C+G forest from its own comparator.
+
+### iter_004 — Reactome-smoothed stability + greedy comparator-matched forest
+- type: ALGO
+- hypothesis: (a) Pooling stability evidence across Reactome pathway members
+  averages out per-gene selection noise, so a gene promoted by both its own
+  selection frequency and its pathway's selection frequency reproduces across
+  folds and lifts Jaccard past 0.10; (b) `max_features=1.00` makes both matched
+  forests greedy over the same column set, so the C+G forest reproduces the
+  clinical comparator's splits wherever a clinical variable genuinely wins and
+  deviates only where a gene beats it, shrinking the increment magnitude and
+  turning the four value gates from large losses into near-ties.
+- changed: `stability_select_genes` now also scores every Reactome pathway per
+  subsample as the mean of its top-3 member scores (the locked `dr_pathway`
+  convention), counts top-50 pathway appearances, and ranks genes by
+  `gene_selection_frequency + best_containing_pathway_frequency`;
+  `STABILITY_SUBSAMPLES` 40->60, `STABILITY_TOP_K` 100->60, new
+  `STABILITY_TOP_PATHWAYS=50`; `CANDIDATE` name and `rsf.max_features`
+  0.25->1.00. Everything else is held at iter_003 values.
+- attribution note: the two changes touch disjoint reported metrics — Jaccard is
+  a pure function of the selector, and the ACT-use and value diagnostics are a
+  pure function of the forest given the genes — so a combined run is still
+  attributable.
+- red_line_audit: pathway membership is the pinned MSigDB Reactome collection
+  already supplied to the callback, not an external or hard-coded list; all
+  scores, pseudo-outcomes, and nuisance fits stay inside the fitting partition;
+  no validation row, assessment-fold outcome, gene symbol, or patient index is
+  referenced; no gene-by-ACT product column is created; `max_features=1.00` is
+  applied identically to the clinical and C+G forests, preserving the matched
+  comparator; estimand, gates, bootstrap, and budget untouched.
+- run_id: run_004_20260821T223904Z
+- eligible: false
+- failed_gates: [gene_selection_jaccard_at_least_0_10, train_genomic_value_at_least_clinical, validation_genomic_value_at_least_clinical]
+- reward: -1000000.000
+- train_increment: -3.686 months
+- validation_increment: -0.249 months
+- absolute_gap: 3.436 months
+- train_cindex_cg: 0.662
+- validation_cindex_cg: 0.666
+- gene_jaccard: 0.000
+- train_act_usage_cg: tree_split=0.213; path_traversal=0.058; terminal_difference_mean=0.058, median=0.054, p10=0.016, p90=0.105, nonzero_patients=1.000
+- validation_act_usage_cg: tree_split=0.497; path_traversal=0.150; terminal_difference_mean=0.150, median=0.145, p10=0.077, p90=0.235, nonzero_patients=1.000
+
+- verdict: NOT_LEADER
+- lesson: The two halves of the hypothesis split cleanly. (b) is confirmed and
+  large: `max_features=1.00` cut the failed gates from five to three — both
+  alignment gates and both best-constant gates now pass, and the validation
+  increment moved -5.331 -> -0.249 months with C+G alignment +2.170 against the
+  comparator's +2.419. (a) is refuted: pathway smoothing drove Jaccard 0.048 ->
+  0.000, because `max`-over-containing-pathway frequency is a coarse, heavily
+  tied statistic that swamps the finer gene-level stability evidence.
+- carried forward: the only remaining failures are Jaccard and the two
+  `value_at_least_clinical` gates, and validation is now nearly a tie (45.96 vs
+  46.16). Arithmetically, at `n_genes=4` a single gene shared by all three folds
+  gives Jaccard 0.143 and passes, whereas at `n_genes=8` two shared genes per
+  pair are needed; the smallest gene block is therefore also the easiest
+  stability target, so the fix must make the top-ranked gene reproducible rather
+  than make the list longer.
