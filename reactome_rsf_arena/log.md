@@ -251,3 +251,54 @@ validation row was computed. Results are in the iteration 2 hypothesis.
   pair are needed; the smallest gene block is therefore also the easiest
   stability target, so the fix must make the top-ranked gene reproducible rather
   than make the list longer.
+
+### iter_005 — complementary-pairs simultaneous stability selection
+- type: ALGO
+- hypothesis: A gene that tops the DR ranking in one 70% subsample can still be
+  driven by a handful of influential patients, so requiring *simultaneous*
+  selection in two disjoint halves of the fitting partition — Shah-Samworth
+  complementary pairs — keeps only genes whose treatment-benefit association
+  survives being measured on completely different patients, which is exactly the
+  property cross-fold reproducibility needs; the top-ranked gene should then
+  repeat in all three folds and give Jaccard 0.143.
+- changed: `stability_select_genes` reverted from the refuted pathway smoothing
+  back to gene-level evidence, and its criterion changed from "in the top 60 of
+  a 70% subsample" to "in the top 300 of *both* disjoint stratified halves of
+  the fitting partition"; `STABILITY_SUBSAMPLES` 60->40, `STABILITY_TOP_K`
+  60->300, `STABILITY_TOP_PATHWAYS` removed, `STABILITY_FRACTION` removed in
+  favour of exact halves. `CANDIDATE` keeps every iter_004 value including the
+  confirmed `max_features=1.00`, so the selector is the only difference.
+- red_line_audit: both halves are drawn from the fitting partition only, so no
+  assessment-fold or validation outcome enters selection; the target remains the
+  locked train-only cross-fitted treatment-benefit pseudo-outcome, satisfying
+  predictive-not-prognostic; no gene symbols, patient indices, or oracle
+  features are hard-coded; the RNG seed is a fixed constant; no gene-by-ACT
+  product columns; matched comparator, estimand, gates, bootstrap, and budget
+  untouched; no test artifact referenced.
+- run_id: run_005_20260821T224440Z
+- eligible: false
+- failed_gates: [gene_selection_jaccard_at_least_0_10, train_genomic_value_at_least_clinical, validation_cindex_drop_no_more_than_0_03, validation_genomic_value_at_least_best_constant, validation_genomic_value_at_least_clinical]
+- reward: -1000000.000
+- train_increment: -3.354 months
+- validation_increment: -0.993 months
+- absolute_gap: 2.361 months
+- train_cindex_cg: 0.646
+- validation_cindex_cg: 0.652
+- gene_jaccard: 0.048
+- train_act_usage_cg: tree_split=0.250; path_traversal=0.075; terminal_difference_mean=0.075, median=0.070, p10=0.019, p90=0.135, nonzero_patients=1.000
+- validation_act_usage_cg: tree_split=0.436; path_traversal=0.114; terminal_difference_mean=0.114, median=0.117, p10=0.050, p90=0.170, nonzero_patients=1.000
+
+- verdict: NOT_LEADER
+- lesson: Complementary pairs did not beat plain subsampling — Jaccard is 0.048
+  again, the identical value it reached in iter_003, with UQCRH surviving in
+  folds 1 and 3 and fold 2 selecting a disjoint set for the third consecutive
+  run — and the genes now also cost discrimination, newly failing
+  `validation_cindex_drop_no_more_than_0_03` (0.652 versus 0.695).
+- carried forward: making the *aggregation* more stringent cannot help while
+  the underlying statistic is unstable. The locked pseudo-outcome
+  `phi1 - phi0` has SD ~72 months on a quantity conceptually bounded by tau=60,
+  because the propensity clip at 0.05 and the censoring-survival floor at 0.05
+  each admit weights up to 20. A handful of patients therefore carry most of the
+  squared variation, and the gene-versus-gamma correlation is decided by which
+  extreme patients happen to have high expression — which differs in every
+  fold. The instability is in the target, not in the aggregation.

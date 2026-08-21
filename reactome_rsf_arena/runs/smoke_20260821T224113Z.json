@@ -1,0 +1,276 @@
+{
+  "budget": {
+    "forest_seeds": [
+      42,
+      43,
+      44
+    ],
+    "inner_folds": 3,
+    "max_experiments": 20,
+    "max_selected_genes": 32,
+    "max_total_features": 51,
+    "max_trees_per_forest": 1000,
+    "multiplicity_alpha": 0.05,
+    "outer_folds": 3,
+    "patient_bootstraps": 4000,
+    "schema_version": 1,
+    "smoke_reductions_applied": true,
+    "tau_months": 60.0,
+    "wall_time_seconds": 1500
+  },
+  "candidate": {
+    "benefit_threshold_months": 0.25,
+    "n_genes": 4,
+    "name": "comppairs_stability40_dr_gene_4_greedy",
+    "rsf": {
+      "max_depth": 9,
+      "max_features": 1.0,
+      "min_samples_leaf": 8,
+      "min_samples_split": 16,
+      "n_estimators": 600
+    },
+    "selector": "dr_gene"
+  },
+  "data": {
+    "forest_seeds": [
+      42
+    ],
+    "outer_folds": 2,
+    "reactome_collection_sha256": "5d61f289a2400cddfbb3a3353829fd2284a360bbe50f2093b566c4b7bea93341",
+    "test_used": false,
+    "train_act": 114,
+    "train_events": 348,
+    "train_n": 775,
+    "train_sha256": "b93f3cee3858716bca8add447bc837c734e203f6cb37962b1081e3c118d2c65d",
+    "validation_act": 38,
+    "validation_events": 117,
+    "validation_n": 259,
+    "validation_sha256": "824689aeaa34984727f2551bd512214164d0559d05cbec5817b0f88c9adb15a9",
+    "validation_used": true
+  },
+  "eligible": false,
+  "estimator": "outer-cross-fitted IPCW-AIPW restricted-time policy value",
+  "gates": {
+    "gene_selection_jaccard_at_least_0_10": false,
+    "train_cindex_drop_no_more_than_0_03": true,
+    "train_genomic_alignment_positive": true,
+    "train_genomic_seed_agreement_at_least_0_85": true,
+    "train_genomic_value_at_least_best_constant": true,
+    "train_genomic_value_at_least_clinical": true,
+    "train_iptw_effective_sample_size_at_least_0_30n": true,
+    "train_nontrivial_benefit_fraction_at_least_0_10": true,
+    "train_raw_propensity_overlap_at_least_0_80": true,
+    "validation_cindex_drop_no_more_than_0_03": true,
+    "validation_genomic_alignment_positive": false,
+    "validation_genomic_seed_agreement_at_least_0_85": true,
+    "validation_genomic_value_at_least_best_constant": false,
+    "validation_genomic_value_at_least_clinical": false,
+    "validation_iptw_effective_sample_size_at_least_0_30n": true,
+    "validation_nontrivial_benefit_fraction_at_least_0_10": true,
+    "validation_raw_propensity_overlap_at_least_0_80": true
+  },
+  "gene_selection": {
+    "frequency": [
+      {
+        "count": 1,
+        "gene": "AATF"
+      },
+      {
+        "count": 1,
+        "gene": "ACADM"
+      },
+      {
+        "count": 1,
+        "gene": "ACBD4"
+      },
+      {
+        "count": 1,
+        "gene": "ACOT13"
+      },
+      {
+        "count": 1,
+        "gene": "ACR"
+      },
+      {
+        "count": 1,
+        "gene": "ACTN2"
+      },
+      {
+        "count": 1,
+        "gene": "ADAM20"
+      },
+      {
+        "count": 1,
+        "gene": "ADAM21"
+      }
+    ],
+    "full_training_selection": [
+      "AARS1",
+      "ADAM30",
+      "ACAD10",
+      "ABL2"
+    ],
+    "mean_pairwise_jaccard": 0.0,
+    "per_outer_fold": [
+      [
+        "ADAM20",
+        "ADAM21",
+        "AATF",
+        "ACTN2"
+      ],
+      [
+        "ACOT13",
+        "ACADM",
+        "ACBD4",
+        "ACR"
+      ]
+    ]
+  },
+  "generalization": {
+    "absolute_increment_gap_months": 10.066956215941566,
+    "robust_selection_lcb": -26.268056882270514,
+    "score_before_eligibility": -36.33501309821208
+  },
+  "limitations": [
+    "Search uncertainty uses paired bootstraps of fixed train-OOF and validation predictions; it does not refit the full pipeline in each bootstrap draw.",
+    "Validation is adaptive search feedback, not untouched confirmation; the fixed experiment budget and multiplicity-adjusted LCB limit but do not eliminate validation overfitting.",
+    "IPCW-AIPW validity requires adequate measured-confounder adjustment, treatment positivity, and conditionally independent censoring.",
+    "Random row-level cross-validation does not establish transportability across source studies or expression platforms."
+  ],
+  "objective": "min(train OOF LCB, validation LCB) minus the absolute train-validation gap for A60(C+G)-A60(C), where A60(d)=V60(d)-V60(1-d)",
+  "phase": "smoke",
+  "reward": -1000000.0,
+  "schema_version": 1,
+  "train_oof": {
+    "constant_policy_values": {
+      "all_act_months": 45.935620840846134,
+      "all_observation_months": 45.86672731695004
+    },
+    "incremental_alignment_months": 0.45774162140969565,
+    "models": {
+      "clinical": {
+        "act_recommended_fraction": 0.15483870967741936,
+        "act_usage": {
+          "patient_tree_paths_traversing_act_fraction": 0.14077419354838708,
+          "per_patient_different_terminal_tree_fraction": {
+            "mean": 0.14077419354838708,
+            "median": 0.15,
+            "nonzero_patient_fraction": 0.944516129032258,
+            "p10": 0.025,
+            "p90": 0.275
+          },
+          "tree_contains_act_split_fraction": 0.4625
+        },
+        "alignment_months": 2.0026699849897582,
+        "anti_policy_value_months": 44.660115217546945,
+        "harrell_cindex": 0.6607870193346744,
+        "mean_predicted_benefit_months": -0.786779255695707,
+        "median_absolute_predicted_benefit_months": 0.7179113672409656,
+        "nontrivial_benefit_fraction": 0.7948387096774193,
+        "seed_agreement": 1.0,
+        "value_months": 46.6627852025367
+      },
+      "clinical_plus_genomic": {
+        "act_recommended_fraction": 0.21419354838709678,
+        "act_usage": {
+          "patient_tree_paths_traversing_act_fraction": 0.036258064516129035,
+          "per_patient_different_terminal_tree_fraction": {
+            "mean": 0.036258064516129035,
+            "median": 0.025,
+            "nonzero_patient_fraction": 0.8438709677419355,
+            "p10": 0.0,
+            "p90": 0.075
+          },
+          "tree_contains_act_split_fraction": 0.1375
+        },
+        "alignment_months": 2.460411606399454,
+        "anti_policy_value_months": 44.67096827569836,
+        "harrell_cindex": 0.6461183798551423,
+        "mean_predicted_benefit_months": -0.12480868732464707,
+        "median_absolute_predicted_benefit_months": 0.3762426679154913,
+        "nontrivial_benefit_fraction": 0.6180645161290322,
+        "seed_agreement": 1.0,
+        "value_months": 47.13137988209781
+      }
+    },
+    "overlap": {
+      "iptw_effective_sample_size": 266.8157708236647,
+      "raw_propensity_in_0_05_0_95_fraction": 0.8193548387096774
+    },
+    "paired_bootstrap": {
+      "ci95_high": 5.0705706699205555,
+      "ci95_low": -4.863385803062227,
+      "draws": 100,
+      "mean": 0.27313111561239434,
+      "sd": 2.6968599905177504,
+      "selection_lcb": -5.718482148769247,
+      "selection_lcb_quantile_percent": 0.25
+    }
+  },
+  "validation": {
+    "constant_policy_values": {
+      "all_act_months": 47.55654272383358,
+      "all_observation_months": 44.24239568996149
+    },
+    "incremental_alignment_months": -9.60921459453187,
+    "models": {
+      "clinical": {
+        "act_recommended_fraction": 0.4362934362934363,
+        "act_usage": {
+          "patient_tree_paths_traversing_act_fraction": 0.2628378378378379,
+          "per_patient_different_terminal_tree_fraction": {
+            "mean": 0.2628378378378379,
+            "median": 0.25,
+            "nonzero_patient_fraction": 0.9806949806949807,
+            "p10": 0.125,
+            "p90": 0.425
+          },
+          "tree_contains_act_split_fraction": 0.775
+        },
+        "alignment_months": 7.930878208690146,
+        "anti_policy_value_months": 41.19969809610083,
+        "harrell_cindex": 0.691175748046971,
+        "mean_predicted_benefit_months": -1.0584313216772392,
+        "median_absolute_predicted_benefit_months": 2.371483486604781,
+        "nontrivial_benefit_fraction": 0.9382239382239382,
+        "seed_agreement": 1.0,
+        "value_months": 49.13057630479098
+      },
+      "clinical_plus_genomic": {
+        "act_recommended_fraction": 0.24324324324324326,
+        "act_usage": {
+          "patient_tree_paths_traversing_act_fraction": 0.09652509652509653,
+          "per_patient_different_terminal_tree_fraction": {
+            "mean": 0.09652509652509653,
+            "median": 0.1,
+            "nonzero_patient_fraction": 0.9420849420849421,
+            "p10": 0.025,
+            "p90": 0.175
+          },
+          "tree_contains_act_split_fraction": 0.4
+        },
+        "alignment_months": -1.6783363858417246,
+        "anti_policy_value_months": 46.738637399818394,
+        "harrell_cindex": 0.6700240750749276,
+        "mean_predicted_benefit_months": -0.5115683154485925,
+        "median_absolute_predicted_benefit_months": 0.9415661969180178,
+        "nontrivial_benefit_fraction": 0.7722007722007722,
+        "seed_agreement": 1.0,
+        "value_months": 45.06030101397667
+      }
+    },
+    "overlap": {
+      "iptw_effective_sample_size": 88.83582827209842,
+      "raw_propensity_in_0_05_0_95_fraction": 0.8185328185328186
+    },
+    "paired_bootstrap": {
+      "ci95_high": 0.041027741780597315,
+      "ci95_low": -22.832057990313203,
+      "draws": 100,
+      "mean": -9.554511171257769,
+      "sd": 6.010599363031603,
+      "selection_lcb": -26.268056882270514,
+      "selection_lcb_quantile_percent": 0.25
+    }
+  }
+}
