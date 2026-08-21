@@ -638,3 +638,63 @@ validation row was computed. Results are in the iteration 2 hypothesis.
   two pathways can reach Jaccard 0.10 — arithmetically one shared pathway
   contributing its two genes to one fold pair gives 2/(8-2) = 0.333, a mean of
   0.111, which clears the gate.
+
+### iter_012 — four genes as two pathways of two
+- type: PARAM
+- hypothesis: Four genes is the only block width that clears the validation
+  c-index, ACT-use, and nontrivial-benefit gates together, and drawing it as two
+  genes from each of the two best-ranked pathways keeps the tolerant stability
+  criterion — a single shared pathway contributing its two genes to one fold
+  pair gives 2/(8-2) = 0.333 and a mean of 0.111 — so this is the narrowest
+  configuration that can satisfy every structural gate at once.
+- changed: `CANDIDATE["n_genes"]` 8 -> 4 and the candidate name; the per-pathway
+  cap stays at 2, so the block spans two pathways. Selector scoring,
+  winsorization, detectability filter, complementary-pairs criterion, and every
+  forest parameter are unchanged from iter_011.
+- risk accepted: the immunoglobulin pathway that supplied the shared genes in
+  iter_010 and iter_011 ranked second or third, so restricting each fold to its
+  top two pathways may drop it in some folds; the fold-frequency table will show
+  directly whether the shared block survives.
+- red_line_audit: only the candidate name and `n_genes` change; no gene symbol
+  is hard-coded and membership remains the pinned Reactome collection passed to
+  the callback; selection stays fit-only against the locked train-only
+  treatment-benefit pseudo-outcome; matched comparator, estimand, gates,
+  bootstrap, and budget untouched; no test artifact referenced.
+- run_id: run_012_20260821T232817Z
+- eligible: false
+- failed_gates: [gene_selection_jaccard_at_least_0_10, train_genomic_alignment_positive, train_genomic_value_at_least_best_constant, train_genomic_value_at_least_clinical, validation_genomic_alignment_positive, validation_genomic_value_at_least_best_constant, validation_genomic_value_at_least_clinical]
+- reward: -1000000.000
+- train_increment: -6.327 months
+- validation_increment: -2.457 months
+- absolute_gap: 3.869 months
+- train_cindex_cg: 0.662
+- validation_cindex_cg: 0.689
+- gene_jaccard: 0.000
+- train_act_usage_cg: tree_split=0.256; path_traversal=0.069; terminal_difference_mean=0.069, median=0.059, p10=0.021, p90=0.126, nonzero_patients=1.000
+- validation_act_usage_cg: tree_split=0.426; path_traversal=0.094; terminal_difference_mean=0.094, median=0.088, p10=0.048, p90=0.148, nonzero_patients=1.000
+
+- verdict: NOT_LEADER
+- lesson: The flagged risk materialised — restricting each fold to its top two
+  pathways dropped the shared immunoglobulin block, and Jaccard fell to 0.000
+  even though the c-index (0.662 train, 0.689 validation), ACT use (0.256 /
+  0.426), and nontrivial-benefit gates were all comfortable. What two folds
+  share is a mid-ranked pathway, not their top-ranked one, so a fold must be
+  allowed to reach past its single best block for any overlap to exist.
+
+Constraint map after twelve experiments (train and validation only):
+
+- `train_genomic_value_at_least_clinical` has **never** passed. The matched
+  clinical comparator's train value is fixed by geometry alone — 46.34 at the
+  anchor's regularised geometry (run_001), 48.18 at depth 9 / leaf 8 /
+  `mtry=1.00` (runs 004-012), and 50.20 at `mtry=0.25` (runs 002-003) — so the
+  bar the gene block must clear is something the *forest*, not the genes, sets.
+  The deficit is correspondingly smallest at the most regularised geometry
+  (0.49 months in run_001) and largest where the comparator can overfit the AIPW
+  noise. Regularisation, not better genes, is the lever on this gate.
+- `max_features=0.25` protects the validation c-index (drop 0.016 in run_002)
+  where `max_features=1.00` does not (drop 0.043 in run_005), but it also makes
+  the clinical comparator luckiest of all, so it trades one gate for another.
+- ACT use is extremely sensitive to leaf size once the block widens: the
+  iteration-2 probe measured tree-split 0.100 at 8 genes with `leaf=8` but 0.005
+  at 8 genes with `leaf=16`, so heavy leaf regularisation and a wide gene block
+  cannot be combined.
