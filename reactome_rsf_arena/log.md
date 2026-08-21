@@ -758,3 +758,68 @@ Constraint map after twelve experiments (train and validation only):
   all-observation in all but name. That is exactly why train alignment is
   -0.314, close to the -0.726 an all-observation policy would score. The
   threshold, not the forest, is what pins the train side.
+
+### iter_014 — the only jointly feasible corner
+- type: PARAM
+- hypothesis: Thirteen experiments have pinned each gate to a different corner of
+  the same two knobs, and exactly one corner satisfies all of them at once —
+  sixteen genes across four pathways for stability (0.122 in run_010),
+  `max_features=0.25` to stop those genes from costing discrimination (drop 0.016
+  at 0.25 in run_002 versus 0.043 at 1.00 in run_005), depth 6 to keep the
+  clinical comparator from overfitting AIPW noise, `min_samples_leaf=8` because
+  ACT use collapses at wider leaves, and a zero threshold because the C+G
+  benefit scale is six times narrower than the comparator's so a 0.25-month rule
+  silences it. This run tests that corner.
+- changed: `CANDIDATE` -> name `feasible_corner_pathway16_zerothresh`,
+  `n_genes` 8 -> 16, `benefit_threshold_months` 0.25 -> 0.00,
+  `rsf.max_features` 0.50 -> 0.25, `rsf.n_estimators` 600 -> 800;
+  `MAX_GENES_PER_PATHWAY` stays 4, `max_depth` stays 6, `min_samples_leaf`
+  stays 8. The selector is untouched. Tree count rises purely as Monte-Carlo
+  variance control, since `max_features=0.25` raises per-tree variance and the
+  seed-agreement gate must hold at 0.85.
+- expected failure modes to read from the diagnostics: if ACT tree-split falls
+  near the 0.078 of run_010 *and* the zero threshold still leaves the ACT rate
+  near zero, the decision-scale explanation is wrong; if Jaccard drops below
+  0.10 despite sixteen genes, `max_features` is interacting with selection,
+  which it should not, since the selector never sees the forest.
+- red_line_audit: only the candidate name and five `CANDIDATE` fields change;
+  every parameter is applied identically to the clinical and C+G forests, so the
+  comparator stays matched; the threshold is prespecified from the train-OOF
+  benefit scale, not tuned to validation; recommendations remain integrated
+  counterfactual RMST contrasts, never RSF mortality scores; no ACT rate is
+  forced; 16 genes plus 19 clinical columns is 35 features and 800 trees is
+  inside the 1,000-tree cap; no gene symbol, patient index, or validation
+  quantity is hard-coded; estimand, gates, bootstrap, and budget untouched; no
+  test artifact referenced.
+- run_id: run_014_20260821T233818Z
+- eligible: false
+- failed_gates: [train_genomic_value_at_least_best_constant, train_genomic_value_at_least_clinical, validation_cindex_drop_no_more_than_0_03, validation_genomic_value_at_least_best_constant, validation_genomic_value_at_least_clinical]
+- reward: -1000000.000
+- train_increment: -7.750 months
+- validation_increment: -2.997 months
+- absolute_gap: 4.753 months
+- train_cindex_cg: 0.672
+- validation_cindex_cg: 0.658
+- gene_jaccard: 0.122
+- train_act_usage_cg: tree_split=0.052; path_traversal=0.014; terminal_difference_mean=0.014, median=0.013, p10=0.007, p90=0.022, nonzero_patients=1.000
+- validation_act_usage_cg: tree_split=0.079; path_traversal=0.016; terminal_difference_mean=0.016, median=0.015, p10=0.009, p90=0.026, nonzero_patients=1.000
+
+- verdict: NOT_LEADER
+- lesson: The corner splits cleanly into a confirmed half and a refuted half.
+  Confirmed: the zero threshold is the right decision rule — the C+G ACT rate
+  went 0.000 -> 0.160 train and 0.263 validation and **both alignment gates
+  passed** (+0.332, +1.326), with Jaccard holding at 0.122 exactly as expected
+  since the selector never sees the forest. Refuted: `max_features=0.25` does
+  not protect discrimination at sixteen genes — the validation c-index drop
+  worsened to 0.046 — and it made the clinical comparator markedly luckier
+  (train value 48.05 -> 49.88), so it loses on both counts here; the 0.016 drop
+  it bought in run_002 was a four-gene effect that does not survive a wide
+  block. Seed agreement also fell to 0.897/0.864, close to its 0.85 floor,
+  because a zero threshold puts many patients near the decision boundary.
+- carried forward: with alignment solved, the wall is `validation_cindex` and
+  the two `value_at_least_clinical` gates. Both respond to the same thing —
+  how much the forest lets sixteen noise-carrying genes shape the risk ranking —
+  and depth is the one regularisation knob not yet tried downward, since the
+  iteration-2 probe showed depth barely affects ACT use (0.165/0.230/0.235 at
+  depths 6/9/12) while shallower trees necessarily give genes fewer chances to
+  enter a path and also keep the comparator from overfitting AIPW noise.
