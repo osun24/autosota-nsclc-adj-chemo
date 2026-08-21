@@ -355,3 +355,54 @@ validation row was computed. Results are in the iteration 2 hypothesis.
   1.190 on train), so the shared 0.25-month threshold silences the genomic
   policy while barely touching the clinical one — an effectively unmatched
   comparison that the next iteration tests directly.
+
+### iter_007 — matched decision scale via a zero-benefit threshold
+- type: PARAM
+- hypothesis: The C+G forest's counterfactual RMST contrasts are attenuated
+  roughly threefold relative to the clinical forest's (median |benefit| 0.378
+  versus 1.190 on train OOF), so a common 0.25-month threshold is not a matched
+  decision rule — it silences the genomic policy while leaving the clinical one
+  intact. Prespecifying the clinically neutral rule "recommend ACT whenever
+  predicted counterfactual RMST60 is higher under ACT" removes that asymmetry,
+  raises the C+G ACT rate toward the level the positive estimated ATE rewards,
+  and should recover `train_genomic_alignment_positive` and both
+  `*_value_at_least_best_constant` gates.
+- changed: `CANDIDATE["benefit_threshold_months"]` 0.25 -> 0.00 and the name;
+  nothing else changes, so the selector and forest are held at iter_006 values.
+- red_line_audit: the threshold is applied identically to the clinical and C+G
+  policies by the locked evaluator, preserving the matched comparator; the rule
+  is prespecified here on the basis of the train-OOF benefit scale, not tuned to
+  a validation outcome; recommendations still come from integrated
+  counterfactual RMST curves, never from RSF mortality scores; no ACT rate is
+  forced — the locked evaluator applies the rule and the gates judge it;
+  estimand, gates, bootstrap, budget, and selector untouched; no test artifact
+  referenced.
+- run_id: (none — experiment 7 consumed without producing a result)
+- eligible: false
+- failed_gates: [n/a — no result was produced]
+- reward: n/a
+- train_increment: n/a
+- validation_increment: n/a
+- absolute_gap: n/a
+- train_cindex_cg: n/a
+- validation_cindex_cg: n/a
+- gene_jaccard: n/a
+- train_act_usage_cg: n/a — the run aborted before any cohort was summarised
+- validation_act_usage_cg: n/a — the run aborted before any cohort was summarised
+- verdict: INELIGIBLE
+- lesson: Lost to an infrastructure failure, not to science. The host revoked
+  filesystem access to the repository (macOS TCC on `~/Documents` and
+  `~/Downloads`; `stat` still worked while `open`/`opendir` returned EPERM)
+  while the run was assembling its result, so `sha256_file(TRAIN_CSV)` raised
+  `PermissionError` after all three folds had been fitted, and the launcher's
+  own failure-row write raised as well.
+- ledger state: verified after access was restored — the lock manifest verifies,
+  the ledger hash chain is intact across 13 rows, and experiment 7 has a
+  `started` row (train sha `dbe3ce85896b`) with no `finished` row. Per red line
+  12 a failure consumes a slot, so **7 of 20 are used and 13 remain**, and that
+  exact `train.py` is permanently barred from consuming another slot by the
+  launcher's duplicate check. The zero-threshold candidate is therefore retired
+  rather than resubmitted under a new name, which would be a duplicate
+  candidate; its hypothesis is revisited later only as part of a genuinely
+  different candidate. The orphaned `runs/candidate_n2vwr5jo.json` temporary
+  file from the aborted run is left untouched as a prior-run artifact.

@@ -33,10 +33,10 @@ WINSOR_PERCENT = 5.0
 
 
 CANDIDATE = {
-    "name": "comppairs_winsor5_dr_gene_4_greedy",
+    "name": "comppairs_winsor5_dr_gene_4_zerothresh",
     "selector": "dr_gene",
     "n_genes": 4,
-    "benefit_threshold_months": 0.25,
+    "benefit_threshold_months": 0.00,
     "rsf": {
         "n_estimators": 600,
         "max_depth": 9,
