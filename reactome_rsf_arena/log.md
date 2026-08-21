@@ -871,3 +871,57 @@ Constraint map after twelve experiments (train and validation only):
   transport to the validation cohort. That is a transportability failure of the
   gene block itself, not a tuning failure, and no forest parameter tried so far
   removes it.
+
+### iter_016 — every confirmed element, nothing refuted
+- type: PARAM
+- hypothesis: Three elements are now individually confirmed — the zero threshold
+  (both alignment gates in iter_014), the sixteen-gene four-pathway block
+  (Jaccard 0.122 in iter_010 and iter_014), and depth 6 with
+  `max_features=0.50` (the weakest clinical comparator at 48.05 and all three
+  validation value gates in iter_013) — while `max_features=0.25` and depth 4
+  are refuted. Combining only the confirmed elements, at the 1,000-tree cap for
+  maximum Monte-Carlo variance reduction, is the best-supported single point in
+  the space and should hold alignment and stability while giving the validation
+  c-index its best chance.
+- changed: `rsf.max_depth` 4 -> 6, `rsf.n_estimators` 800 -> 1000; the zero
+  threshold, sixteen-gene block, `min_samples_leaf=8`, `max_features=0.50`, and
+  the selector are unchanged.
+- red_line_audit: only the candidate name and two RSF fields change, applied
+  identically to both forests so the comparator stays matched; 1,000 trees is
+  exactly the locked cap and depth 6 is inside the locked range; selection is
+  untouched and remains fit-only against the locked train-only treatment-benefit
+  pseudo-outcome; no gene symbol, patient index, or validation quantity is
+  hard-coded; no gene-by-ACT products; estimand, gates, bootstrap, and budget
+  untouched; no test artifact referenced.
+- run_id: run_016_20260821T234935Z
+- eligible: false
+- failed_gates: [train_genomic_alignment_positive, train_genomic_value_at_least_best_constant, train_genomic_value_at_least_clinical, validation_cindex_drop_no_more_than_0_03]
+- reward: -1000000.000
+- train_increment: -9.366 months
+- validation_increment: 0.653 months
+- absolute_gap: 10.018 months
+- train_cindex_cg: 0.673
+- validation_cindex_cg: 0.659
+- gene_jaccard: 0.122
+- train_act_usage_cg: tree_split=0.047; path_traversal=0.012; terminal_difference_mean=0.012, median=0.010, p10=0.005, p90=0.022, nonzero_patients=1.000
+- validation_act_usage_cg: tree_split=0.076; path_traversal=0.016; terminal_difference_mean=0.016, median=0.014, p10=0.007, p90=0.027, nonzero_patients=1.000
+
+- verdict: NOT_LEADER
+- lesson: Best gate count yet at four, and the validation cohort is now
+  genuinely good — increment **+0.653 months**, C+G value 46.97 against a 45.86
+  clinical comparator and a 46.97 best constant, alignment +2.336, all three
+  validation value gates passing. But the train side collapsed the other way:
+  at sixteen genes and depth 6 the ACT tree-split fraction is only 0.047 on the
+  smaller fold-fitting partitions, the train ACT rate falls to 0.125, alignment
+  goes to -2.990, and the gap blows out to 10.018 months. The two cohorts are
+  now failing in opposite directions, which is the signature of a gene block too
+  wide for the 516-patient fitting partitions to support.
+- carried forward, and this closes the sixteen-gene branch: the validation
+  c-index drop at sixteen genes has now been measured at four geometries —
+  0.053 (depth 9, mtry 1.00), 0.046 (depth 6, mtry 0.25), 0.042 (depth 6, mtry
+  0.50), and 0.035 (depth 4, mtry 0.50) — and only the depth that destroys ACT
+  use gets near the 0.03 allowance. Sixteen genes cannot pass that gate at any
+  workable geometry, so the block must narrow, which means the *within-pathway*
+  gene choice has to become reproducible: two folds that share a pathway
+  currently pick different members of it, which is exactly why eight genes gave
+  Jaccard 0.022 in iter_013 while sixteen gave 0.122.
