@@ -823,3 +823,51 @@ Constraint map after twelve experiments (train and validation only):
   iteration-2 probe showed depth barely affects ACT use (0.165/0.230/0.235 at
   depths 6/9/12) while shallower trees necessarily give genes fewer chances to
   enter a path and also keep the comparator from overfitting AIPW noise.
+
+### iter_015 — shallow trees to stop genes shaping the risk ranking
+- type: PARAM
+- hypothesis: The remaining three gates all measure how much sixteen
+  noise-carrying genes are allowed to shape the forest, so cutting `max_depth`
+  to 4 — the one regularisation knob the iteration-2 probe showed to be nearly
+  neutral for ACT use (tree-split 0.165/0.230/0.235 at depths 6/9/12) — should
+  shorten every root-to-leaf path, give genes fewer chances to enter it, recover
+  the validation c-index, and simultaneously keep the clinical comparator from
+  overfitting the AIPW noise that inflated its value to 49.88, while restoring
+  `max_features=0.50` undoes the refuted quarter-mtry setting.
+- changed: `rsf.max_depth` 6 -> 4 and `rsf.max_features` 0.25 -> 0.50; the
+  confirmed zero threshold, the sixteen-gene four-pathway block,
+  `min_samples_leaf=8`, 800 trees, and the whole selector are held fixed.
+- red_line_audit: only the candidate name and two RSF fields change, applied
+  identically to both forests so the comparator stays matched; depth 4 and
+  `max_features` 0.50 are inside the locked validation ranges; selection is
+  untouched and remains fit-only against the locked train-only treatment-benefit
+  pseudo-outcome; no gene symbol, patient index, or validation quantity is
+  hard-coded; no gene-by-ACT products; estimand, gates, bootstrap, and budget
+  untouched; no test artifact referenced.
+- run_id: run_015_20260821T234304Z
+- eligible: false
+- failed_gates: [train_genomic_alignment_positive, train_genomic_value_at_least_best_constant, train_genomic_value_at_least_clinical, validation_cindex_drop_no_more_than_0_03, validation_genomic_alignment_positive, validation_genomic_value_at_least_best_constant, validation_genomic_value_at_least_clinical]
+- reward: -1000000.000
+- train_increment: -7.477 months
+- validation_increment: -4.047 months
+- absolute_gap: 3.430 months
+- train_cindex_cg: 0.668
+- validation_cindex_cg: 0.666
+- gene_jaccard: 0.122
+- train_act_usage_cg: tree_split=0.022; path_traversal=0.007; terminal_difference_mean=0.007, median=0.005, p10=0.003, p90=0.012, nonzero_patients=1.000
+- validation_act_usage_cg: tree_split=0.029; path_traversal=0.006; terminal_difference_mean=0.006, median=0.005, p10=0.003, p90=0.011, nonzero_patients=1.000
+
+- verdict: NOT_LEADER
+- lesson: Refuted, and the reason is a scope error in my own probe evidence. The
+  depth-insensitivity I relied on (tree-split 0.165/0.230/0.235 at depths
+  6/9/12) was measured at *four* genes; at sixteen genes depth is decisive,
+  because a depth-4 tree has too few nodes for a 1-in-35 feature to enter, and
+  ACT tree-split collapsed to 0.022 train / 0.029 validation, taking both
+  alignment gates down with it. The validation c-index did improve to 0.666
+  (drop 0.035, the best yet at sixteen genes) but still misses.
+- carried forward: the train-OOF c-index gap is essentially zero (0.668 genomic
+  versus 0.669 clinical) while the validation gap is 0.035, so the genes are not
+  overfitting the *fitting* partition — their contribution simply fails to
+  transport to the validation cohort. That is a transportability failure of the
+  gene block itself, not a tuning failure, and no forest parameter tried so far
+  removes it.
