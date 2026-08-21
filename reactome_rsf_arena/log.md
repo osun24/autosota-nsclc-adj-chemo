@@ -587,3 +587,54 @@ validation row was computed. Results are in the iteration 2 hypothesis.
   number of *shared pathways*, not the number of genes, so taking two genes from
   each of four pathways preserves the tolerant criterion (one shared pathway
   still gives 2/(16-2) = 0.143) at half the block width.
+
+### iter_011 — same pathway spread at half the block width
+- type: PARAM
+- hypothesis: Cross-fold overlap is earned by the number of *shared pathways*,
+  not by the number of genes, so halving the per-pathway cap keeps the same four
+  distinct Reactome blocks and the same tolerant Jaccard criterion — one shared
+  pathway still gives 2/(16-2) = 0.143 — while an eight-gene block restores the
+  ACT tree-split fraction from 0.078 to roughly 0.135 and with it a non-degenerate
+  ACT recommendation rate, recovering the alignment, best-constant, and
+  validation c-index gates.
+- changed: `MAX_GENES_PER_PATHWAY` 4 -> 2 and `CANDIDATE["n_genes"]` 16 -> 8;
+  the block still spans four pathways. Selector scoring, winsorization,
+  detectability filter, complementary-pairs criterion, and every forest
+  parameter are unchanged from iter_010.
+- red_line_audit: only the candidate name, `n_genes`, and the per-pathway cap
+  change; no gene symbol is hard-coded and membership remains the pinned
+  Reactome collection passed to the callback; selection stays fit-only against
+  the locked train-only treatment-benefit pseudo-outcome; 8 genes plus 19
+  clinical columns is 27 features, inside budget; matched comparator, estimand,
+  gates, bootstrap, and budget untouched; no test artifact referenced.
+- run_id: run_011_20260821T232353Z
+- eligible: false
+- failed_gates: [gene_selection_jaccard_at_least_0_10, train_genomic_alignment_positive, train_genomic_value_at_least_best_constant, train_genomic_value_at_least_clinical, validation_cindex_drop_no_more_than_0_03, validation_genomic_alignment_positive, validation_genomic_value_at_least_best_constant, validation_genomic_value_at_least_clinical]
+- reward: -1000000.000
+- train_increment: -4.935 months
+- validation_increment: -7.254 months
+- absolute_gap: 2.319 months
+- train_cindex_cg: 0.671
+- validation_cindex_cg: 0.644
+- gene_jaccard: 0.048
+- train_act_usage_cg: tree_split=0.152; path_traversal=0.040; terminal_difference_mean=0.040, median=0.033, p10=0.009, p90=0.080, nonzero_patients=1.000
+- validation_act_usage_cg: tree_split=0.255; path_traversal=0.054; terminal_difference_mean=0.054, median=0.051, p10=0.023, p90=0.093, nonzero_patients=1.000
+
+- verdict: NOT_LEADER
+- lesson: Halving the cap more than halved the overlap — Jaccard fell 0.122 ->
+  0.048 while ACT tree-split recovered 0.078 -> 0.152 — because what two folds
+  share is a *pathway*, and within a shared pathway their top-two genes need not
+  be the same two. The cap cannot go below the width at which within-pathway
+  gene rankings agree, so overlap must be bought with genes per pathway, not
+  with more pathways.
+- carried forward, and now the binding constraint: `n_genes` is squeezed from
+  both sides by three different gates. At 16 genes Jaccard passes (0.122) but
+  ACT collapses and validation c-index drops 0.053; at 8 genes ACT recovers but
+  Jaccard fails and validation c-index still drops 0.051; only at 4 genes does
+  `validation_cindex_drop_no_more_than_0_03` reliably pass (0.673 in run_008,
+  0.682 in run_009). A four-gene block is therefore the *only* width that can
+  satisfy the c-index, ACT-use, and nontrivial-benefit gates simultaneously, so
+  the remaining question is whether four genes drawn as two genes from each of
+  two pathways can reach Jaccard 0.10 — arithmetically one shared pathway
+  contributing its two genes to one fold pair gives 2/(8-2) = 0.333, a mean of
+  0.111, which clears the gate.
