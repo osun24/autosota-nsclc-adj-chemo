@@ -529,3 +529,61 @@ validation row was computed. Results are in the iteration 2 hypothesis.
   block already gives Jaccard 4/(32-4) = 0.143. This is the one structural
   change that converts a knife-edge into a tolerant criterion, and it is what
   iteration 10 tests.
+
+### iter_010 — spread the block across several top pathways
+- type: PARAM
+- hypothesis: Requiring three fitting partitions to agree on a single top-ranked
+  pathway is a knife-edge, but taking four genes from each of the four
+  best-ranked pathways means the folds only need to share one pathway anywhere
+  in a short list; a single shared four-gene block already yields Jaccard
+  4/(32-4) = 0.143, so this should clear the stability gate without relying on
+  the undetectable-probe artifact that iter_006 exposed.
+- changed: `MAX_GENES_PER_PATHWAY = 4` added and enforced in the pathway walk,
+  and `CANDIDATE["n_genes"]` 4 -> 16, so the block is drawn from four distinct
+  Reactome pathways instead of one. The selector's scoring, winsorization,
+  detectability filter, complementary-pairs criterion, and the forest are all
+  unchanged from iter_009.
+- risk accepted: 16 genes make the C+G forest 35 columns wide instead of 23, and
+  the iteration-2 probe implies the ACT tree-split fraction falls from about
+  0.21 to roughly 0.09, so `*_nontrivial_benefit_fraction_at_least_0_10` is the
+  gate to watch; it currently passes with wide margin (0.632 train, 0.710
+  validation), and the ACT-use diagnostics will show directly whether the
+  margin is being spent.
+- red_line_audit: only `CANDIDATE["n_genes"]`, the candidate name, and the
+  per-pathway cap change; no gene symbol is hard-coded and pathway membership
+  remains the pinned Reactome collection supplied to the callback; selection
+  stays fit-only against the locked train-only treatment-benefit pseudo-outcome;
+  16 genes plus 19 clinical columns is 35 features, inside the 51-feature and
+  32-gene budget; matched comparator, estimand, gates, bootstrap, and budget
+  untouched; no test artifact referenced.
+- run_id: run_010_20260821T231840Z
+- eligible: false
+- failed_gates: [train_genomic_alignment_positive, train_genomic_value_at_least_best_constant, train_genomic_value_at_least_clinical, validation_cindex_drop_no_more_than_0_03, validation_genomic_alignment_positive, validation_genomic_value_at_least_best_constant, validation_genomic_value_at_least_clinical]
+- reward: -1000000.000
+- train_increment: -5.325 months
+- validation_increment: -4.946 months
+- absolute_gap: 0.380 months
+- train_cindex_cg: 0.676
+- validation_cindex_cg: 0.642
+- gene_jaccard: 0.122
+- train_act_usage_cg: tree_split=0.078; path_traversal=0.019; terminal_difference_mean=0.019, median=0.016, p10=0.003, p90=0.040, nonzero_patients=0.997
+- validation_act_usage_cg: tree_split=0.123; path_traversal=0.024; terminal_difference_mean=0.024, median=0.019, p10=0.007, p90=0.049, nonzero_patients=1.000
+
+- verdict: NOT_LEADER
+- lesson: The stability hypothesis is confirmed on legitimate genes — spreading
+  the block across four pathways lifted Jaccard 0.000 -> **0.122** with a shared
+  immunoglobulin block (IGKV1-17, IGKV4-1, IGLV2-14, IGLV3-19, IGLV3-25 each in
+  two folds) drawn from detectable genes, not from the undetectable-probe
+  artifact — and the train/validation gap fell to 0.380 months, the smallest so
+  far. The accepted risk then materialised exactly as predicted: 16 genes cut
+  the ACT tree-split fraction to 0.078 train / 0.123 validation, the C+G ACT
+  rate collapsed to 0.000 in both cohorts, and an all-observation policy cannot
+  survive `alignment_positive` or `value_at_least_best_constant` while the
+  estimated ATE is positive. The 0.380 gap is an artifact of both cohorts
+  collapsing to the same constant policy, not evidence of generalisation.
+- carried forward: Jaccard and ACT usage are both solved, but at different block
+  sizes — 16 genes buys stability and loses ACT, 4 genes buys ACT and loses
+  stability. The per-pathway cap decouples them: what earns Jaccard is the
+  number of *shared pathways*, not the number of genes, so taking two genes from
+  each of four pathways preserves the tolerant criterion (one shared pathway
+  still gives 2/(16-2) = 0.143) at half the block width.
