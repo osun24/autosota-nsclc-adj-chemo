@@ -470,3 +470,62 @@ validation row was computed. Results are in the iteration 2 hypothesis.
   for a different and now-understood reason — it used the locked top-3-member
   statistic, itself an extreme-value quantity, combined by a coarse `max` that
   produced large ties.
+
+### iter_009 — Reactome pathway-mean stability selection
+- type: ALGO
+- hypothesis: A single gene's DR score on ~258 patients is too noisy to
+  reproduce across fitting partitions that share only a third of their
+  patients, but the mean score over all detectable members of a Reactome
+  pathway averages that noise down by roughly the square root of the member
+  count, so selecting the pathway that is most reproducibly top-ranked and then
+  taking its best-scoring members will reproduce across folds and clear Jaccard
+  while keeping the gene-quality gain of the detectability filter.
+- changed: `stability_select_genes` now scores pathways, not genes, as the
+  primary unit. For each complementary half it computes the locked
+  winsorized-gamma gene scores over detectable genes, forms every Reactome
+  pathway's *mean member score* via a sparse membership matrix (mean over all
+  members, deliberately not the locked top-3 extreme-value statistic), and
+  counts a pathway only when it lands in the top 20 of *both* halves; pathways
+  are ranked by that simultaneous count, and genes are then taken from the
+  best-ranked pathways in order of their score averaged over all 80 half-sample
+  rankings. New constants `MIN_PATHWAY_MEMBERS = 12`, `TOP_PATHWAYS = 20`.
+  `CANDIDATE` is unchanged from iter_008.
+- red_line_audit: pathway membership is the pinned MSigDB Reactome collection
+  handed to the callback, not an external or hard-coded list, and no gene symbol
+  is named anywhere; every score, winsorization, half-split, and pathway mean is
+  computed inside the fitting partition, so selection stays fit-only and no
+  assessment-fold or validation outcome is touched; the target remains the
+  locked train-only treatment-benefit pseudo-outcome, so selection is predictive
+  rather than prognostic; no patient is dropped; the RSF still receives raw gene
+  values and the same clinical block, preserving the matched comparator; no
+  gene-by-ACT product columns; estimand, gates, bootstrap, and budget untouched;
+  no test artifact referenced.
+- run_id: run_009_20260821T230908Z
+- eligible: false
+- failed_gates: [gene_selection_jaccard_at_least_0_10, train_genomic_alignment_positive, train_genomic_value_at_least_best_constant, train_genomic_value_at_least_clinical, validation_genomic_alignment_positive, validation_genomic_value_at_least_best_constant, validation_genomic_value_at_least_clinical]
+- reward: -1000000.000
+- train_increment: -4.737 months
+- validation_increment: -3.112 months
+- absolute_gap: 1.626 months
+- train_cindex_cg: 0.671
+- validation_cindex_cg: 0.682
+- gene_jaccard: 0.000
+- train_act_usage_cg: tree_split=0.243; path_traversal=0.066; terminal_difference_mean=0.066, median=0.055, p10=0.016, p90=0.135, nonzero_patients=1.000
+- validation_act_usage_cg: tree_split=0.399; path_traversal=0.088; terminal_difference_mean=0.088, median=0.088, p10=0.043, p90=0.132, nonzero_patients=1.000
+
+- verdict: NOT_LEADER
+- lesson: Pathway aggregation produced coherent biology but no reproducibility.
+  Each fold now returns a single interpretable Reactome block — fold 1 TGF-beta
+  receptor/SMAD (TGFBR3, SMAD4, SMAD5, ACVR2A), fold 2 nuclear pore and RAN
+  transport (NDC1, RAN, SUMO1, NUP37), fold 3 immunoglobulin (IGLC2, IGLV3-25,
+  IGKV4-1) — but each fold picks a *different* block, so Jaccard stays 0.000.
+  Averaging over members reduced the variance of each pathway's score without
+  making the pathway *ranking* reproducible, because the ranking is a
+  competition among 1,839 near-zero means.
+- carried forward: with `n_genes=4` and whole-pathway blocks, the three folds
+  must agree on their single top-ranked pathway, which is a knife-edge. Taking a
+  few genes from each of several top pathways instead means the folds only need
+  to share *one* pathway anywhere in their short list, and one shared four-gene
+  block already gives Jaccard 4/(32-4) = 0.143. This is the one structural
+  change that converts a knife-edge into a tolerant criterion, and it is what
+  iteration 10 tests.
