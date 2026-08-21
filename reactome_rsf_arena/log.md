@@ -406,3 +406,67 @@ validation row was computed. Results are in the iteration 2 hypothesis.
   candidate; its hypothesis is revisited later only as part of a genuinely
   different candidate. The orphaned `runs/candidate_n2vwr5jo.json` temporary
   file from the aborted run is left untouched as a prior-run artifact.
+
+### iter_008 — restrict selection to reliably measured genes
+- type: ALGO
+- hypothesis: Winsorizing gamma fixed the outcome side of the association but
+  left the gene side unprotected, so the score is now won by near-floor probes
+  whose residual norm is tiny and whose apparent signal comes from a handful of
+  samples that are present in *every* subsample — reproducible and spurious at
+  once. Restricting the selectable pool to genes in the upper half of
+  within-partition expression variability should keep the Jaccard gain while
+  replacing degenerate probes with genes the array actually measures, restoring
+  `train_genomic_alignment_positive` and the value gates.
+- changed: added `GENE_IQR_PERCENTILE = 50.0` and `_detectable_genes`;
+  `stability_select_genes` now computes each candidate gene's interquartile
+  range on the fitting partition and keeps only those at or above the median
+  IQR of the offered gene universe before running the unchanged
+  complementary-pairs, winsorized-gamma machinery. `CANDIDATE` is restored to
+  its iter_006 values (`benefit_threshold_months` back to 0.25) so this run is a
+  clean one-variable comparison against run_006.
+- supporting evidence (training covariates only — no outcome, treatment,
+  policy, gate, or reward quantity was computed): across the 8,647-gene
+  universe the median expression SD is 0.529 and median IQR 0.644; run_006's
+  selections sit at median IQR percentile **10.1** (OR3A2 0.6, IL9 2.8, MYF5
+  3.4, MYH8 8.6), whereas the pre-winsorization selections of iter_003/005 sat
+  at median percentile **62.0**.
+- red_line_audit: the filter is a data-driven variability threshold computed
+  inside the fitting partition, not a hard-coded gene list, and it names no
+  symbol; it uses expression only, never an outcome, treatment, or validation
+  quantity, so selection remains fit-only and still targets the locked
+  train-only treatment-benefit pseudo-outcome; no patient is dropped; the RSF
+  still receives raw, untransformed gene values so the matched comparator is
+  unaffected; no gene-by-ACT products; estimand, gates, bootstrap, and budget
+  untouched; no test artifact referenced.
+- run_id: run_008_20260821T230408Z
+- eligible: false
+- failed_gates: [gene_selection_jaccard_at_least_0_10, train_genomic_value_at_least_best_constant, train_genomic_value_at_least_clinical, validation_genomic_alignment_positive, validation_genomic_value_at_least_best_constant, validation_genomic_value_at_least_clinical]
+- reward: -1000000.000
+- train_increment: -4.287 months
+- validation_increment: -2.623 months
+- absolute_gap: 1.664 months
+- train_cindex_cg: 0.655
+- validation_cindex_cg: 0.673
+- gene_jaccard: 0.000
+- train_act_usage_cg: tree_split=0.246; path_traversal=0.068; terminal_difference_mean=0.068, median=0.064, p10=0.017, p90=0.126, nonzero_patients=1.000
+- validation_act_usage_cg: tree_split=0.375; path_traversal=0.069; terminal_difference_mean=0.069, median=0.063, p10=0.022, p90=0.122, nonzero_patients=1.000
+
+- verdict: NOT_LEADER
+- lesson: The filter did exactly what it was designed to do and the result is
+  informative rather than encouraging — with near-floor probes excluded, Jaccard
+  falls 0.111 -> 0.000. Taken with iter_006 this isolates the finding: the only
+  reproducible gene signal available to a per-gene DR ranking in this cohort was
+  an artifact of undetectable probes, and among reliably measured genes
+  fold-level selection is entirely irreproducible. Train alignment did recover
+  to +0.433 (from -0.484), so the filter improved gene *quality* while removing
+  the spurious source of gene *stability*.
+- carried forward: a per-gene statistic on 516 patients cannot be stabilised by
+  any amount of internal resampling, because the three fitting partitions share
+  only one third of their patients — internal resampling removes Monte-Carlo
+  noise but not fitting-partition noise. The remaining legitimate route to
+  stability is variance reduction by aggregation: a Reactome pathway mean over
+  dozens of members has a far smaller sampling variance than any single gene's
+  score, which is what iteration 9 tests. Note iter_004's pathway attempt failed
+  for a different and now-understood reason — it used the locked top-3-member
+  statistic, itself an extreme-value quantity, combined by a coarse `max` that
+  produced large ties.
