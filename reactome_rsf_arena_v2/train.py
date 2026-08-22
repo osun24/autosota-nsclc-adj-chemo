@@ -23,12 +23,12 @@ except ImportError:
 
 # Stability-selection controls.  These govern only how the train-only DR gene
 # ranking is aggregated; they never touch the estimand, gates, or budget.
-STABILITY_SUBSAMPLES = 100
+STABILITY_SUBSAMPLES = 140
 STABILITY_TOP_K = 300
 # A fixed shortlist rather than a quantile: gating on the top half of a pathway
 # makes the gate's selectivity depend on pathway size, so a large pathway is
 # effectively ungated and the fold-stable spread ordering does all the work.
-MEMBER_POOL = 8
+MEMBER_POOL = 5
 STABILITY_SEED = 20260823
 # The DR pseudo-outcome is heavy tailed: the 0.05 propensity clip and the 0.05
 # censoring-survival floor each admit weights up to 20, so a few patients would
@@ -45,11 +45,11 @@ MIN_PATHWAY_MEMBERS = 12
 TOP_PATHWAYS = 20
 # Spread the block over several pathways: folds then need only share one
 # pathway anywhere in a short list rather than agree on a single top choice.
-MAX_GENES_PER_PATHWAY = 8
+MAX_GENES_PER_PATHWAY = 4
 
 
 CANDIDATE = {
-    "name": "v2_pathway8_single_pathway_mtry035_s100",
+    "name": "v2_pathway8_one_module_mtry035_pool5_s140",
     "selector": "dr_gene",
     "n_genes": 8,
     "representation": "module",

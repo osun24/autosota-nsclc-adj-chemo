@@ -910,3 +910,64 @@ below about +0.6. The one intervention that improved both at once was raising
 the aggregation from 40 to 100 half-sample pairs, which is a variance reduction
 rather than a trade. That remains the only known way to move the frontier
 outward, and it is the basis of the remaining hypotheses.
+
+### iter_016 — shortlist 5 with 140 aggregation draws
+- type: PARAM
+- hypothesis: The only intervention that moved Jaccard and the increments together is variance reduction in the selection statistic (iter_010, 40 -> 100 draws: Jaccard +23.6% and repeat 1 from -0.056 to +0.146). Shortlist 5 at 100 draws already cleared Jaccard at 0.105 and failed only on repeat 1's -0.507, which iter_013 established is inside a noise floor of about a month. Raising `STABILITY_SUBSAMPLES` to 140 at shortlist 5 should widen the Jaccard margin to roughly 0.112 and, more importantly, sharpen gene choice enough to pull repeat 1 back above zero -- giving an eligible run whose increments sit near iter_014's +0.700 / +0.834 rather than the leader's +0.146 / +0.483, which would improve the reward by more than a month.
+- changed: `train.py` restored to its iter_013 state (`MAX_GENES_PER_PATHWAY` back to 4, `MEMBER_POOL` 5, `GENE_IQR_PERCENTILE` 50.0), then `STABILITY_SUBSAMPLES` 100 -> 140 and `CANDIDATE["name"]` -> `v2_pathway8_one_module_mtry035_pool5_s140`. Single new variable relative to iter_013.
+- red_line_audit: Only `train.py` edited, and only a selector aggregation constant. `STABILITY_SUBSAMPLES` governs how the train-only DR ranking is averaged inside the fitting partition; it touches no estimand, gate, bootstrap, threshold, budget field, or comparator geometry, and the launcher still validates every fixed budget key. Detectability filtering unchanged. No assessment rows, outcomes, or covariate summaries. No hard-coded gene symbols, patient indices, or assessment rankings. No gene-by-ACT product. Development CSVs only.
+- runtime: at 100 draws this configuration ran 883 s, of which the selector is about 9 x 200 x 0.34 = 612 s and the remainder about 271 s. At 140 draws the selector projects to about 857 s for a total near 1,128 s against the 1,500 s wall -- about 75% of budget, leaving a safe margin. 200 draws was rejected earlier precisely because it projects to roughly 1,490 s.
+- watch: iter_013 showed repeat 1's increment swinging 1.8 months between neighbouring configurations, so a positive result here is not proof the extra draws caused it, and a negative result is not proof they failed. The honest reading of either outcome must account for that noise floor, and the run only counts as an improvement if it is *eligible* and its reward exceeds run_010's -4.787.
+- run_id: (failed -- experiment 16 recorded as `status: failed` in the ledger, 692.96 s)
+- eligible: false
+- failed_gates: [run aborted before gates were computed]
+- reward: -1000000.000
+- diagnostic_score: n/a
+- repeat_1_increment: n/a
+- repeat_1_lcb: n/a
+- repeat_2_increment: n/a
+- repeat_2_lcb: n/a
+- repeat_range: n/a
+- development_alignment_cg: n/a
+- development_cindex_cg: n/a
+- gene_jaccard: n/a
+- development_act_usage_cg: n/a -- the run raised before any forest was fitted
+- repeat_1_act_usage_cg: n/a -- the run raised before any forest was fitted
+- repeat_2_act_usage_cg: n/a -- the run raised before any forest was fitted
+- verdict: INELIGIBLE
+- lesson: Raising the aggregation to 140 draws exposed a latent numerical fragility in the selector -- a non-converging Cox nuisance fit on one half-sample overflows to an infinite predicted RMST, which turns the benefit pseudo-outcome into NaN and kills the run -- so the extra draws cost a slot without testing the hypothesis.
+
+#### Root cause, in order
+1. `sklearn` `ConvergenceWarning`: a Cox fit inside
+   `cross_fitted_benefit_pseudo_outcome` hit its iteration limit on a
+   pathological stratified half-sample.
+2. `sksurv/linear_model/coxph.py:124` `RuntimeWarning: overflow encountered in
+   power` -- `np.power(baseline_survival, risk_score)` with a diverged
+   `risk_score` overflows, so the integrated survival curve becomes `inf`.
+3. `prepare.py:362` `invalid value encountered in multiply/add` --
+   `phi1 = mu1 + treatment / propensity * (ipcw_time - mu1)` evaluates
+   `0 * inf`, producing NaN.
+4. `_robust_gamma` takes `np.percentile` of an array containing NaN, so both
+   winsorizing bounds become NaN and the whole vector is clipped to NaN.
+5. `prepare._gene_effect_scores` calls `Ridge().fit(clinical, gamma)`, which
+   raises `ValueError: Input y contains NaN`.
+
+Each `_dr_ranking` call performs 3 inner folds x 2 Cox fits, so 9 selector
+calls x 140 draws x 2 halves is roughly 15,000 Cox fits per run against about
+11,000 at 100 draws and 4,300 at 40. The failure was always latent; more draws
+simply made it near-certain. Six prior runs at 40-100 draws got lucky.
+
+#### The fix, and why it is legitimate in `train.py`
+`_robust_gamma` lives in `train.py` and is used **only** to build the selector's
+internal gene ranking. The locked evaluation path -- `aipw_arm_scores` and
+`_summarize_cohort` on the outer folds -- is in `prepare.py` and is untouched,
+so guarding the selector's copy cannot alter the estimand, the policy value, or
+any gate. The guard replaces non-finite pseudo-outcome entries with the median
+of the finite entries before winsorizing. This **keeps every patient in the
+ranking computation**, so red line 4 is respected -- no censored patient, and
+indeed no patient at all, is dropped; a pathological nuisance fit is simply
+prevented from propagating an infinity into the ranking.
+
+#### Budget consequence
+Four slots remain (17-20). run_010 is unaffected and still frozen in
+`best_run.txt` at reward -4.787.
