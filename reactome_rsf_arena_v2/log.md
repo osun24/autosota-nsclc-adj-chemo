@@ -489,3 +489,62 @@ target, and it is the pathway-level analogue of iter_007's gate: let the DR
 signal decide which pathways are *eligible*, and let a fold-stable key decide
 the order among those equals. Unlike iter_007, this spends no member-level
 signal, because every pathway in the pool is already DR-strong.
+
+### iter_009 — stable ordering among DR-equal pathways
+- type: ALGO
+- hypothesis: Folds reproducibly identify the same handful of benefit-associated pathway *families* but disagree on which one wins, and that disagreement -- not member ordering and not `n_genes` -- is what holds Jaccard at 0.076. Letting the DR co-selection count decide which pathways are *eligible* and a fold-stable covariate summary decide the order among those equals should make pathway choice reproducible and lift Jaccard over the 0.10 floor while leaving the member ordering that produced iter_006's +0.473 / +1.824 increments completely intact.
+- changed: `train.py` restored to its iter_006 state (`n_genes=8`, DR-frequency member ordering), then `stability_select_genes` splits the pathway ranking in two: the existing count-based sort now produces `ranked`, its first `STABLE_PATHWAY_POOL = 8` entries form a DR-eligible pool, and that pool is re-ordered by descending mean expression spread of its detectable members (ties by pathway name) before the remaining pathways are appended unchanged. New module constant `STABLE_PATHWAY_POOL = 8`. `CANDIDATE["name"]` -> `v2_pathway8_one_module_mtry035_stablepath`. Nothing else changes: `n_genes=8`, `module_count=1`, `max_features=0.35`, threshold 0.00, `MAX_GENES_PER_PATHWAY=4`.
+- red_line_audit: Only `train.py` edited. The gate is the locked cross-fitted train-only DR benefit statistic aggregated over fitting-partition half-samples; the tie-break is mean within-partition expression spread, a covariate summary of the fitting partition only. No assessment rows, outcomes, or covariate summaries are touched. Detectability filtering still runs first, so this is not v1's refuted unfiltered-stability artifact, and it is not v1's refuted pathway-smoothing experiment -- no score is smoothed across pathways, only the order among already-selected pathways changes. No hard-coded gene symbols, patient indices, or assessment rankings. No gene-by-ACT product. Estimand, gates, bootstrap, threshold, and the locked clinical comparator untouched. Development CSVs only.
+- watch: with only eight pathways in the pool the spread tie-break could promote a pathway that is DR-eligible but weakly benefit-associated, which would show up as both increments falling toward zero while Jaccard rises; if that happens the pool is too wide and should be narrowed rather than abandoned.
+- run_id: run_009_20260822T023638Z
+- eligible: false
+- failed_gates: [all_repeat_genomic_increment_positive, gene_selection_jaccard_at_least_0_10]
+- reward: -1000000.000
+- diagnostic_score: -4.718
+- repeat_1_increment: -0.328 months
+- repeat_1_lcb: -3.172 months
+- repeat_2_increment: +0.022 months
+- repeat_2_lcb: -4.368 months
+- repeat_range: 0.350 months
+- development_alignment_cg: 3.778 months
+- development_cindex_cg: 0.687
+- gene_jaccard: 0.059
+- development_act_usage_cg: tree_split=0.704; path_traversal=0.171; terminal_difference_mean=0.171, median=0.158, p10=0.087, p90=0.271, nonzero_patients=1.000
+- repeat_1_act_usage_cg: tree_split=0.715; path_traversal=0.174; terminal_difference_mean=0.174, median=0.161, p10=0.084, p90=0.275, nonzero_patients=1.000
+- repeat_2_act_usage_cg: tree_split=0.694; path_traversal=0.169; terminal_difference_mean=0.169, median=0.155, p10=0.090, p90=0.267, nonzero_patients=1.000
+- verdict: DIAGNOSTIC_LEADER
+- lesson: Gating pathways by a noisy criterion and then ordering the pool by a stable one is *less* reproducible than ordering by the noisy criterion directly -- Jaccard fell to 0.059, the worst of the search -- because the pool boundary fluctuates across folds even when its top element does not.
+
+#### Why the pathway-level gate failed where the logic looked sound
+The member-level gate in iter_007 worked in the intended direction (Jaccard
+0.076 -> 0.098) because it re-ordered members *within* an already-chosen
+pathway, and pathway choice was held fixed. The pathway-level gate has no such
+anchor: `pool = ranked[:8]` is itself re-estimated per fold, so re-ordering the
+pool by expression spread makes the winner depend on *which eight pathways
+happened to qualify* rather than on which pathway scored highest. The
+count-based top element turns out to be more stable than the pool's boundary,
+so replacing "highest DR count wins" with "highest spread among the top eight
+wins" injected the boundary's noise directly into the winner. The watch item
+anticipated a weakly-associated pathway being promoted -- both increments did
+fall -- but not that stability itself would get worse.
+
+#### This run is the diagnostic leader and must NOT be followed
+`diagnostic_leader.txt` now names run_009 because `min_lcb - repeat_range` rose
+to -4.718, helped mostly by the repeat range collapsing to 0.350. It is
+simultaneously **worse than iter_006 and iter_007 on both gates that matter**
+(Jaccard 0.059 vs 0.076 and 0.098; repeat 1 -0.328 vs +0.473 and -0.056). This
+is exactly the situation red line 12 describes: the continuous diagnostic and
+the eligibility target disagree, and the diagnostic is not a candidate. The
+search continues from iter_007, not from run_009.
+
+#### Standing position after nine slots
+| run | Jaccard | R1 incr | R2 incr | distance to eligibility |
+|---|---|---|---|---|
+| iter_004 | 0.131 | -0.259 | +0.150 | needs +0.26 increment |
+| iter_007 | 0.098 | -0.056 | +0.898 | needs +0.0016 Jaccard and +0.06 increment |
+| iter_006 | 0.076 | +0.473 | +1.824 | needs +0.024 Jaccard (+32%) |
+iter_007 is by a wide margin the closest point, missing both gates by hairs.
+Every axis tried so far (member ordering, `n_genes`, pathway ordering) *trades*
+one gate against the other. What is needed now is a change that reduces the
+variance of the selection statistic itself, improving reproducibility without
+giving up benefit signal.
