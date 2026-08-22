@@ -140,3 +140,57 @@ ACT operational use in the genomic forest is pinned near tree_split 0.50-0.52
 and terminal_difference 0.116-0.119, against the locked comparator's 0.82 and
 0.239, in both runs and both repeats. Neither run has yet touched the feature
 geometry that causes it. That is the next target.
+
+### iter_003 — one module: halve the continuous split-competitors
+- type: PARAM
+- hypothesis: ACT is binary and offers the log-rank splitter one candidate threshold per node while each standardized module score offers ~n, so with `max_features=1.0` the modules outcompete ACT at almost every node; the locked comparator carries one continuous feature (Age) and reaches ACT tree_split 0.823, whereas three continuous features (Age + two modules) pin it at 0.502-0.517. Dropping to a single module leaves two continuous features and should recover ACT usage toward tree_split ~0.65 and terminal_difference ~0.16, raising the genomic benefit scale and the increment.
+- changed: `train.py` restored to its iter_001 selector exactly (from `runs/run_001_.../train_snapshot.py`, discarding iter_002's sign ordering, which lost), then `CANDIDATE["module_count"]` 2 -> 1 and `CANDIDATE["name"]` -> `v2_pathway8_one_module`. This is one *effective* change: a module is the mean of its standardized members and `np.array_split(arange(8), 1)` puts all eight genes in a single group, so gene ordering is provably inert at `module_count=1` and reverting iter_002 cannot affect this run's result. `n_genes` stays 8, threshold stays 0.00, and the genomic RSF geometry is untouched.
+- red_line_audit: Only `train.py` edited. No selector logic, detectability filter, estimand, gate, bootstrap, or threshold changed; the locked clinical comparator is untouched and is not weakened by reducing the *genomic* feature count. No hard-coded gene symbols and no gene-by-ACT product. `module_count=1` is inside the locked `1 <= module_count <= min(4, n_genes)` validation and lowers total features to 20, well under the 35 cap. Development CSVs only; projected wall clock ~13 min.
+- run_id: run_003_20260822T013504Z
+- eligible: false
+- failed_gates: [all_repeat_genomic_increment_positive]
+- reward: -1000000.000
+- diagnostic_score: -5.259
+- repeat_1_increment: -0.617 months
+- repeat_1_lcb: -4.596 months
+- repeat_2_increment: -0.105 months
+- repeat_2_lcb: -4.746 months
+- repeat_range: 0.512 months
+- development_alignment_cg: 3.570 months
+- development_cindex_cg: 0.677
+- gene_jaccard: 0.131
+- development_act_usage_cg: tree_split=0.596; path_traversal=0.142; terminal_difference_mean=0.142, median=0.123, p10=0.037, p90=0.271, nonzero_patients=1.000
+- repeat_1_act_usage_cg: tree_split=0.612; path_traversal=0.148; terminal_difference_mean=0.148, median=0.132, p10=0.037, p90=0.271, nonzero_patients=1.000
+- repeat_2_act_usage_cg: tree_split=0.580; path_traversal=0.137; terminal_difference_mean=0.137, median=0.114, p10=0.038, p90=0.272, nonzero_patients=1.000
+- verdict: DIAGNOSTIC_LEADER
+- lesson: Removing one continuous module feature recovered 1.62 months of increment (-1.977 -> -0.361) and cleared both value gates, confirming that continuous-feature split competition against binary ACT -- not gene choice or module composition -- is the dominant obstacle in this arena.
+
+#### The crowding curve is now measured
+ACT operational use in a 1,000-tree forest at the locked geometry, as a
+function of how many *continuous* features share the split search:
+
+| continuous features | model | ACT tree_split | terminal_difference_mean | median abs benefit | alignment |
+|---|---|---|---|---|---|
+| 1 (Age) | locked clinical | 0.823 | 0.239 | 1.427 | 3.931 |
+| 2 (Age + 1 module) | iter_003 | 0.596 | 0.142 | 0.855 | 3.570 |
+| 3 (Age + 2 modules) | iter_001 | 0.502 | 0.116 | 0.599 | 2.212 |
+
+Each continuous competitor is worth roughly 0.10-0.12 of ACT tree_split and a
+large slice of the counterfactual benefit scale. `module_count=1` is the floor
+for this lever, so further crowding relief must come from reducing per-node
+competition rather than from removing features.
+
+#### Gate status is now down to one
+Both value gates cleared: genomic value 48.242 vs clinical 48.139 and vs the
+best constant policy 47.337, in both repeats. C-index drop is only 0.004 of the
+allowed 0.03 and seed agreement is 0.969 against a 0.85 floor, so there is real
+headroom to spend on forest regularization. Repeat 2's increment reached -0.105,
+i.e. near parity, while repeat 1 sat at -0.617; the repeat range of 0.512 is now
+a material part of the reward and will need attention once the increment turns.
+
+#### Note on max_depth (rules out a v1-style depth experiment)
+With `min_samples_leaf=8` and `min_samples_split=16` on a 775-row fitting
+partition, a tree can hold at most ~97 leaves, so the realised depth is ~6.6 and
+the depth cap of 9 is essentially never binding. Raising `max_depth` toward 12
+therefore cannot change anything, which is consistent with v1's refuted
+depth-only experiments. Depth is not a live lever here and will not be spent on.
