@@ -548,3 +548,69 @@ Every axis tried so far (member ordering, `n_genes`, pathway ordering) *trades*
 one gate against the other. What is needed now is a change that reduces the
 variance of the selection statistic itself, improving reproducibility without
 giving up benefit signal.
+
+### iter_010 — 100 stability subsamples on the iter_007 geometry
+- type: PARAM
+- hypothesis: iter_007 misses eligibility by 0.0016 of Jaccard and 0.056 months of repeat-1 increment, and both misses are dominated by Monte-Carlo noise in the selection statistic rather than by any signal/stability trade: with 40 draws a pathway whose true co-selection probability is 0.5 has a count standard deviation of sqrt(40*0.25) = 3.16 on a 0-40 scale, so pathways separated by a true gap of 0.1 in probability reorder across folds purely by chance. Raising `STABILITY_SUBSAMPLES` from 40 to 100 shrinks that standard deviation by sqrt(2.5) = 1.58 for both `pathway_counts` and `gene_top_counts`, which should raise cross-fold agreement *and* sharpen gene choice, moving both failing gates in the same direction for the first time.
+- changed: `train.py` restored to its iter_007 state (median DR gate on members, spread ordering within the gate -- the configuration closest to eligibility), then `STABILITY_SUBSAMPLES` 40 -> 100 and `CANDIDATE["name"]` -> `v2_pathway8_one_module_mtry035_gated_s100`. Nothing else changes: `n_genes=8`, `module_count=1`, `max_features=0.35`, threshold 0.00, `MAX_GENES_PER_PATHWAY=4`, `STABILITY_TOP_K=300`. iter_009's pathway-level gate is discarded.
+- red_line_audit: Only `train.py` edited. `STABILITY_SUBSAMPLES` governs only how the train-only DR ranking is aggregated inside the fitting partition; it touches no estimand, gate, bootstrap, threshold, budget field, or comparator geometry, and the launcher still validates every fixed budget key. All half-samples are drawn from the fitting partition only, via the locked cross-fitted train-only benefit pseudo-outcome. Detectability filtering unchanged. No hard-coded gene symbols, patient indices, or assessment rankings. No gene-by-ACT product. Development CSVs only.
+- runtime: iter_007 completed in 468.7 s, of which the selector is about 9 calls x 40 draws x 2 halves x 0.34 s = 245 s. At 100 draws that becomes about 612 s, for a projected total near 836 s against the 1,500 s wall -- roughly 56% of budget, a safe margin.
+- watch: this is a variance-reduction argument, so if Jaccard barely moves it means the residual fold-to-fold disagreement is driven by the *data* (different 775-patient fitting partitions) rather than by subsampling noise, and no amount of extra draws will close it. That would be a genuine finding and would redirect the remaining slots away from the selector entirely.
+- run_id: run_010_20260822T025243Z
+- eligible: **true**
+- failed_gates: []
+- reward: -4.787
+- diagnostic_score: -4.787
+- repeat_1_increment: +0.146 months
+- repeat_1_lcb: -2.733 months
+- repeat_2_increment: +0.483 months
+- repeat_2_lcb: -4.450 months
+- repeat_range: 0.337 months
+- development_alignment_cg: 4.246 months
+- development_cindex_cg: 0.689
+- gene_jaccard: 0.122
+- development_act_usage_cg: tree_split=0.687; path_traversal=0.174; terminal_difference_mean=0.174, median=0.164, p10=0.095, p90=0.264, nonzero_patients=1.000
+- repeat_1_act_usage_cg: tree_split=0.690; path_traversal=0.174; terminal_difference_mean=0.174, median=0.166, p10=0.092, p90=0.263, nonzero_patients=1.000
+- repeat_2_act_usage_cg: tree_split=0.685; path_traversal=0.173; terminal_difference_mean=0.173, median=0.162, p10=0.099, p90=0.265, nonzero_patients=1.000
+- verdict: SEARCH_LEADER
+- lesson: Monte-Carlo noise in the selection statistic, not a signal/stability trade, was what held iter_007 short of both gates -- raising the aggregation from 40 to 100 half-sample pairs moved Jaccard 0.098 -> 0.122 and repeat 1 -0.056 -> +0.146 simultaneously, producing the first eligible candidate of the v2 search.
+
+#### First eligible candidate: all ten gates
+| gate | value | requirement |
+|---|---|---|
+| all_repeat_genomic_increment_positive | +0.146, +0.483 | > 0 |
+| all_repeat_genomic_alignment_positive | 3.633, 4.858 | > 0 |
+| all_repeat_genomic_value_at_least_clinical | 48.369 vs 47.827; 48.970 vs 48.451 | >= |
+| all_repeat_genomic_value_at_least_best_constant | 48.369 vs 47.491; 48.970 vs 47.478 | >= |
+| all_repeat_cindex_drop_no_more_than_0_03 | 0.688 vs 0.676; 0.689 vs 0.685 | genomic is *ahead* in both |
+| all_repeat_genomic_seed_agreement_at_least_0_85 | 0.975 | >= 0.85 |
+| gene_selection_jaccard_at_least_0_10 | 0.122 | >= 0.10 |
+| all_repeat_nontrivial_benefit_fraction_at_least_0_10 | 0.941 | >= 0.10 |
+| all_repeat_raw_propensity_overlap_at_least_0_80 | 0.872, 0.869 | >= 0.80 |
+| all_repeat_iptw_effective_sample_size_at_least_0_30n | 358.5, 366.3 | >= 310.2 |
+
+Runtime 870.3 s against a projected 836 s and the 1,500 s wall. The selected
+module is a branched-chain-amino-acid catabolism block plus chromatin
+co-regulators: `ACAD8, ALDH6A1, MCCC1, HIBCH, MBIP, KAT2B, ZZZ3, PHF20L1`.
+
+#### What the reward is now made of, and where the remaining headroom is
+`reward = min_repeat_lcb - repeat_range = -4.450 - 0.337 = -4.787`. Because the
+selection LCB is the 0.25th bootstrap percentile, `lcb ~= mean - 2.81 sd`, and
+with means of 0.15-0.48 against standard deviations of 1.02-1.59 the reward is
+almost entirely `-2.81 * max_repeat_sd`. Repeat 2's sd of 1.590 is the binding
+term; repeat 1's is 1.022.
+
+Writing the increment as `(2/n) * sum over policy-disagreeing patients of
++/- gamma`, its bootstrap sd is about `2 sqrt(f/n) * rms(gamma | disagree)` for
+a disagreement fraction `f`, while its mean is about `2 f * m`. Solving the
+observed sd of 1.590 at n=1034 gives `sqrt(f) * rms(gamma) ~= 25.6`, so at
+`f ~= 0.10` the disagreeing patients carry an rms gamma near 80 months -- the
+IPW-amplified tail of the AIPW pseudo-outcome, since a treated patient with
+propensity near the 0.05 clip carries a weight up to 20.
+
+Differentiating `reward ~ 2 f m - 2.81 * 2 sqrt(f/n) * rms` in `f` shows the
+optimum lies above the feasible range at the observed `m ~= 2.4` months, i.e.
+**broader correctly-signed deviation from the clinical policy raises the reward**,
+which is the same direction as maximising the increment. The remaining slots
+should therefore push the increment up while holding all ten gates, with the
+repeat range watched because it is subtracted directly.
