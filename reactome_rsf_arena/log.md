@@ -988,3 +988,59 @@ Constraint map after twelve experiments (train and validation only):
   columns so the C+G policy tracks its comparator; it also lowers the comparator
   itself, since the train clinical value runs 49.02 at `mtry=0.50` against 48.18
   at `mtry=1.00`, moving both sides of `value_at_least_clinical` the right way.
+
+### iter_018 — greedy matched forests at the working block width
+- type: PARAM
+- hypothesis: All four remaining failures are `value` gates, and the confirmed
+  fix for exactly those is `max_features=1.00`, which in iter_004 cut failed
+  gates from five to three by making the clinical and C+G forests greedy over
+  the same columns so the C+G policy reproduces its comparator's splits wherever
+  a clinical variable genuinely wins; it should also lower the comparator itself
+  (train clinical value 49.02 at `mtry=0.50` versus 48.18 at `mtry=1.00`),
+  moving both sides of `value_at_least_clinical` toward each other, while the
+  eight-gene block keeps the c-index headroom that iter_017 just won.
+- changed: `rsf.max_features` 0.50 -> 1.00. The selector, the eight-gene
+  two-pathway block with IQR-stabilised members, the zero threshold, depth 6,
+  `min_samples_leaf=8`, and 1,000 trees are all held fixed.
+- risk accepted: `max_features=1.00` cost discrimination at depth 9 in iter_005
+  (drop 0.043), but that was measured with an unregularised depth; here depth is
+  6 and the block is half as wide, and iter_017 leaves 0.025 of headroom on that
+  gate.
+- red_line_audit: one RSF field changes, applied identically to both forests so
+  the comparator stays matched; `max_features` 1.00 is inside the locked range;
+  selection is untouched and remains fit-only against the locked train-only
+  treatment-benefit pseudo-outcome; no gene symbol, patient index, or validation
+  quantity is hard-coded; no gene-by-ACT products; estimand, gates, bootstrap,
+  and budget untouched; no test artifact referenced.
+- run_id: run_018_20260822T000128Z
+- eligible: false
+- failed_gates: [train_genomic_value_at_least_clinical, validation_genomic_alignment_positive, validation_genomic_value_at_least_best_constant, validation_genomic_value_at_least_clinical]
+- reward: -1000000.000
+- train_increment: -4.607 months
+- validation_increment: -2.855 months
+- absolute_gap: 1.752 months
+- train_cindex_cg: 0.660
+- validation_cindex_cg: 0.694
+- gene_jaccard: 0.111
+- train_act_usage_cg: tree_split=0.147; path_traversal=0.044; terminal_difference_mean=0.044, median=0.035, p10=0.010, p90=0.091, nonzero_patients=1.000
+- validation_act_usage_cg: tree_split=0.156; path_traversal=0.035; terminal_difference_mean=0.035, median=0.033, p10=0.014, p90=0.059, nonzero_patients=1.000
+
+- verdict: NOT_LEADER
+- lesson: Partially confirmed. `max_features=1.00` did what iter_004 predicted to
+  the *quantities* — the train/validation gap halved from 3.271 to 1.752 months,
+  the train increment improved from -5.682 to -4.607, the comparator came down
+  as forecast (train 49.02 -> 48.47, validation 45.86 -> 45.68), and the c-index
+  headroom survived (drop 0.005) — but the same four value gates fail, because
+  the C+G validation value fell in step with the comparator (44.93 -> 44.46).
+- carried forward, and this is the mismatch that matters: the cross-fold
+  stability comes from the immunoglobulin block that folds 2 and 3 share, but
+  the *full-training* refit that generates every validation number selects a
+  different block entirely — CHRDL1, BMP2, TGFBR3, SMURF2 (TGF-beta/BMP) plus
+  TBL1XR1, NRIP1, CHD9, RORA. So the validation policy is built from genes that
+  only one of the three folds endorsed, while the train-OOF policy is built
+  partly from genes the full-training refit rejects. That is a direct
+  contribution to the train/validation gap the reward penalises, and it explains
+  why the two cohorts keep failing in opposite directions. Widening the block to
+  three pathways should let both the folds and the full-training refit carry the
+  shared immunoglobulin block, at a width the c-index can still afford (drop
+  0.005 at eight genes, 0.042 at sixteen).
