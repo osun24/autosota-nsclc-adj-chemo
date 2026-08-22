@@ -373,3 +373,63 @@ that raises the overlap fraction. Held in reserve.
 - iter_006 geometry passes the increment gate with a large margin (+0.473,
   +1.824) and fails Jaccard by 32% (0.076 vs 0.10), with an obvious lever left.
 The second is the one to push.
+
+### iter_007 — DR-gated, spread-ordered members
+- type: ALGO
+- hypothesis: The two available ordering keys fail in complementary ways -- expression spread is fold-stable but benefit-blind (Jaccard 0.131, repeat 1 increment -0.259), DR association is benefit-bearing but fold-noisy (increments +0.473/+1.824, Jaccard 0.076). Using DR only for a *coarse* within-pathway gate and the fold-stable spread for the actual ordering should keep most of the benefit signal while restoring cross-fold member agreement above the 0.10 floor, because a median split is far more reproducible than a full ranking.
+- changed: In `stability_select_genes`, members of a selected pathway are now partitioned by whether their co-selection frequency reaches that pathway's own median frequency; the qualifying half is ordered by expression spread and exhausted first, then the remainder, also spread-ordered. Concretely `ordered_members` becomes `sorted(gated, key=spread) + sorted(rest, key=spread)` where `gated = [m for m in members if gene_top_counts[m] >= np.median(gene_top_counts[members])]`. Using `>=` guarantees the gate keeps at least half of every pathway, so no pathway can be emptied. `CANDIDATE["name"]` -> `v2_pathway8_one_module_mtry035_gated`. Nothing else changes: pathway ranking, `n_genes=8`, `module_count=1`, `max_features=0.35`, threshold 0.00 identical to iter_006.
+- red_line_audit: Only `train.py` edited. Detectability filtering still runs first, so the spread-ordered pool is unchanged from v1's mandate and this is not the refuted unfiltered-stability artifact. The gate uses only `gene_top_counts`, accumulated from fitting-partition half-samples via the locked cross-fitted train-only benefit pseudo-outcome; the ordering uses only within-partition expression spread. No assessment rows, outcomes, or covariate summaries. No hard-coded gene symbols, patient indices, or assessment rankings. No gene-by-ACT product. Estimand, gates, bootstrap, threshold, and the locked clinical comparator untouched. Development CSVs only.
+- watch: this deliberately gives back some benefit signal to buy stability, so the risk is landing in the dead zone -- Jaccard still under 0.10 *and* repeat 1's increment pushed back under zero. Repeat 1's increment (+0.473 in iter_006) is the margin being spent; if Jaccard clears 0.10 but repeat 1 turns negative, the gate trade has simply reversed and the next move is the `MAX_GENES_PER_PATHWAY` coverage lever instead.
+- run_id: run_007_20260822T021611Z
+- eligible: false
+- failed_gates: [all_repeat_genomic_increment_positive, gene_selection_jaccard_at_least_0_10]
+- reward: -1000000.000
+- diagnostic_score: -5.380
+- repeat_1_increment: -0.056 months
+- repeat_1_lcb: -3.052 months
+- repeat_2_increment: +0.898 months
+- repeat_2_lcb: -4.426 months
+- repeat_range: 0.954 months
+- development_alignment_cg: 4.352 months
+- development_cindex_cg: 0.686
+- gene_jaccard: 0.098
+- development_act_usage_cg: tree_split=0.690; path_traversal=0.174; terminal_difference_mean=0.174, median=0.165, p10=0.098, p90=0.263, nonzero_patients=1.000
+- repeat_1_act_usage_cg: tree_split=0.689; path_traversal=0.173; terminal_difference_mean=0.173, median=0.166, p10=0.097, p90=0.261, nonzero_patients=1.000
+- repeat_2_act_usage_cg: tree_split=0.690; path_traversal=0.174; terminal_difference_mean=0.174, median=0.163, p10=0.099, p90=0.265, nonzero_patients=1.000
+- verdict: NOT_LEADER
+- lesson: The DR-gate/spread-order split landed in the predicted dead zone -- Jaccard rose 0.076 -> 0.098 but still missed the 0.10 floor by 0.0016, while repeat 1's increment was spent from +0.473 down to -0.056, so trading signal for stability along this one axis cannot reach both gates at once.
+
+#### The trade curve, now with three points
+| run | member ordering | Jaccard | repeat 1 increment | repeat 2 increment |
+|---|---|---|---|---|
+| iter_004 | spread only | 0.131 | -0.259 | +0.150 |
+| iter_007 | DR-gated, spread-ordered | 0.098 | -0.056 | +0.898 |
+| iter_006 | DR frequency only | 0.076 | +0.473 | +1.824 |
+
+The three points are monotone: every unit of member-ordering stability costs
+increment and vice versa. No point on this curve satisfies both gates, so the
+next move must raise Jaccard through a mechanism *other* than the ordering key,
+leaving the increment margin intact.
+
+#### Refinement of the iter_006 note on n_genes (a testable prediction)
+The iter_006 entry claimed Jaccard is scale-invariant in `n_genes`. That
+assumed shared genes grow proportionally with set size. A more careful overlap
+model disagrees. If two folds each select `p` pathways from correlated
+rankings, the expected number of *shared pathways* grows about like `p^2`
+rather than `p`, and each shared pathway contributes about `k^2/M` shared genes
+for `k` members drawn from a pathway with `M` detectable members. Then
+
+    E[shared genes] ~ p^2 * c * k^2 / M = c * (p*k)^2 / M = c * n_genes^2 / M
+
+so shared genes grow with the *square* of `n_genes`, and the split between
+`MAX_GENES_PER_PATHWAY` and the number of pathways drops out to first order.
+Calibrating `c * n^2 / M` on iter_006 (`n=8`, Jaccard 0.076 => about 1.13 shared
+genes) predicts for the same ordering:
+- `n_genes=12`: about 2.53 shared, Jaccard about 0.118
+- `n_genes=16`: about 4.50 shared, Jaccard about 0.164
+
+Crucially `n_genes` costs nothing in crowding: under `module_count=1` the forest
+sees exactly one module feature regardless. The only cost is dilution of the
+module mean, and iter_002 warns that mixing unrelated pathway blocks into one
+average can cancel. `n_genes=12` (three pathway blocks) is the balanced choice
+and the prediction above is falsifiable at 0.118.
