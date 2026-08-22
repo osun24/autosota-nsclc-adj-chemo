@@ -847,3 +847,66 @@ genes. Every configuration so far has used `MAX_GENES_PER_PATHWAY = 4` against
 
 This also explains why raising `MIN_PATHWAY_MEMBERS` would be the wrong move
 (larger `M` lowers coverage) and points at the untried lever: raise `k`.
+
+### iter_015 — one pathway per module: raise per-pathway coverage
+- type: PARAM
+- hypothesis: Member-level agreement is the binding term for Jaccard, and it is governed by the fraction of a pathway taken -- two folds sharing a pathway share about `k^2/M` genes for `k` of `M` detectable members. Every run so far has used `k = 4` against `M >= 12`. Setting `MAX_GENES_PER_PATHWAY` and `MEMBER_POOL` to 8 with `n_genes = 8` makes the module a single Reactome pathway's top eight members, roughly quadrupling `k^2` and so the shared-gene count whenever two folds agree on a pathway, which should lift Jaccard past 0.10 while keeping the width-4-style pure-frequency selectivity that produced the search's largest increments. It also makes the module pathway-coherent, which iter_002 found matters.
+- changed: `train.py` restored to its iter_012 state (`GENE_IQR_PERCENTILE` back to 50.0, discarding iter_014's stricter filter, which lost 0.006 of Jaccard), then `MAX_GENES_PER_PATHWAY` 4 -> 8 and `MEMBER_POOL` 4 -> 8 so the shortlist again equals the per-pathway quota and members are taken purely on co-selection frequency. `CANDIDATE["name"]` -> `v2_pathway8_single_pathway_mtry035_s100`. `STABILITY_SUBSAMPLES=100`, `n_genes=8`, `module_count=1`, `max_features=0.35`, threshold 0.00, `MIN_PATHWAY_MEMBERS=12` unchanged, so the top pathway always has at least eight detectable members and supplies the whole module.
+- red_line_audit: Only `train.py` edited. Detectability filtering runs first and is restored to its long-standing setting. All co-selection frequencies come from fitting-partition half-samples via the locked cross-fitted train-only benefit pseudo-outcome; expression spread is a within-fitting-partition covariate summary. No assessment rows, outcomes, or covariate summaries. No hard-coded gene symbols, patient indices, or assessment rankings. No gene-by-ACT product. Estimand, gates, bootstrap, threshold, budget, and the locked clinical comparator untouched. Development CSVs only.
+- watch: this trades breadth for depth -- a fold now commits to one pathway instead of two, so if two folds pick different families they share nothing, and Jaccard is `P(same pathway) x` a much larger per-share overlap. The gamble fails if pathway-level agreement is below roughly 0.3, and it also fails if the winning pathways are large (coverage `8/M` collapses for `M` near 40). Per iter_013 the increments carry a noise floor near a month, so the criterion remains margin on both gates, not the headline reward.
+- run_id: run_015_20260822T041330Z
+- eligible: false
+- failed_gates: [all_repeat_genomic_increment_positive, gene_selection_jaccard_at_least_0_10]
+- reward: -1000000.000
+- diagnostic_score: -5.815
+- repeat_1_increment: -0.357 months
+- repeat_1_lcb: -4.301 months
+- repeat_2_increment: +1.157 months
+- repeat_2_lcb: -2.799 months
+- repeat_range: 1.515 months
+- development_alignment_cg: 4.331 months
+- development_cindex_cg: 0.689
+- gene_jaccard: 0.056
+- development_act_usage_cg: tree_split=0.698; path_traversal=0.173; terminal_difference_mean=0.173, median=0.164, p10=0.090, p90=0.264, nonzero_patients=1.000
+- repeat_1_act_usage_cg: tree_split=0.703; path_traversal=0.169; terminal_difference_mean=0.169, median=0.163, p10=0.083, p90=0.256, nonzero_patients=1.000
+- repeat_2_act_usage_cg: tree_split=0.693; path_traversal=0.176; terminal_difference_mean=0.176, median=0.165, p10=0.098, p90=0.273, nonzero_patients=1.000
+- verdict: INELIGIBLE
+- lesson: Concentrating the module on a single pathway did raise per-share overlap exactly as intended, but pathway-level agreement turned out to be only 0.14 -- far below the 0.3 the gamble needed -- so Jaccard collapsed to 0.056, the worst result since iter_009.
+
+#### Pathway-level agreement is now measured directly, and it is low
+Because each fold committed to exactly one pathway, the cross-fold frequency
+table reads out pathway agreement without inference: **every gene sits at count
+2**, i.e. four distinct pathways each won two of the eight folds. That gives
+`4 * C(2,2) / C(8,2) = 4/28 = 0.143` as the probability two folds picked the
+same pathway. Decomposing the observed Jaccard, `0.0556 / 0.143 = 0.39`, so when
+two folds *did* agree on a pathway they shared roughly 4.5 of 8 genes -- the
+coverage mechanism worked as designed. The gamble failed purely on the
+`P(same pathway)` term, which the iter_015 watch item named as the failure
+condition.
+
+The module itself was cleanly pathway-coherent for the first time
+(`ACAD8, ALDH6A1, MCCC1, HIBCH, DLD, ACADSB, AUH, SLC25A44`, all
+branched-chain amino-acid catabolism), so interpretability improved while the
+gate went backwards.
+
+#### What fifteen slots have established about this arena
+Jaccard and the increment are controlled by the same underlying quantity -- how
+strongly the fold-specific DR benefit estimate is allowed to drive selection --
+and the achievable frontier is narrow:
+
+| configuration | Jaccard | increments | eligible |
+|---|---|---|---|
+| spread-ordered (iter_004) | 0.131 | -0.259 / +0.150 | no |
+| median gate, 100 draws (iter_010) | 0.122 | +0.146 / +0.483 | **yes** |
+| shortlist 6, 100 draws (iter_011) | 0.124 | +0.579 / +0.474 | **yes** |
+| shortlist 5, 100 draws (iter_013) | 0.105 | -0.507 / +0.836 | no |
+| shortlist 4, 100 draws (iter_012) | 0.090 | +1.291 / +1.708 | no |
+| shortlist 4, strict IQR (iter_014) | 0.084 | +0.700 / +0.834 | no |
+| single pathway (iter_015) | 0.056 | -0.357 / +1.157 | no |
+
+Every configuration with increments above about +1 month sits at Jaccard
+0.084-0.090; every configuration clearing Jaccard comfortably sits at increments
+below about +0.6. The one intervention that improved both at once was raising
+the aggregation from 40 to 100 half-sample pairs, which is a variance reduction
+rather than a trade. That remains the only known way to move the frontier
+outward, and it is the basis of the remaining hypotheses.
