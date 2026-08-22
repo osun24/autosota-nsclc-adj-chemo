@@ -25,6 +25,10 @@ except ImportError:
 # ranking is aggregated; they never touch the estimand, gates, or budget.
 STABILITY_SUBSAMPLES = 100
 STABILITY_TOP_K = 300
+# A fixed shortlist rather than a quantile: gating on the top half of a pathway
+# makes the gate's selectivity depend on pathway size, so a large pathway is
+# effectively ungated and the fold-stable spread ordering does all the work.
+MEMBER_POOL = 6
 STABILITY_SEED = 20260823
 # The DR pseudo-outcome is heavy tailed: the 0.05 propensity clip and the 0.05
 # censoring-survival floor each admit weights up to 20, so a few patients would
@@ -45,7 +49,7 @@ MAX_GENES_PER_PATHWAY = 4
 
 
 CANDIDATE = {
-    "name": "v2_pathway8_one_module_mtry035_gated_s100",
+    "name": "v2_pathway8_one_module_mtry035_pool6_leaf12",
     "selector": "dr_gene",
     "n_genes": 8,
     "representation": "module",
@@ -54,8 +58,8 @@ CANDIDATE = {
     "rsf": {
         "n_estimators": 1000,
         "max_depth": 9,
-        "min_samples_leaf": 8,
-        "min_samples_split": 16,
+        "min_samples_leaf": 12,
+        "min_samples_split": 24,
         "max_features": 0.35,
     },
 }
@@ -105,7 +109,20 @@ def _detectable_genes(
 
 
 def _robust_gamma(gamma: np.ndarray) -> np.ndarray:
-    """Winsorize the DR benefit pseudo-outcome inside the scoring partition."""
+    """Winsorize the DR benefit pseudo-outcome inside the scoring partition.
+
+    A Cox nuisance fit that fails to converge on a pathological half-sample can
+    overflow to an infinite predicted RMST, which makes the AIPW pseudo-outcome
+    NaN and poisons every percentile computed from it (this killed experiment
+    16 and fired twice in experiment 19).  Non-finite entries are replaced by
+    the median of the finite ones, which keeps **every** patient in the ranking
+    rather than dropping anyone.  This affects only the selector's internal gene
+    ranking; the locked evaluation path in ``prepare.py`` is untouched.
+    """
+    gamma = np.asarray(gamma, dtype=float)
+    finite = np.isfinite(gamma)
+    if not finite.all():
+        gamma = np.where(finite, gamma, np.median(gamma[finite]) if finite.any() else 0.0)
     low, high = np.percentile(gamma, [WINSOR_PERCENT, 100.0 - WINSOR_PERCENT])
     return np.clip(gamma, low, high)
 
@@ -206,11 +223,12 @@ def stability_select_genes(
         def _by_spread(item: int) -> tuple[float, str]:
             return (-gene_spread[available[item]], available[item])
 
-        counts = gene_top_counts[members]
-        cutoff = float(np.median(counts))
-        gated = [item for item in members if gene_top_counts[item] >= cutoff]
-        rest = [item for item in members if gene_top_counts[item] < cutoff]
-        ordered_members = sorted(gated, key=_by_spread) + sorted(rest, key=_by_spread)
+        shortlist = sorted(
+            members, key=lambda item: (-gene_top_counts[item], available[item])
+        )[:MEMBER_POOL]
+        chosen = set(shortlist)
+        rest = [item for item in members if item not in chosen]
+        ordered_members = sorted(shortlist, key=_by_spread) + sorted(rest, key=_by_spread)
         for gene_position in ordered_members:
             if taken >= MAX_GENES_PER_PATHWAY:
                 break

@@ -1144,3 +1144,132 @@ than 387-row ones, and it ignores machine variance. Any future run in this arena
 should treat `STABILITY_SUBSAMPLES = 140` as unaffordable and 100 as the
 practical ceiling. Experiment 16's crash and experiment 19's 0.8-second margin
 between them consumed two of twenty slots on this configuration.
+
+### iter_020 — genomic leaf regularization on the proven-eligible geometry
+- type: PARAM
+- hypothesis: `reward = min_lcb - range` is dominated by `2.81 sd`, and the disagreement fraction `f` that drives `sd ~ 2 sqrt(f/n) rms(gamma)` contains two kinds of patient: those where the module genuinely reverses the clinical recommendation, and those sitting near the decision boundary who flip on noise in the estimated benefit. The second kind contributes to the variance but almost nothing to the mean, because their true benefit is near zero. Smoothing the genomic benefit function by enlarging its leaves should remove those noise flips, cutting `sd` while leaving the mean roughly intact -- the first lever tried that reduces dispersion without moving the genomic recommendation rate away from the comparator's 0.373, which is what defeated iter_017.
+- changed: `train.py` restored to its iter_011 state -- `MEMBER_POOL=6`, `STABILITY_SUBSAMPLES=100`, `MAX_GENES_PER_PATHWAY=4`, `GENE_IQR_PERCENTILE=50.0`, threshold 0.00, the configuration proven eligible at reward -4.802 -- with the `_robust_gamma` non-finite guard retained, then `CANDIDATE["rsf"]["min_samples_leaf"]` 8 -> 12 and `["min_samples_split"]` 16 -> 24, and `CANDIDATE["name"]` -> `v2_pathway8_one_module_mtry035_pool6_leaf12`.
+- red_line_audit: Only `train.py` edited, and only the **genomic** forest. The locked clinical comparator keeps `min_samples_leaf=8`, `min_samples_split=16`, `max_features=1.0`, 1,000 trees and depth 9 from `budget.json`; red line 9 forbids weakening it and nothing here can reach it. Both values satisfy the locked validation (`8 <= leaf <= 40`, `split >= 2*leaf` and `<= 100`). Selector logic, detectability filtering, estimand, gates, bootstrap, threshold, and budget untouched. The guard retains every patient, so red line 4 holds. No hard-coded gene symbols, patient indices, or assessment rankings. No gene-by-ACT product. Development CSVs only.
+- runtime: fewer, larger leaves make the genomic forest cheaper than iter_011's 879 s, and `STABILITY_SUBSAMPLES` stays at the practical ceiling of 100 that iter_019 established, so this is nowhere near the 0.8 s margin that run cut it to.
+- watch: enlarging leaves reduces the total number of splits, so ACT tree usage may fall from 0.697 and the counterfactual benefit scale may narrow -- the iter_001 crowding lesson in a different guise. It also makes the genomic forest structurally more different from the locked comparator, which can *increase* the variance of the paired difference and offset the intended saving. Failure leaves run_010 frozen at -4.787, which is an acceptable final answer.
+- run_id: run_020_20260822T054413Z
+- eligible: false
+- failed_gates: [all_repeat_genomic_increment_positive]
+- reward: -1000000.000
+- diagnostic_score: -4.588
+- repeat_1_increment: -0.165 months
+- repeat_1_lcb: -2.922 months
+- repeat_2_increment: +1.501 months
+- repeat_2_lcb: -2.846 months
+- repeat_range: 1.666 months
+- development_alignment_cg: 4.599 months
+- development_cindex_cg: 0.687
+- gene_jaccard: 0.124
+- development_act_usage_cg: tree_split=0.446; path_traversal=0.128; terminal_difference_mean=0.128, median=0.118, p10=0.066, p90=0.200, nonzero_patients=1.000
+- repeat_1_act_usage_cg: tree_split=0.456; path_traversal=0.130; terminal_difference_mean=0.130, median=0.119, p10=0.063, p90=0.204, nonzero_patients=1.000
+- repeat_2_act_usage_cg: tree_split=0.435; path_traversal=0.126; terminal_difference_mean=0.126, median=0.116, p10=0.068, p90=0.196, nonzero_patients=1.000
+- verdict: INELIGIBLE
+- lesson: Leaf regularization did not reduce dispersion (repeat 2 sd 1.624 -> 1.626, repeat 1 0.860 -> 0.969) and instead reproduced the iter_001 crowding failure through a new route -- larger leaves mean fewer splits, so ACT tree usage collapsed from 0.697 to 0.446 and the benefit scale from 0.971 to 0.645.
+
+#### The watch item was the outcome
+Jaccard was untouched at 0.1242 exactly as predicted, since leaf size cannot
+reach gene selection. But every ACT-use diagnostic fell hard: tree_split
+0.697 -> 0.446, terminal_difference_mean 0.175 -> 0.128, median |benefit|
+0.971 -> 0.645. Enlarging leaves from 8 to 12 cuts the maximum number of leaves
+on a 775-row fitting partition from about 97 to about 65, and ACT -- a binary
+variable that wins splits only marginally against a continuous module and Age --
+loses a disproportionate share of the splits that disappear. This is the
+iter_001 crowding mechanism arriving through split *count* rather than split
+*competition*, and it confirms that ACT operational use is the fragile quantity
+in this arena regardless of which knob threatens it.
+
+The dispersion hypothesis itself is simply false here: sd did not move. The
+near-boundary noise flips that leaf smoothing was meant to remove were evidently
+not a material part of `f`.
+
+## Completion
+
+The 20-experiment budget is exhausted: 19 completed candidates and one
+infrastructure failure (experiment 16, Cox overflow -> NaN pseudo-outcome).
+
+**Frozen candidate: `run_010_20260822T025243Z`, reward -4.787, eligible on all
+ten gates.** This is the only run named in `best_run.txt` and it is the sole
+result the arena authorises for the human-held test. `train.py` has been
+restored to that run's `train_snapshot.py` so the repository state reproduces
+the frozen candidate exactly; because the launcher refuses a `train.py` whose
+SHA has already consumed an experiment, this also makes the frozen state
+non-rerunnable by construction.
+
+`diagnostic_leader.txt` names `run_012_20260822T032622Z` at a continuous score
+of -2.708. **It is ineligible and is not a nominee.** Per red line 12 it guided
+hypotheses and nothing else; it must not be evaluated on test.
+
+### The frozen candidate
+
+Selector: Reactome pathways ranked by co-selection of their mean clinical-adjusted
+DR benefit score across 100 stratified half-sample pairs of the fitting
+partition; within each selected pathway, members above the pathway's median
+co-selection frequency are shortlisted and ordered by within-partition
+expression spread; four genes per pathway, eight genes total, compressed to a
+single fold-fitted standardized module score. Genomic forest: 1,000 trees,
+depth 9, leaf 8, split 16, `max_features` 0.35, decision threshold 0 months.
+
+Full-development module: `ACAD8, ALDH6A1, MCCC1, HIBCH, MBIP, KAT2B, ZZZ3,
+PHF20L1` -- branched-chain amino-acid catabolism plus chromatin co-regulators.
+
+| metric | locked clinical | clinical + genomic |
+|---|---|---|
+| policy alignment | 3.931 | 4.246 |
+| policy value (months) | 48.139 | 48.669 |
+| Harrell C-index | 0.681 | 0.689 |
+| ACT recommended | 0.373 | 0.393 |
+| ACT tree_split | 0.823 | 0.687 |
+
+Repeat increments +0.146 and +0.483 months; worst-repeat selection LCB -4.450;
+repeat range 0.337.
+
+### What the search established
+
+1. **ACT crowding-out is the dominant mechanism and survived v1's fix.** Module
+   compression did not solve it: two continuous module features halved ACT tree
+   usage (0.823 -> 0.502) and the counterfactual benefit scale (1.427 -> 0.599),
+   accounting for the entire -1.72-month baseline increment. Dropping to one
+   module recovered 1.62 months (iter_003) and genomic `max_features` 0.35
+   recovered another 0.31 (iter_004). Every later failure that touched forest
+   geometry -- including the final leaf-regularization attempt -- re-broke this
+   same quantity.
+2. **Gene identity reproducibility and value stability are dissociable.**
+   iter_018 produced the most repeat-consistent result of the search (increments
+   +1.055 and +1.036, range 0.019, C-index 0.693) and was refused for Jaccard
+   0.070. The stability gate is doing real work.
+3. **The eligible frontier is narrow and the interior is noisy.** Configurations
+   with increments above +1 month sit at Jaccard 0.084-0.090; those clearing
+   Jaccard comfortably sit below +0.6. iter_013 showed repeat 1's increment
+   swinging 1.8 months and reversing sign from a one-gene perturbation, so
+   run_010's -4.787 and run_011's -4.802 are the same number within noise, and
+   run_012's -2.708 is one draw from a wide distribution rather than an
+   achievable target.
+4. **Levers closed with reasons:** `max_depth` (never binds, ~6.6 realised depth);
+   `n_genes` (Jaccard is scale-invariant -- shared genes grow linearly, measured
+   1.126 at n=8 and 1.701 at n=12); genomic threshold (the disagreement fraction
+   is a *symmetric* difference, minimised near the comparator's rate, so both
+   directions raise dispersion); aggregation draws (stabilise within a partition
+   but cannot make two partitions agree -- repeat 1 was bit-identical at 100 and
+   140 draws); pathway spread (non-monotone, peaks at two pathways);
+   `max_features` below 0.30 (contradicts the combinatorial argument that
+   motivated 0.35).
+
+### Limitations that constrain any reading of this result
+
+The reward is negative: the worst-repeat multiplicity-adjusted lower bound is
+-4.450 months, so this is an eligible candidate whose increment is **not**
+separated from zero by the arena's selection-adjusted bootstrap. Eligibility
+means the ten gates passed, not that the improvement is statistically
+established. The two repeats reuse the same 1,034 patients and are stability
+views, not independent cohorts. Former train and validation rows were pooled as
+adaptive development data, so only the human-held test can provide one-shot
+confirmation. IPCW-AIPW validity rests on adequate measured-confounder
+adjustment, positivity, and conditionally independent censoring; row-level
+cross-validation establishes nothing about transport across source studies or
+expression platforms. Nothing here supports a treatment-effect claim, a regimen
+recommendation, or deployment.
