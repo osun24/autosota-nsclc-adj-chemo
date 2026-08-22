@@ -614,3 +614,63 @@ optimum lies above the feasible range at the observed `m ~= 2.4` months, i.e.
 which is the same direction as maximising the increment. The remaining slots
 should therefore push the increment up while holding all ten gates, with the
 repeat range watched because it is subtracted directly.
+
+### iter_011 — fixed member shortlist instead of a size-dependent median gate
+- type: ALGO
+- hypothesis: iter_007's gate keeps the top *half* of a pathway's members, so its selectivity depends on pathway size -- for a 12-member pathway it shortlists 6 and the four picks are meaningfully DR-driven, but for a 40-member pathway it shortlists 20 and the spread ordering does nearly all the work, collapsing toward iter_004's benefit-blind behaviour. Replacing the quantile with a fixed shortlist of the top `MEMBER_POOL = 6` members by co-selection frequency makes DR influence uniform across pathway sizes and strictly increases it for large pathways, which should raise the increment (and hence the reward, since the reward rises with broader correctly-signed deviation) while spending part of the 22% Jaccard margin iter_010 earned.
+- changed: In `stability_select_genes`, the median gate `cutoff = np.median(gene_top_counts[members])` is replaced by a fixed shortlist: members are ranked by descending co-selection frequency, the top `MEMBER_POOL = 6` form the shortlist, and the shortlist is spread-ordered and exhausted before the spread-ordered remainder. New module constant `MEMBER_POOL = 6`, chosen as 1.5x the per-pathway quota `MAX_GENES_PER_PATHWAY = 4` so the shortlist is selective but never smaller than the quota. `CANDIDATE["name"]` -> `v2_pathway8_one_module_mtry035_pool6_s100`. Everything else identical to iter_010: `STABILITY_SUBSAMPLES=100`, `n_genes=8`, `module_count=1`, `max_features=0.35`, threshold 0.00.
+- red_line_audit: Only `train.py` edited. The shortlist uses `gene_top_counts`, accumulated from fitting-partition half-samples via the locked cross-fitted train-only benefit pseudo-outcome; the ordering uses within-partition expression spread. Detectability filtering still runs first. No assessment rows, outcomes, or covariate summaries. No hard-coded gene symbols, patient indices, or assessment rankings. No gene-by-ACT product. Estimand, gates, bootstrap, threshold, and the locked clinical comparator untouched. Development CSVs only.
+- watch: this deliberately spends Jaccard margin (0.122 against the 0.10 floor) to buy increment. If Jaccard falls below 0.10 the run is ineligible and the shortlist should be widened to 8 rather than abandoned. Note that a failure here cannot cost the banked result: `best_run.txt` is only overwritten by an *eligible* run with a strictly higher reward, so run_010 stays frozen regardless of this outcome.
+- run_id: run_011_20260822T031020Z
+- eligible: true
+- failed_gates: []
+- reward: -4.802
+- diagnostic_score: -4.802
+- repeat_1_increment: +0.579 months
+- repeat_1_lcb: -1.859 months
+- repeat_2_increment: +0.474 months
+- repeat_2_lcb: -4.697 months
+- repeat_range: 0.105 months
+- development_alignment_cg: 4.458 months
+- development_cindex_cg: 0.688
+- gene_jaccard: 0.124
+- development_act_usage_cg: tree_split=0.697; path_traversal=0.175; terminal_difference_mean=0.175, median=0.163, p10=0.096, p90=0.266, nonzero_patients=1.000
+- repeat_1_act_usage_cg: tree_split=0.697; path_traversal=0.174; terminal_difference_mean=0.174, median=0.163, p10=0.091, p90=0.264, nonzero_patients=1.000
+- repeat_2_act_usage_cg: tree_split=0.697; path_traversal=0.175; terminal_difference_mean=0.175, median=0.162, p10=0.102, p90=0.269, nonzero_patients=1.000
+- verdict: NOT_LEADER
+- lesson: The fixed shortlist improved almost everything -- pooled increment 0.315 -> 0.527, repeat 1's LCB -2.733 -> -1.859 on the lowest bootstrap sd of the search (0.860), and the repeat range 0.337 -> 0.105 -- yet the reward fell 0.015 because repeat 2's sd rose to 1.624 and `min_lcb` is set entirely by repeat 2.
+
+#### The signal/stability trade curve was a Monte-Carlo artifact
+This is the most useful result since iter_003. At 40 draws, every increase in
+DR selectivity cost Jaccard (0.131 -> 0.098 -> 0.076 across iter_004, 007, 006).
+At 100 draws the same move went the *other* way: replacing the median gate with
+a far more DR-selective fixed top-6 shortlist raised Jaccard slightly, 0.122 ->
+0.124, while raising the pooled increment by 67%. So the apparent trade was not
+intrinsic to using the DR signal -- it was noise in the DR estimate. Once the
+statistic is aggregated over 100 half-sample pairs, using it *more* is free.
+
+This retires the iter_007 trade-curve framing that governed slots 7-9 and opens
+the shortlist width as a lever that can be pushed further rather than balanced.
+
+#### Repeat 2's bootstrap sd is now the only thing that matters
+`reward = min_lcb - range`, and the two repeats are wildly asymmetric:
+
+| | repeat 1 | repeat 2 |
+|---|---|---|
+| increment | +0.579 | +0.474 |
+| bootstrap sd | 0.860 | 1.624 |
+| selection LCB | -1.859 | **-4.697** |
+
+Repeat 1's LCB is 2.8 months better than repeat 2's on an almost identical mean,
+purely through dispersion. Across all eleven runs repeat 2's sd has never gone
+below 1.370 while repeat 1's has ranged 0.860-1.325, so this is a property of
+repeat 2's fold partition (`fold_seed = FOLD_SEED + 20000`) rather than of any
+candidate. The repeat range is already down to 0.105 and contributes almost
+nothing, so essentially **reward = repeat 2's mean - 2.81 * repeat 2's sd**.
+Raising repeat 2's mean is the only controllable route, since its dispersion has
+proved insensitive to every configuration tried.
+
+The best repeat 2 mean observed anywhere in the search is iter_006's +1.824 at
+sd 1.370, i.e. an LCB of -2.040 -- 2.7 months better than the current leader's.
+iter_006's member ordering is exactly a shortlist of width 4, which is now
+reachable without the Jaccard penalty that made iter_006 ineligible.
