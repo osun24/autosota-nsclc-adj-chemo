@@ -1101,3 +1101,133 @@ Constraint map after twelve experiments (train and validation only):
   45.86 in run_016). The gate therefore penalises the fold-fitting sample size,
   and the only width that would close it is one too narrow to hold the shared
   pathway that Jaccard needs.
+
+### iter_020 — final slot: deeper trees at the working block width
+- type: PARAM
+- hypothesis: The last untested structural lever at the eight-gene optimum is
+  depth. Deeper trees give the ACT indicator more nodes to enter — the
+  iteration-2 probe measured tree-split 0.100 at depth 6 against 0.135-0.155 at
+  depth 9 for an eight-gene block — which widens the C+G counterfactual benefit
+  distribution (currently median |benefit| 0.279 against the comparator's 1.074)
+  and should lift the C+G ACT rate from 0.20 toward the 0.39 that the positive
+  validation ATE rewards, giving the three validation value gates their best
+  remaining chance.
+- changed: `rsf.max_depth` 6 -> 9. The eight-gene two-pathway block with
+  IQR-stabilised members, the zero threshold, `min_samples_leaf=8`,
+  `max_features=1.00`, 1,000 trees, and the whole selector are unchanged from
+  iter_018.
+- stated expectation: this run is unlikely to be eligible.
+  `train_genomic_value_at_least_clinical` has failed in all nineteen previous
+  experiments with a deficit that tracks block width (1.56 / 2.11 / 3.41 months
+  at 4 / 8 / 12 genes) because the train comparison uses out-of-fold forests
+  fitted on 516 patients, and closing a ~2-month deficit would take roughly a
+  three-sigma move in a quantity whose bootstrap SD is ~2.5. Deeper trees also
+  spend c-index headroom. The slot is spent because an unused slot has no
+  salvage value and the gate is a noisy estimate rather than a fixed constant,
+  not because the mechanism is expected to carry all four gates.
+- red_line_audit: one RSF field changes, applied identically to both forests so
+  the comparator stays matched; depth 9 is inside the locked range; selection is
+  untouched and remains fit-only against the locked train-only treatment-benefit
+  pseudo-outcome; no gene symbol, patient index, or validation quantity is
+  hard-coded; no gene-by-ACT products; estimand, gates, bootstrap, and budget
+  untouched; no test artifact referenced.
+- run_id: run_020_20260822T001904Z
+- eligible: false
+- failed_gates: [train_genomic_value_at_least_clinical, validation_genomic_alignment_positive, validation_genomic_value_at_least_best_constant, validation_genomic_value_at_least_clinical]
+- reward: -1000000.000
+- train_increment: -2.605 months
+- validation_increment: -4.379 months
+- absolute_gap: 1.774 months
+- train_cindex_cg: 0.661
+- validation_cindex_cg: 0.689
+- gene_jaccard: 0.111
+- train_act_usage_cg: tree_split=0.189; path_traversal=0.052; terminal_difference_mean=0.052, median=0.042, p10=0.011, p90=0.104, nonzero_patients=1.000
+- validation_act_usage_cg: tree_split=0.251; path_traversal=0.049; terminal_difference_mean=0.049, median=0.048, p10=0.019, p90=0.079, nonzero_patients=1.000
+
+- verdict: NOT_LEADER
+- lesson: The mechanism worked on the train side better than any previous run —
+  ACT tree-split rose 0.147 -> 0.189, the C+G ACT rate 0.151 -> 0.178, train
+  alignment reached **+2.643**, the train increment improved to **-2.605**
+  (best of all twenty), and the deficit on the never-passed
+  `train_genomic_value_at_least_clinical` gate fell to **1.03 months**, its
+  smallest value in the whole search — while Jaccard held at 0.111 and the
+  validation c-index drop stayed at 0.006. Validation nonetheless swung the
+  other way once more (alignment -0.865), which is the same cohort see-saw seen
+  in iter_016 and iter_017 and is noise, not mechanism.
+
+## Completion — search closed at the 20-experiment budget
+
+Twenty slots are consumed (19 completed runs plus experiment 7, lost to a host
+filesystem revocation). The lock manifest verifies and the ledger hash chain is
+intact over 39 rows. **No candidate was eligible**, so every reward is the
+`-1000000.0` sentinel. Because the launcher promotes a run only on strict
+reward improvement and all twenty rewards tie, `best_run.txt` still names
+`run_001_20260821T222205Z` — the shipped-baseline anchor, which is the *worst*
+candidate found. That file is launcher-owned arena state and has been left
+untouched; the note below records what the search actually found, for the human
+who performs the one-shot test evaluation.
+
+### What a human should look at instead
+
+`run_020_20260822T001904Z` is the candidate this search would freeze if the
+reward permitted it, with `run_018_20260822T000128Z` as the more conservative
+alternative. Run 020 passes 14 of 18 gates: gene Jaccard 0.111, validation
+c-index drop 0.006, train alignment +2.643, train increment -2.605 months, gap
+1.774 months, and all ACT-use, overlap, seed-stability, and nontrivial-benefit
+gates. Its gene block is eight genes from two Reactome pathways, and the
+cross-fold stability comes from a shared immunoglobulin block (IGKV1-17,
+IGKV2D-28, IGKV4-1, IGLV3-25) drawn from reliably measured probes. Run 018 has
+the same stability and c-index headroom with a smaller train increment
+magnitude. Neither is eligible, and neither should be described as a validated
+policy.
+
+### Why no candidate was eligible
+
+`train_genomic_value_at_least_clinical` failed in all nineteen completed runs
+and is the binding constraint. It is structural rather than tunable: on train
+the comparison uses out-of-fold forests fitted on 516 patients, where every
+added gene costs the C+G model more than it costs the 19-column clinical model,
+and the deficit tracks block width almost linearly — 1.03 to 1.56 months at
+four to eight genes, 2.11 at eight, 3.41 at twelve. On validation, where both
+models are refitted on all 775 patients and compete on equal terms, the C+G
+policy *has* beaten its comparator (46.97 versus 45.86 in run_016). The gate
+therefore penalises the fold-fitting sample size, and the only block width
+narrow enough to close it is too narrow to hold the shared pathway that the
+Jaccard gate needs. The two gates are mutually exclusive on this data.
+
+### What the search established
+
+1. **ACT crowd-out is set by gene-block width, not tree depth.** Tree-split
+   fraction runs 0.34 at four genes against 0.09 at twenty. Fixing it moved ACT
+   use from 0.025 to 0.334 (iter_002).
+2. **The reproducible per-gene signal was an artifact.** Winsorizing the
+   heavy-tailed DR pseudo-outcome (SD ~72 months on a tau=60 scale) lifted
+   Jaccard to 0.111, but the genes it promoted sat at the 10th percentile of
+   expression IQR — near-floor probes whose apparent stability came from the
+   same few samples recurring in every subsample. Excluding them returned
+   Jaccard to 0.000 (iter_006, iter_008).
+3. **Legitimate stability exists at the pathway level, not the gene level.**
+   Selecting Reactome blocks and then ordering their members by a covariate
+   summary — stable across fitting partitions — gave Jaccard 0.111 at eight
+   detectable genes (iter_017), the search's central methodological result.
+4. **The decision threshold must match the C+G benefit scale.** The genomic
+   forest's counterfactual contrasts are three- to sixfold narrower than the
+   clinical forest's, so a shared 0.25-month rule silenced the genomic policy
+   entirely (ACT rate 0.000); a zero threshold restored it and flipped both
+   alignment gates (iter_014).
+5. **Eight genes is a genuine optimum**, the only width where stability,
+   discrimination, and ACT use coexist — four genes cannot hold a shared
+   pathway, sixteen fail the c-index at every workable geometry.
+
+### Standing limitations
+
+These are observational IPCW-AIPW estimates requiring consistency, adequate
+measured-confounder adjustment, positivity, and conditionally independent
+censoring. No candidate cleared the prespecified gates, so nothing here
+supports a treatment-effect, regimen-level, or clinical-deployment claim. The
+ACT-use diagnostics recorded in every iteration above are transparency
+measurements of whether the fitted forests operationally use the ACT indicator;
+they are not evidence that any treatment-effect estimate is valid. The
+immunoglobulin block's cross-fold reproducibility is a stability property of the
+selection procedure on this cohort, not a validated predictive biomarker. Test
+data was never opened, enumerated, hashed, or referenced at any point.
