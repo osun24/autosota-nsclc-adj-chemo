@@ -1,0 +1,22 @@
+{
+  "schema_version": 2,
+  "max_experiments": 20,
+  "wall_time_seconds": 1500,
+  "outer_folds": 4,
+  "outer_repeats": 2,
+  "inner_folds": 3,
+  "forest_seeds": [42, 43, 44],
+  "patient_bootstraps": 4000,
+  "max_selected_genes": 16,
+  "max_total_features": 35,
+  "max_trees_per_forest": 1000,
+  "tau_months": 60.0,
+  "multiplicity_alpha": 0.05,
+  "clinical_forest": {
+    "n_estimators": 1000,
+    "max_depth": 9,
+    "min_samples_leaf": 8,
+    "min_samples_split": 16,
+    "max_features": 1.0
+  }
+}
