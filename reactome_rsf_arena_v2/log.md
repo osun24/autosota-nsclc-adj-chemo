@@ -674,3 +674,56 @@ The best repeat 2 mean observed anywhere in the search is iter_006's +1.824 at
 sd 1.370, i.e. an LCB of -2.040 -- 2.7 months better than the current leader's.
 iter_006's member ordering is exactly a shortlist of width 4, which is now
 reachable without the Jaccard penalty that made iter_006 ineligible.
+
+### iter_012 — narrow the shortlist to the per-pathway quota
+- type: PARAM
+- hypothesis: iter_011 showed that at 100 draws the DR statistic is stable enough that using it *more* costs no reproducibility (shortlist 6 raised both the increment and Jaccard). Narrowing `MEMBER_POOL` from 6 to 4 makes the shortlist exactly the per-pathway quota, so the four members are taken purely on co-selection frequency -- which is precisely iter_006's member ordering, the configuration that produced the largest repeat-2 increment of the entire search (+1.824 at sd 1.370, an LCB of -2.040 against the current leader's -4.697). Since reward is now essentially `repeat 2 mean - 2.81 * repeat 2 sd`, recovering that mean at 100-draw stability should improve the reward substantially.
+- changed: `MEMBER_POOL` 6 -> 4 and `CANDIDATE["name"]` -> `v2_pathway8_one_module_mtry035_pool4_s100`. Nothing else. At width 4 the shortlist equals `MAX_GENES_PER_PATHWAY`, so all shortlisted members are taken and the spread ordering becomes inert -- the selector reduces exactly to iter_006's top-4-by-frequency rule, now aggregated over 100 half-sample pairs instead of 40.
+- red_line_audit: Only `train.py` edited, and only a selector aggregation constant. Detectability filtering still runs first. All frequencies come from fitting-partition half-samples via the locked cross-fitted train-only benefit pseudo-outcome; no assessment rows, outcomes, or covariate summaries. No hard-coded gene symbols, patient indices, or assessment rankings. No gene-by-ACT product. Estimand, gates, bootstrap, threshold, budget, and the locked clinical comparator untouched. Development CSVs only.
+- watch: iter_006 at 40 draws had Jaccard 0.076, and scaling by iter_010's +23.6% variance-reduction gain predicts only about 0.094 at 100 draws -- below the floor. iter_011's evidence argues against that extrapolation, since shortlist 6 landed at 0.124 rather than the predicted decline, but Jaccard remains the gate at risk. A failure costs nothing: run_010 stays frozen in `best_run.txt`, and the fallback is shortlist 5.
+- run_id: run_012_20260822T032622Z
+- eligible: false
+- failed_gates: [gene_selection_jaccard_at_least_0_10]
+- reward: -1000000.000
+- diagnostic_score: -2.708
+- repeat_1_increment: +1.291 months
+- repeat_1_lcb: -1.407 months
+- repeat_2_increment: +1.708 months
+- repeat_2_lcb: -2.291 months
+- repeat_range: 0.417 months
+- development_alignment_cg: 5.430 months
+- development_cindex_cg: 0.690
+- gene_jaccard: 0.090
+- development_act_usage_cg: tree_split=0.705; path_traversal=0.171; terminal_difference_mean=0.171, median=0.160, p10=0.089, p90=0.268, nonzero_patients=1.000
+- repeat_1_act_usage_cg: tree_split=0.706; path_traversal=0.170; terminal_difference_mean=0.170, median=0.161, p10=0.088, p90=0.258, nonzero_patients=1.000
+- repeat_2_act_usage_cg: tree_split=0.704; path_traversal=0.172; terminal_difference_mean=0.172, median=0.159, p10=0.089, p90=0.278, nonzero_patients=1.000
+- verdict: DIAGNOSTIC_LEADER
+- lesson: A shortlist equal to the per-pathway quota produced by far the strongest candidate ever measured here -- both increments above 1.29 months, both LCBs the best of the search, a would-be reward of -2.708 against the leader's -4.787 -- but Jaccard fell to 0.090 and the run is ineligible, so it is a diagnostic result only.
+
+#### Shortlist width now has three calibrated points, all at 100 draws
+| MEMBER_POOL | Jaccard | R1 incr | R2 incr | min LCB | range | score |
+|---|---|---|---|---|---|---|
+| 6 (iter_011) | 0.124 | +0.579 | +0.474 | -4.697 | 0.105 | -4.802 |
+| 4 (iter_012) | 0.090 | +1.291 | +1.708 | -2.291 | 0.417 | -2.708 |
+| median gate (iter_010) | 0.122 | +0.146 | +0.483 | -4.450 | 0.337 | -4.787 |
+
+Narrowing the shortlist from 6 to 4 nearly tripled the pooled increment
+(0.527 -> 1.499) and improved repeat 2's LCB by 2.4 months, at a cost of 0.034
+Jaccard. The gate is 0.010 away. Linear interpolation between widths 6 and 4
+puts width 5 at roughly Jaccard 0.107 and a pooled increment near 1.0, which
+would clear the floor with a thin margin and still beat the current leader's
+reward by well over a month.
+
+#### This is a diagnostic result, not a candidate
+Red line 12 applies directly: run_012 now heads `diagnostic_leader.txt` with a
+score of -2.708, and it is **ineligible**. It cannot be frozen, cannot be
+nominated, and does not displace run_010 in `best_run.txt`. Its only legitimate
+use is to form the next hypothesis, which is what the width-5 interpolation
+above does.
+
+#### Note on repeat 2's dispersion
+The iter_011 entry concluded repeat 2's sd was insensitive to configuration and
+that only its mean was controllable. iter_012 supports that: repeat 2's sd came
+in at 1.377, inside the 1.370-1.643 band every previous run has occupied, while
+its mean moved from +0.474 to +1.708. The reward improvement came entirely
+through the mean, exactly as predicted.
