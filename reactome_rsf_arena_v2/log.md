@@ -971,3 +971,65 @@ prevented from propagating an infinity into the ranking.
 #### Budget consequence
 Four slots remain (17-20). run_010 is unaffected and still frozen in
 `best_run.txt` at reward -4.787.
+
+### iter_017 — genomic decision threshold 0.25 on the proven-eligible geometry
+- type: PARAM
+- hypothesis: `reward = min_lcb - range` is dominated by dispersion, not by the mean: at iter_011 the repeat-2 mean was 0.472 against a bootstrap sd of 1.624, so `2.81 sd` is 4.6 months of the 4.7-month deficit. Writing the increment over policy-disagreeing patients gives `sd ~ 2 sqrt(f/n) rms(gamma)` and `mean ~ 2 f m`, so shrinking the recommended set by raising the genomic decision threshold cuts `f` and therefore cuts sd as `sqrt(f)` while costing the mean only linearly. A 20% sd reduction is worth about +0.9 of reward, far more than any mean gain observed. Crucially the threshold does **not** enter gene selection at all, so Jaccard stays at iter_011's 0.124 and that gate is not at risk.
+- changed: `train.py` restored to its iter_011 state (`MEMBER_POOL=6`, `STABILITY_SUBSAMPLES=100`, `MAX_GENES_PER_PATHWAY=4`, `GENE_IQR_PERCENTILE=50.0`) -- the configuration that is *proven eligible* -- then `CANDIDATE["benefit_threshold_months"]` 0.00 -> 0.25 and `CANDIDATE["name"]` -> `v2_pathway8_one_module_mtry035_pool6_thr025`. Separately, `_robust_gamma` gains the non-finite guard diagnosed in experiment 16; at 100 draws no run has ever hit that path, so the guard is inert here and the threshold is the only effective change.
+- red_line_audit: Only `train.py` edited. The threshold applies **only to the genomic policy**; `_summarize_cohort` hard-codes `model_threshold = 0.0` for the clinical arm, so the locked comparator keeps its zero-month threshold and cannot be weakened -- red line 9 is respected. 0.25 is inside the locked `0 <= benefit_threshold_months <= 3` validation. The NaN guard replaces non-finite selector pseudo-outcome entries with the finite median and **retains every patient**, so red line 4 (never drop censored patients) holds; it touches only `train.py`'s ranking copy, never `prepare.py`'s locked evaluation path, so the estimand is unchanged. No hard-coded gene symbols and no gene-by-ACT product. Development CSVs only.
+- distinction from v1's refuted experiment: v1 refuted a **shared** 0.25-month threshold applied to both arms, which silenced a genomic policy whose benefit scale was much narrower than the clinical one. Here the threshold is genomic-only, the comparator stays locked at zero, and this candidate's median absolute predicted benefit is 0.971 months, so a 0.25 cut removes marginal recommendations rather than silencing the policy. This is the "genomic threshold calibration" lever named in `program.md`, not a repeat of v1's shared-threshold test.
+- watch: `all_repeat_nontrivial_benefit_fraction_at_least_0_10` is evaluated as `|benefit| > max(threshold, 0.10)`, so it tightens to `|b| > 0.25` -- at a median |b| of 0.971 it should stay far above the 0.10 floor, but it is the gate this change puts at risk. The value gates could also regress as the recommended set shrinks toward all-observation. If both increments stay positive and sd falls, this beats run_010's -4.787.
+- run_id: run_017_20260822T044401Z
+- eligible: false
+- failed_gates: [all_repeat_genomic_increment_positive]
+- reward: -1000000.000
+- diagnostic_score: -5.036
+- repeat_1_increment: -0.661 months
+- repeat_1_lcb: -3.168 months
+- repeat_2_increment: +1.206 months
+- repeat_2_lcb: -2.964 months
+- repeat_range: 1.868 months
+- development_alignment_cg: 4.204 months
+- development_cindex_cg: 0.688
+- gene_jaccard: 0.124
+- development_act_usage_cg: tree_split=0.697; path_traversal=0.175; terminal_difference_mean=0.175, median=0.163, p10=0.096, p90=0.266, nonzero_patients=1.000
+- repeat_1_act_usage_cg: tree_split=0.697; path_traversal=0.174; terminal_difference_mean=0.174, median=0.163, p10=0.091, p90=0.264, nonzero_patients=1.000
+- repeat_2_act_usage_cg: tree_split=0.697; path_traversal=0.175; terminal_difference_mean=0.175, median=0.162, p10=0.102, p90=0.269, nonzero_patients=1.000
+- verdict: INELIGIBLE
+- lesson: Raising the genomic threshold cut the recommended fraction from 0.393 to 0.320 and left Jaccard untouched at 0.124 exactly as predicted, but the bootstrap sd barely moved (repeat 2: 1.624 -> 1.571, repeat 1: 0.860 -> 0.933) because the disagreement fraction `f` is a *symmetric* difference, and moving the genomic recommendation rate away from the comparator's 0.373 increases it.
+
+#### Correction to the dispersion model used in iter_011 and iter_017
+The hypothesis treated `f` as the size of the genomic recommended set, so that
+shrinking the set would shrink `f` and hence `sd ~ sqrt(f)`. That is wrong. `f`
+is the fraction of patients on which the two policies *disagree*, so it is
+minimised when the genomic recommendation rate sits near the locked
+comparator's 0.373 -- and it grows when the genomic rate moves away in
+**either** direction. At threshold 0 the genomic rate was 0.393, essentially
+matched; at threshold 0.25 it fell to 0.320, further away, so `f` rose and the
+`sqrt(f)` saving never materialised. The 3% sd reduction observed is consistent
+with no real effect.
+
+This closes threshold calibration as a dispersion lever: threshold 0 already
+sits near the `f`-minimising point, and both directions away from it increase
+dispersion. The large swing in the *means* (repeat 1 +0.579 -> -0.661, repeat 2
++0.474 -> +1.206, range blown out to 1.868) is the same month-scale noise floor
+iter_013 established.
+
+#### v1's threshold warning is reproduced in a narrower form
+`nontrivial_benefit_fraction` fell from 0.939 to 0.859 as the gate tightened to
+`|b| > 0.25`, still far above its 0.10 floor, so the policy was not silenced --
+consistent with the prediction that this candidate's benefit scale (median |b|
+0.971) is wide enough to absorb a 0.25 cut, unlike v1's. The lever failed on
+dispersion grounds, not because the policy went quiet.
+
+#### Position with three slots left
+`best_run.txt` still names run_010 at reward -4.787. The search has established
+that pool-4-style pure-DR selection dominates on every axis except Jaccard
+(iter_012: increments +1.291/+1.708, the two lowest repeat-2 sds of the search
+at 1.377, would-be reward -2.708) and fails only at Jaccard 0.090. Every
+attempt to buy that last 0.010 by trading signal has cost more than it bought.
+The one untried direction with empirical support is *spreading the same
+selectivity over more pathways*: pathway concentration was measured at
+`p = 1` -> Jaccard 0.056 (iter_015) and `p = 2` -> Jaccard 0.090 (iter_012),
+a 1.6x gain that the `n^2/M` model does not explain and that predicts further
+gains at `p = 4`.
