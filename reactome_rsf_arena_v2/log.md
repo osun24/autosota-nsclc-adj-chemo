@@ -315,3 +315,61 @@ is a mechanical way to raise Jaccard at zero crowding cost -- under module
 representation the forest still sees one feature regardless of `n_genes` -- but
 it only helps if members are stable enough that sharing a pathway implies
 sharing genes, which is precisely what iter_005 broke. Stabilise members first.
+
+### iter_006 — rank-based co-selection frequency for within-pathway member choice
+- type: ALGO
+- hypothesis: iter_005 ordered pathway members by the *mean* of a heavy-tailed DR statistic, which is fold-unstable and dropped Jaccard to 0.075; replacing it with a rank-based co-selection *frequency* -- how often each gene lands in the global top-`STABILITY_TOP_K` by DR association across the same 80 fitting-partition half-samples -- keeps the benefit information that turned both increments positive while restoring cross-fold member agreement above the 0.10 Jaccard floor.
+- changed: In `stability_select_genes`, added a `gene_top_counts` accumulator; in each half-sample, `np.argpartition` marks the `STABILITY_TOP_K = 300` genes with the largest DR association and increments their counts. `ordered_members` now sorts by `(-gene_top_counts[item], -mean_score[item], -gene_spread[available[item]], available[item])`, so a bounded rank frequency over 80 half-samples leads, iter_005's mean score breaks ties, and expression spread breaks any remaining tie. `CANDIDATE["name"]` -> `v2_pathway8_one_module_mtry035_freqorder`. `STABILITY_TOP_K` was already declared in `train.py` and previously unused; this is its intended purpose. Nothing else changes: pathway ranking, `n_genes=8`, `module_count=1`, `max_features=0.35`, threshold 0.00 all identical to iter_005.
+- red_line_audit: Only `train.py` edited. Detectability filtering still runs first, so this is not v1's refuted per-gene-stability-without-detectability artifact -- the frequency only orders an already spread-filtered pool. All counts come from fitting-partition half-samples via the locked cross-fitted train-only benefit pseudo-outcome; no assessment rows, outcomes, or covariate summaries. No hard-coded gene symbols, patient indices, or assessment rankings. No gene-by-ACT product. Estimand, gates, bootstrap, threshold, and the locked clinical comparator untouched. Development CSVs only.
+- watch: if `gene_top_counts` is zero for most members of the winning pathways the ordering degrades gracefully to iter_005's mean-score behaviour and Jaccard will stay near 0.075; the increments must also remain positive in both repeats, since iter_005's gain is the thing being protected.
+- run_id: run_006_20260822T020549Z
+- eligible: false
+- failed_gates: [gene_selection_jaccard_at_least_0_10]
+- reward: -1000000.000
+- diagnostic_score: -4.807
+- repeat_1_increment: +0.473 months
+- repeat_1_lcb: -3.455 months
+- repeat_2_increment: +1.824 months
+- repeat_2_lcb: -2.151 months
+- repeat_range: 1.352 months
+- development_alignment_cg: 5.079 months
+- development_cindex_cg: 0.690
+- gene_jaccard: 0.076
+- development_act_usage_cg: tree_split=0.701; path_traversal=0.172; terminal_difference_mean=0.172, median=0.160, p10=0.093, p90=0.266, nonzero_patients=1.000
+- repeat_1_act_usage_cg: tree_split=0.700; path_traversal=0.172; terminal_difference_mean=0.172, median=0.163, p10=0.092, p90=0.259, nonzero_patients=1.000
+- repeat_2_act_usage_cg: tree_split=0.702; path_traversal=0.171; terminal_difference_mean=0.171, median=0.158, p10=0.094, p90=0.273, nonzero_patients=1.000
+- verdict: DIAGNOSTIC_LEADER
+- lesson: A bounded co-selection frequency improved the increments again (repeat 1 +0.189 -> +0.473, pooled alignment 5.079 vs the comparator's 3.931) but left Jaccard flat at 0.076, because it selected the identical eight genes -- confirming that *any* DR-driven member ordering is fold-dependent and that stability has to come from a fold-stable ordering key, not a better-behaved DR statistic.
+
+#### What iter_006 establishes
+The full-development module was byte-identical to iter_005
+(`TGFBR3, SMAD7, BMPR1A, SMAD4, SIRT1, CHD9, EP300, TBL1XR1`), so the rank
+frequency and the mean score agree on the winning pathway's best members. The
+watch item's graceful-degradation case is what happened. The instability is not
+an artifact of the heavy tail; it is intrinsic to ordering members by a
+quantity that is re-estimated inside each fitting partition.
+
+Contrast the two available ordering keys:
+- **expression spread** is a covariate summary over hundreds of patients, nearly
+  identical across fitting partitions -> Jaccard 0.131 (iter_004), but carries no
+  benefit information, so repeat 1's increment stayed negative (-0.259).
+- **DR association** carries the benefit information that made both increments
+  positive, but is re-estimated per partition -> Jaccard 0.076.
+
+#### Correction to a claim made in the iter_005 entry
+The iter_005 note suggested raising `n_genes` is "a mechanical way to raise
+Jaccard". That is wrong as stated: Jaccard is scale-invariant if the number of
+shared genes grows in proportion to the set size. Doubling `n_genes` from 8 to
+16 while holding `MAX_GENES_PER_PATHWAY=4` simply doubles the number of
+contributing pathways and leaves the ratio near 0.076. `n_genes` only helps
+through the *fraction of a pathway taken*: for two folds drawing `k` members
+from a shared pathway with `M` detectable members, expected overlap is about
+`k^2/M`, so raising `MAX_GENES_PER_PATHWAY` (not `n_genes` alone) is the lever
+that raises the overlap fraction. Held in reserve.
+
+#### Both remaining routes to eligibility are about equally far away
+- iter_004 geometry passes Jaccard with 31% margin (0.131 vs 0.10) and fails the
+  increment gate on repeat 1 by 0.26 months, with no obvious lever left.
+- iter_006 geometry passes the increment gate with a large margin (+0.473,
+  +1.824) and fails Jaccard by 32% (0.076 vs 0.10), with an obvious lever left.
+The second is the one to push.
