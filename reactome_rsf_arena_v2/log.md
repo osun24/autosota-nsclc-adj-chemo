@@ -259,3 +259,59 @@ The k=7 choice came from maximising P(ACT drawn and facing no continuous rival)
 and 0.20-0.25 is predicted to be *worse*, not better. Spending a slot on
 `max_features=0.20` would contradict the mechanism that motivated 0.35, so the
 crowding lever is considered exhausted.
+
+### iter_005 — order pathway members by benefit association, not by spread alone
+- type: ALGO
+- hypothesis: The DR benefit signal currently decides only *which pathway* wins; within that pathway the four members are taken in order of expression spread, so the module can be built from the widest-spread but least benefit-associated genes. Ordering the already-detectability-filtered members by their aggregated DR benefit association should make the single module genuinely benefit-predictive and lift repeat 1's increment above zero, which is the only gate still failing.
+- changed: In `stability_select_genes`, `ordered_members` is now sorted by `(-mean_score[item], -gene_spread[available[item]], available[item])` instead of `(-gene_spread[available[item]], available[item])`. `mean_score` is the existing aggregate of the locked clinical-adjusted DR statistic averaged over the same 40 x 2 = 80 fitting-partition half-samples, so it is a stable fit-only quantity and no new computation is added; expression spread is retained as the tie-break. `CANDIDATE["name"]` -> `v2_pathway8_one_module_mtry035_drorder`. Nothing else changes: pathway ranking, `n_genes=8`, `module_count=1`, `max_features=0.35`, threshold 0.00 all identical to iter_004.
+- red_line_audit: Only `train.py` edited. This does **not** reintroduce v1's refuted unfiltered-winsorization artifact: `_detectable_genes` still runs first, so only genes in the upper half of within-partition expression spread are ever eligible, and DR association merely orders that filtered pool. `mean_score` is computed exclusively from fitting-partition half-samples via the locked cross-fitted train-only benefit pseudo-outcome; no assessment rows, outcomes, or covariate summaries are touched. No hard-coded gene symbols, patient indices, or assessment rankings. No gene-by-ACT product. Estimand, gates, bootstrap, threshold, and the locked clinical comparator untouched. Development CSVs only.
+- watch: gene Jaccard is the fragile gate at 0.131 against a 0.10 floor; changing within-pathway member choice could reduce agreement across the eight outer folds and fail eligibility on stability even if the increment improves.
+- run_id: run_005_20260822T015532Z
+- eligible: false
+- failed_gates: [gene_selection_jaccard_at_least_0_10]
+- reward: -1000000.000
+- diagnostic_score: -5.412
+- repeat_1_increment: +0.189 months
+- repeat_1_lcb: -3.751 months
+- repeat_2_increment: +1.850 months
+- repeat_2_lcb: -1.989 months
+- repeat_range: 1.662 months
+- development_alignment_cg: 4.951 months
+- development_cindex_cg: 0.689
+- gene_jaccard: 0.075
+- development_act_usage_cg: tree_split=0.706; path_traversal=0.173; terminal_difference_mean=0.173, median=0.161, p10=0.091, p90=0.271, nonzero_patients=1.000
+- repeat_1_act_usage_cg: tree_split=0.713; path_traversal=0.177; terminal_difference_mean=0.177, median=0.165, p10=0.091, p90=0.271, nonzero_patients=1.000
+- repeat_2_act_usage_cg: tree_split=0.700; path_traversal=0.170; terminal_difference_mean=0.170, median=0.157, p10=0.090, p90=0.271, nonzero_patients=1.000
+- verdict: NOT_LEADER
+- lesson: Using the DR benefit signal to order members *within* the winning pathway turned both repeat increments positive for the first time (+0.189 and +1.850, alignment 4.951 vs the comparator's 3.931) but destabilised within-pathway member choice enough to drop gene Jaccard to 0.075 and fail the stability gate, trading the increment gate for the stability gate.
+
+#### The binding constraint has moved
+Nine of ten gates now pass, including the increment gate that blocked
+iter_001-004. The failure is `gene_selection_jaccard_at_least_0_10` at 0.075.
+This is a genuine trade, not a technicality: the selector became more responsive
+to the fitting partition's DR signal, which is exactly what made the module
+benefit-predictive *and* exactly what made it fold-dependent.
+
+#### Where the instability actually lives
+Pathway-level agreement survived; member-level agreement did not. The
+cross-fold frequency table still shows a coherent branched-chain-amino-acid
+block (ACADSB 4, HIBCH 4, AUH 3) and a coherent TGF-beta/SMAD block (SMAD5 3,
+SMAD7 3, TGFBR3 3), but the *members* drawn from the branched-chain pathway
+changed wholesale from iter_004's (ACAD8, ALDH6A1, BCAT1, MCCC1) to
+(ACADSB, HIBCH, AUH, ...). So the fix must stabilise within-pathway member
+ordering, not pathway ranking.
+
+Mean |DR| per gene is an average of a heavy-tailed statistic and is evidently
+still fold-unstable even after 80 half-samples. A rank-based co-selection
+*frequency* is the standard remedy and is far more reproducible than the mean of
+a heavy-tailed score. Note that `STABILITY_TOP_K = 300` is already declared in
+`train.py` and currently unused -- it was clearly intended for exactly this.
+
+#### Arithmetic of the Jaccard gate (sets of size n_genes)
+For two selections of size 8 sharing `s` genes, Jaccard is `s/(16-s)`, so the
+0.10 floor needs `s >= 1.45`, i.e. at least 2 shared genes on average across the
+28 fold pairs. The observed 0.075 corresponds to `s ~= 1.11`. Raising `n_genes`
+is a mechanical way to raise Jaccard at zero crowding cost -- under module
+representation the forest still sees one feature regardless of `n_genes` -- but
+it only helps if members are stable enough that sharing a pathway implies
+sharing genes, which is precisely what iter_005 broke. Stabilise members first.
