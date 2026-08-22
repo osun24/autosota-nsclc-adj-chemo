@@ -795,3 +795,55 @@ evidence, the same number.
    likelier to agree on one. v1 made detectability filtering mandatory, so
    strengthening it is consistent with the inherited findings rather than a
    departure from them.
+
+### iter_014 — stricter detectability filter at shortlist width 4
+- type: PARAM
+- hypothesis: Width 4 carries comfortably positive increments in both repeats (+1.291, +1.708) and misses only Jaccard, at 0.090. Raising `GENE_IQR_PERCENTILE` from 50 to 70 shrinks the candidate pool from roughly 4,300 to roughly 2,600 better-measured genes, which reduces DR ranking noise directly and, by pushing more pathways below `MIN_PATHWAY_MEMBERS = 12`, shrinks the eligible-pathway space so folds are likelier to agree on the same pathway. Both effects raise Jaccard without giving up the DR selectivity that produces the large increments, which is the combination no configuration has achieved yet.
+- changed: `GENE_IQR_PERCENTILE` 50.0 -> 70.0, `MEMBER_POOL` 5 -> 4, `CANDIDATE["name"]` -> `v2_pathway8_one_module_mtry035_pool4_iqr70_s100`. The shortlist returns to the width-4 setting of iter_012, so the single new variable relative to that run is the detectability threshold. `STABILITY_SUBSAMPLES=100`, `n_genes=8`, `module_count=1`, `max_features=0.35`, threshold 0.00 unchanged.
+- red_line_audit: Only `train.py` edited. This *strengthens* the detectability filter that v1 made mandatory rather than relaxing it, so it moves further away from v1's refuted near-floor-probe artifact, not toward it. Expression spread is a within-fitting-partition covariate summary; no assessment rows, outcomes, or covariate summaries are touched. All DR frequencies remain fitting-partition-only via the locked cross-fitted train-only benefit pseudo-outcome. No hard-coded gene symbols, patient indices, or assessment rankings. No gene-by-ACT product. Estimand, gates, bootstrap, threshold, budget, and the locked clinical comparator untouched. Development CSVs only. Runtime should fall slightly, since fewer genes enter each chunked least-squares solve.
+- watch: per iter_013 the increments carry a noise floor of about a month, so a single positive or negative result here should not be over-read. The success criterion is *margin on both gates simultaneously* -- Jaccard clearly above 0.10 and both increments clearly above zero -- not the headline reward. The risk is that a stricter filter discards the genes actually carrying the benefit signal, which would show up as both increments falling together.
+- run_id: run_014_20260822T035715Z
+- eligible: false
+- failed_gates: [gene_selection_jaccard_at_least_0_10]
+- reward: -1000000.000
+- diagnostic_score: -3.643
+- repeat_1_increment: +0.700 months
+- repeat_1_lcb: -3.106 months
+- repeat_2_increment: +0.834 months
+- repeat_2_lcb: -3.509 months
+- repeat_range: 0.135 months
+- development_alignment_cg: 4.698 months
+- development_cindex_cg: 0.690
+- gene_jaccard: 0.084
+- development_act_usage_cg: tree_split=0.704; path_traversal=0.171; terminal_difference_mean=0.171, median=0.162, p10=0.093, p90=0.268, nonzero_patients=1.000
+- repeat_1_act_usage_cg: tree_split=0.702; path_traversal=0.168; terminal_difference_mean=0.168, median=0.160, p10=0.087, p90=0.263, nonzero_patients=1.000
+- repeat_2_act_usage_cg: tree_split=0.706; path_traversal=0.175; terminal_difference_mean=0.175, median=0.163, p10=0.098, p90=0.274, nonzero_patients=1.000
+- verdict: INELIGIBLE
+- lesson: A stricter detectability filter moved Jaccard the wrong way (0.090 -> 0.084) even though it produced the most repeat-consistent increments of the search (+0.700 and +0.834, range 0.135), so shrinking the candidate pool churns pathway choice rather than stabilising it.
+
+#### Why the mechanism was wrong
+The hypothesis assumed a smaller, better-measured pool would reduce ranking
+noise and shrink the eligible-pathway space toward agreement. What actually
+happened is visible in the cross-fold frequency table, which became *more*
+diffuse, not less: the branched-chain and TGF-beta families that had recurred
+in every run since iter_005 were displaced by a scattered set (EP300 4,
+PGRMC2 4, CHD9 3, SIRT1 3, then a long tail of ATPases and lipid-metabolism
+genes at count 2). Dropping the lower-spread half of an already-filtered pool
+removes members from established pathways, pushing some below
+`MIN_PATHWAY_MEMBERS = 12` and reshuffling which pathways qualify at all. The
+eligible-pathway space did shrink, but it shrank *unpredictably per fold*, which
+is the opposite of what was wanted.
+
+#### What now drives Jaccard, corrected
+Comparing the frequency tables across iter_011 (pool 6, Jaccard 0.124) and
+iter_012 (pool 4, Jaccard 0.090) shows both runs recovering the *same* two
+pathway families. The runs differ in which members they draw from those
+families. So member-level agreement, not pathway-level agreement, is the
+binding term at this point in the search, and the controlling quantity is the
+**fraction of a pathway that is taken**: for `k` members drawn from a pathway
+with `M` detectable members, two folds sharing that pathway share about `k^2/M`
+genes. Every configuration so far has used `MAX_GENES_PER_PATHWAY = 4` against
+`M >= 12`, i.e. at most 33% coverage and typically far less.
+
+This also explains why raising `MIN_PATHWAY_MEMBERS` would be the wrong move
+(larger `M` lowers coverage) and points at the untried lever: raise `k`.
