@@ -1044,3 +1044,60 @@ Constraint map after twelve experiments (train and validation only):
   three pathways should let both the folds and the full-training refit carry the
   shared immunoglobulin block, at a width the c-index can still afford (drop
   0.005 at eight genes, 0.042 at sixteen).
+
+### iter_019 — three pathways so both cohorts carry the shared block
+- type: PARAM
+- hypothesis: The train-OOF and validation policies are currently built from
+  different genes — the folds' stability comes from the shared immunoglobulin
+  block while the full-training refit selects TGF-beta/BMP — and that mismatch
+  is a direct, removable contribution to the gap the reward penalises. Widening
+  the block from two pathways to three should let the immunoglobulin block enter
+  *both* the fold selections and the full-training refit, aligning the two
+  cohorts' gene sets, while twelve genes should keep most of the c-index
+  headroom that eight genes won (drop 0.005 at eight, 0.042 at sixteen).
+- changed: `CANDIDATE["n_genes"]` 8 -> 12, so the block spans three pathways of
+  four. Selector, IQR-stabilised member ordering, zero threshold, depth 6,
+  `min_samples_leaf=8`, `max_features=1.00`, and 1,000 trees are unchanged.
+- risk accepted: twelve genes sit between the eight that pass the validation
+  c-index gate with 0.025 of headroom and the sixteen that fail it by 0.012, so
+  that gate is the one at risk; Jaccard also needs the shared pathway to survive
+  a longer list, though stabilised members mean one shared pathway still
+  contributes four identical genes.
+- red_line_audit: only the candidate name and `n_genes` change; no gene symbol
+  is hard-coded and membership remains the pinned Reactome collection passed to
+  the callback; selection stays fit-only against the locked train-only
+  treatment-benefit pseudo-outcome; 12 genes plus 19 clinical columns is 31
+  features, inside the 32-gene and 51-feature budgets; matched comparator,
+  estimand, gates, bootstrap, and budget untouched; no test artifact referenced.
+- run_id: run_019_20260822T001033Z
+- eligible: false
+- failed_gates: [gene_selection_jaccard_at_least_0_10, train_genomic_alignment_positive, train_genomic_value_at_least_best_constant, train_genomic_value_at_least_clinical, validation_cindex_drop_no_more_than_0_03, validation_genomic_alignment_positive, validation_genomic_value_at_least_best_constant, validation_genomic_value_at_least_clinical]
+- reward: -1000000.000
+- train_increment: -7.338 months
+- validation_increment: -3.416 months
+- absolute_gap: 3.922 months
+- train_cindex_cg: 0.661
+- validation_cindex_cg: 0.667
+- gene_jaccard: 0.067
+- train_act_usage_cg: tree_split=0.077; path_traversal=0.022; terminal_difference_mean=0.022, median=0.019, p10=0.007, p90=0.042, nonzero_patients=1.000
+- validation_act_usage_cg: tree_split=0.098; path_traversal=0.021; terminal_difference_mean=0.021, median=0.019, p10=0.008, p90=0.040, nonzero_patients=1.000
+
+- verdict: NOT_LEADER
+- lesson: The mechanism worked but the price was too high. The full-training
+  refit now does carry the shared immunoglobulin block (IGKV2D-28, IGKV4-1,
+  IGLV3-25, IGHM alongside the TGF-beta/BMP genes), so the cohort gene mismatch
+  is genuinely fixed — but twelve genes cost stability (Jaccard 0.111 -> 0.067),
+  discrimination (drop 0.005 -> 0.032, failing), and ACT use (0.147 -> 0.077),
+  taking both alignment gates down and widening the gap from 1.752 to 3.922.
+  Failed gates went 4 -> 8. Eight genes is a genuine optimum, not a way-point.
+- carried forward: `train_genomic_value_at_least_clinical` has now failed in all
+  nineteen experiments, and its cause is structural rather than tunable. On
+  train the comparison uses out-of-fold predictions from forests fitted on 516
+  patients, where every added gene costs the C+G model more than it costs the
+  19-column clinical model, and the deficit scales cleanly with block width —
+  1.56 months at four genes (run_004), 2.11 at eight (run_018), 3.41 at twelve
+  (run_019). On validation, where both models are refitted on all 775 patients
+  and compete on equal terms, C+G *has* beaten its comparator (46.97 versus
+  45.86 in run_016). The gate therefore penalises the fold-fitting sample size,
+  and the only width that would close it is one too narrow to hold the shared
+  pathway that Jaccard needs.
