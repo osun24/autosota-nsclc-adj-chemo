@@ -194,3 +194,68 @@ partition, a tree can hold at most ~97 leaves, so the realised depth is ~6.6 and
 the depth cap of 9 is essentially never binding. Raising `max_depth` toward 12
 therefore cannot change anything, which is consistent with v1's refuted
 depth-only experiments. Depth is not a live lever here and will not be spent on.
+
+### iter_004 — genomic mtry 0.35: let ACT be evaluated without continuous rivals
+- type: PARAM
+- hypothesis: `module_count=1` is the floor for removing continuous competitors, so the remaining crowding lever is per-node competition. With `max_features=1.0` ACT is offered at every node but *always* alongside Age and the module; lowering the genomic forest's `max_features` to 0.35 (7 of 20 features) maximizes the chance that ACT is drawn with no continuous rival in the same node, which should lift ACT tree_split from 0.596 toward the comparator's 0.823 and push the increment from -0.361 toward parity or above.
+- changed: `CANDIDATE["rsf"]["max_features"]` 1.00 -> 0.35 and `CANDIDATE["name"]` -> `v2_pathway8_one_module_mtry035`. Nothing else. Choice of 0.35 is combinatorial, not fitted: with 20 genomic features of which 2 are continuous, P(ACT drawn) x P(no continuous among the other k-1) = (k/20) x C(17,k-1)/C(19,k-1) peaks at k=7, i.e. `max_features=0.35` (0.160), against 0.154 at k=5, 0.154 at k=8, 0.132 at k=10 and 0 at k=20.
+- red_line_audit: Only `train.py` edited, and only the *genomic* forest. The locked clinical comparator keeps `max_features=1.0` from `budget.json`; nothing here can weaken it, and the genomic forest is explicitly agent-tunable under red line 9. Value is within the locked `0.20 <= max_features <= 1.0` validation. Estimand, gates, bootstrap, threshold, selector, and detectability filter untouched. No hard-coded gene symbols, no gene-by-ACT product. Development CSVs only. Runtime should fall, since each node evaluates 7 features instead of 20.
+- watch: C-index drop (0.004 of an allowed 0.03) and seed agreement (0.969 against a 0.85 floor) are the two gates most exposed to added split randomness; both value gates cleared in iter_003 by slim margins and could regress.
+- run_id: run_004_20260822T014430Z
+- eligible: false
+- failed_gates: [all_repeat_genomic_increment_positive]
+- reward: -1000000.000
+- diagnostic_score: -5.451
+- repeat_1_increment: -0.259 months
+- repeat_1_lcb: -4.563 months
+- repeat_2_increment: +0.150 months
+- repeat_2_lcb: -5.042 months
+- repeat_range: 0.409 months
+- development_alignment_cg: 3.877 months
+- development_cindex_cg: 0.687
+- gene_jaccard: 0.131
+- development_act_usage_cg: tree_split=0.688; path_traversal=0.173; terminal_difference_mean=0.173, median=0.162, p10=0.098, p90=0.260, nonzero_patients=1.000
+- repeat_1_act_usage_cg: tree_split=0.681; path_traversal=0.168; terminal_difference_mean=0.168, median=0.161, p10=0.096, p90=0.252, nonzero_patients=1.000
+- repeat_2_act_usage_cg: tree_split=0.696; path_traversal=0.177; terminal_difference_mean=0.177, median=0.164, p10=0.100, p90=0.269, nonzero_patients=1.000
+- verdict: NOT_LEADER
+- lesson: Genomic mtry 0.35 lifted ACT tree_split 0.596 -> 0.688 and turned repeat 2's increment positive (+0.150) while *improving* C-index to 0.687 above the comparator's 0.681, leaving repeat 1 (-0.259) as the only barrier to eligibility.
+
+#### Why this is NOT_LEADER despite the best increment so far
+`diagnostic_leader.txt` still names run_003. The continuous diagnostic score is
+`min_repeat_lcb - repeat_range`, and although iter_004's mean increment is far
+better (-0.054 vs -0.361), repeat 2's bootstrap sd rose to 1.643, dragging its
+0.25th-percentile LCB to -5.042 and the score to -5.451 against iter_003's
+-5.259. This is exactly the metric-shopping trap red line 12 warns about: the
+diagnostic ranking and the eligibility target disagree here, and the
+**eligibility target is the one that counts**.
+
+#### Correction to the iter_001 note on the eligibility bar
+`prepare.evaluate_candidate` sets `eligible = all(gates.values())` and only then
+computes `reward = robust_lcb - increment_range`. The bootstrap LCB is
+therefore **not a gate**. The iter_001 estimate that eligibility needs a 3.7-5.7
+month increment applies to a *positive reward*, not to eligibility. Eligibility
+needs only both repeat increments strictly positive plus the nine other gates,
+all of which iter_004 already passes. An eligible run with a negative reward is
+still eligible and still promoted to `best_run.txt`. The search target is
+therefore much closer than iter_001 implied: flip repeat 1 by ~0.26 months
+without breaking the other nine gates.
+
+#### Gate margins going into iter_005 (all currently passing except one)
+- genomic value 48.397 vs clinical 48.139 and vs best constant 47.315 -- clear.
+- C-index 0.687 vs clinical 0.681: the genomic model is now *ahead*, so the
+  0.03-drop gate has ~0.036 of slack.
+- seed agreement 0.976 vs the 0.85 floor -- clear.
+- nontrivial benefit fraction 0.941 vs the 0.10 floor -- clear.
+- overlap 0.871 vs 0.80, and IPTW ESS 362 vs the 310 floor -- clear.
+- **gene Jaccard 0.131 vs the 0.10 floor is the fragile one.** Any change that
+  reduces selection agreement across the eight outer folds can fail this gate
+  outright, which rules out dropping to `n_genes=4` (one pathway block per fold
+  would likely share nothing between folds).
+
+#### mtry is now at its argued optimum -- do not push it lower
+The k=7 choice came from maximising P(ACT drawn and facing no continuous rival)
+= (k/20) x C(17,k-1)/C(19,k-1). That expression is 0.1597 at k=7, 0.1596 at k=6,
+0.1535 at k=5 and 0.1404 at k=4, so `max_features` of 0.30-0.35 is the plateau
+and 0.20-0.25 is predicted to be *worse*, not better. Spending a slot on
+`max_features=0.20` would contradict the mechanism that motivated 0.35, so the
+crowding lever is considered exhausted.
