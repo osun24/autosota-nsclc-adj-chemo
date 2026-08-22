@@ -433,3 +433,59 @@ sees exactly one module feature regardless. The only cost is dilution of the
 module mean, and iter_002 warns that mixing unrelated pathway blocks into one
 average can cancel. `n_genes=12` (three pathway blocks) is the balanced choice
 and the prediction above is falsifiable at 0.118.
+
+### iter_008 — twelve genes on the iter_006 ordering
+- type: PARAM
+- hypothesis: Every point on the member-ordering trade curve fails at least one gate, so Jaccard must be raised by a mechanism that does not spend increment. Under the overlap model derived in the iter_007 entry, expected shared genes grow as `n_genes^2 / M`, so restoring iter_006's pure DR-frequency ordering (increments +0.473 / +1.824, the largest margin observed) and raising `n_genes` from 8 to 12 should lift Jaccard from 0.076 to about 0.118 -- clearing the 0.10 floor -- at zero crowding cost, because `module_count=1` means the forest still sees exactly one module feature.
+- changed: `train.py` restored to its iter_006 state (from `runs/run_006_.../train_snapshot.py`, discarding iter_007's median gate, which lost 0.53 months of repeat-1 increment for 0.022 of Jaccard), then `CANDIDATE["n_genes"]` 8 -> 12 and `CANDIDATE["name"]` -> `v2_pathway12_one_module_mtry035_freqorder`. The single new variable is `n_genes`; the ordering is returned to the known-best configuration rather than to a novel one. `MAX_GENES_PER_PATHWAY` stays 4, so the twelve genes come from three pathway blocks.
+- red_line_audit: Only `train.py` edited. `n_genes=12` is inside the locked `4 <= n_genes <= 16` validation, and total features stay at 20 (19 clinical + 1 module) against the 35 cap, so nothing about the forest geometry or the locked clinical comparator changes. Detectability filtering still runs first. All selection quantities remain fitting-partition-only, from the locked cross-fitted train-only benefit pseudo-outcome. No hard-coded gene symbols, patient indices, or assessment rankings. No gene-by-ACT product. Estimand, gates, bootstrap, and threshold untouched. Development CSVs only.
+- watch: dilution is the risk iter_002 flagged -- averaging three pathway blocks into a single standardized mean can cancel signal that eight genes from two blocks preserved. If Jaccard clears 0.10 but the increments collapse toward zero, the answer is fewer genes per module rather than more, and `module_count=2` at `n_genes=12` becomes the natural follow-up despite its crowding cost.
+- run_id: run_008_20260822T022616Z
+- eligible: false
+- failed_gates: [all_repeat_genomic_increment_positive, gene_selection_jaccard_at_least_0_10]
+- reward: -1000000.000
+- diagnostic_score: -4.891
+- repeat_1_increment: -0.369 months
+- repeat_1_lcb: -4.123 months
+- repeat_2_increment: +0.399 months
+- repeat_2_lcb: -3.745 months
+- repeat_range: 0.768 months
+- development_alignment_cg: 3.946 months
+- development_cindex_cg: 0.688
+- gene_jaccard: 0.076
+- development_act_usage_cg: tree_split=0.701; path_traversal=0.171; terminal_difference_mean=0.171, median=0.160, p10=0.092, p90=0.265, nonzero_patients=1.000
+- repeat_1_act_usage_cg: tree_split=0.699; path_traversal=0.172; terminal_difference_mean=0.172, median=0.161, p10=0.091, p90=0.262, nonzero_patients=1.000
+- repeat_2_act_usage_cg: tree_split=0.703; path_traversal=0.170; terminal_difference_mean=0.170, median=0.159, p10=0.092, p90=0.268, nonzero_patients=1.000
+- verdict: NOT_LEADER
+- lesson: `n_genes` is not a Jaccard lever -- shared genes grew exactly in proportion to set size (1.13 shared at n=8, 1.70 at n=12, a ratio of 1.51 against 12/8 = 1.50), leaving Jaccard flat at 0.076 while diluting the module across three pathway blocks cost 0.84 months of repeat-1 increment.
+
+#### My iter_007 overlap model is falsified; the iter_006 note was right
+The iter_007 entry predicted `E[shared] ~ n_genes^2 / M` and therefore
+Jaccard about 0.118 at `n_genes=12`. Observed was 0.076. Inverting
+`Jaccard = s/(2n-s)` on the two runs gives `s = 1.126` at `n=8` and `s = 1.701`
+at `n=12`; the ratio 1.51 matches `12/8 = 1.50` to two digits, so shared genes
+grow **linearly** in `n_genes` and Jaccard is scale-invariant, exactly as the
+iter_006 entry originally claimed. The `p^2` step -- assuming the number of
+shared pathways grows with the square of the pathways drawn -- is what was
+wrong; in practice folds disagree at the level of *which pathway family wins*,
+so drawing more pathways adds mostly non-overlapping ones. The iter_007
+refinement should be disregarded and the iter_006 statement restored.
+
+#### Consequence: the remaining lever is pathway-ranking stability
+With member ordering exhausted (the iter_007 trade curve) and `n_genes` ruled
+out, the only untouched source of Jaccard is *which pathways* the folds agree
+on. The cross-fold frequency tables have said the same thing since iter_005:
+folds reproducibly land on a small number of pathway *families* -- a
+branched-chain-amino-acid block (ACADSB, HIBCH, AUH, ACAD8, ALDH6A1, MCCC1), a
+TGF-beta/SMAD block (SMAD7, TGFBR3, SMAD4, SMAD5, BMPR1A) and now a
+PI3K/FOXO block (PIK3CB, PTPN13, FOXO1, CDKN1B) -- but which family wins a
+given fold alternates.
+
+If pathway choice were made reproducible, three pathways sharing about `k^2/M`
+genes each would give roughly 2.4 shared genes at `n_genes=12` (Jaccard 0.111)
+or 1.6 at `n_genes=8` (Jaccard 0.111) -- just over the floor -- *without*
+touching the member ordering that carries the increment. That is the next
+target, and it is the pathway-level analogue of iter_007's gate: let the DR
+signal decide which pathways are *eligible*, and let a fold-stable key decide
+the order among those equals. Unlike iter_007, this spends no member-level
+signal, because every pathway in the pool is already DR-strong.
