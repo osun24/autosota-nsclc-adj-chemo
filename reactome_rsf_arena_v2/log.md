@@ -727,3 +727,71 @@ that only its mean was controllable. iter_012 supports that: repeat 2's sd came
 in at 1.377, inside the 1.370-1.643 band every previous run has occupied, while
 its mean moved from +0.474 to +1.708. The reward improvement came entirely
 through the mean, exactly as predicted.
+
+### iter_013 — shortlist width 5
+- type: PARAM
+- hypothesis: Shortlist width is now calibrated at three points and behaves monotonically: width 6 gives Jaccard 0.124 with a pooled increment of 0.527, width 4 gives Jaccard 0.090 with 1.499. Width 5 should land near Jaccard 0.107 -- clearing the 0.10 floor -- while retaining most of width 4's increment, which under `reward = min_lcb - range` should beat the current leader's -4.787 by more than a month.
+- changed: `MEMBER_POOL` 4 -> 5 and `CANDIDATE["name"]` -> `v2_pathway8_one_module_mtry035_pool5_s100`. Nothing else; `STABILITY_SUBSAMPLES=100`, `n_genes=8`, `module_count=1`, `max_features=0.35`, threshold 0.00 all unchanged.
+- red_line_audit: Only `train.py` edited, and only a selector aggregation constant. Detectability filtering still runs first. All frequencies come from fitting-partition half-samples via the locked cross-fitted train-only benefit pseudo-outcome; no assessment rows, outcomes, or covariate summaries. No hard-coded gene symbols, patient indices, or assessment rankings. No gene-by-ACT product. Estimand, gates, bootstrap, threshold, budget, and the locked clinical comparator untouched. Development CSVs only.
+- watch: the predicted Jaccard of 0.107 carries only a 7% margin over the floor and the interpolation is linear across a two-point span, so it could land either side. run_010 remains frozen in `best_run.txt` either way; if width 5 misses, the remaining route is to buy Jaccard back with more aggregation draws at width 5 rather than to widen the shortlist again.
+- run_id: run_013_20260822T034226Z
+- eligible: false
+- failed_gates: [all_repeat_genomic_increment_positive]
+- reward: -1000000.000
+- diagnostic_score: -5.791
+- repeat_1_increment: -0.507 months
+- repeat_1_lcb: -4.448 months
+- repeat_2_increment: +0.836 months
+- repeat_2_lcb: -4.151 months
+- repeat_range: 1.343 months
+- development_alignment_cg: 4.095 months
+- development_cindex_cg: 0.688
+- gene_jaccard: 0.105
+- development_act_usage_cg: tree_split=0.703; path_traversal=0.173; terminal_difference_mean=0.173, median=0.163, p10=0.095, p90=0.269, nonzero_patients=1.000
+- repeat_1_act_usage_cg: tree_split=0.699; path_traversal=0.172; terminal_difference_mean=0.172, median=0.164, p10=0.093, p90=0.265, nonzero_patients=1.000
+- repeat_2_act_usage_cg: tree_split=0.707; path_traversal=0.174; terminal_difference_mean=0.174, median=0.162, p10=0.096, p90=0.273, nonzero_patients=1.000
+- verdict: INELIGIBLE
+- lesson: Width 5 cleared Jaccard at 0.105 almost exactly as interpolated, but repeat 1's increment fell to -0.507 -- between width 4's +1.291 and width 6's +0.579 -- proving the increment is **not** monotone in shortlist width and that differences of about a month between neighbouring configurations are indistinguishable from noise.
+
+#### The non-monotonicity is the finding, and it is a warning
+Repeat 1's increment against shortlist width, everything else held fixed at 100
+draws:
+
+| MEMBER_POOL | 4 | 5 | 6 |
+|---|---|---|---|
+| repeat 1 increment | +1.291 | **-0.507** | +0.579 |
+| repeat 2 increment | +1.708 | +0.836 | +0.474 |
+| Jaccard | 0.090 | 0.105 | 0.124 |
+
+Jaccard is cleanly monotone; repeat 2's increment is monotone; repeat 1's
+increment swings 1.8 months and reverses sign. Changing a shortlist width by one
+gene changes the module by at most one or two members, so a 1.8-month swing on
+that perturbation means the *increment differences I have been optimising over
+the last few slots are inside the noise floor*.
+
+Concretely, this means run_012's would-be reward of -2.708 should **not** be read
+as "the reward available at width 4". It is one draw from a distribution whose
+spread is at least a month, and the same is true of run_010's -4.787 and
+run_011's -4.802. Those two eligible rewards differ by 0.015 and are, on this
+evidence, the same number.
+
+#### Consequences for the remaining slots
+1. Chasing the largest observed reward across near-identical configurations is
+   fitting noise, which is exactly what red line 12 exists to prevent. The
+   remaining slots should look for a configuration with *comfortable margin on
+   both gates*, not the luckiest single draw.
+2. The only lever proven to improve reproducibility without costing benefit
+   signal is reducing the variance of the selection statistic (iter_010). More
+   aggregation draws is one route, but extrapolating the observed gains
+   (+18.4% Jaccard for 40 -> 100 draws in this configuration family) predicts
+   only about 0.098 at 150 draws and 0.103 at 200, while 200 draws projects to
+   roughly 1,490 s against the 1,500 s wall -- an unacceptable timeout risk for
+   a marginal gain.
+3. A cheaper and untried route to the same end is to tighten the detectability
+   filter. `GENE_IQR_PERCENTILE = 50` currently admits about 4,300 genes;
+   raising it shrinks the candidate pool to better-measured genes, which both
+   reduces ranking noise and, by pushing more pathways below
+   `MIN_PATHWAY_MEMBERS = 12`, shrinks the set of eligible pathways so folds are
+   likelier to agree on one. v1 made detectability filtering mandatory, so
+   strengthening it is consistent with the inherited findings rather than a
+   departure from them.
