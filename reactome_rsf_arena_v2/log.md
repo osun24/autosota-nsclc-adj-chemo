@@ -1089,3 +1089,58 @@ quota; at exactly 1.25x (shortlist 5, quota 4) iter_013 reached Jaccard 0.105
 and failed only on repeat 1's -0.507, which sits inside the month-scale noise
 floor. That configuration at higher aggregation is the last credible hypothesis,
 and it is the one experiment 16 was attempting when it crashed.
+
+### iter_019 — shortlist 5 at 140 draws (retry of the crashed experiment 16)
+- type: PARAM
+- hypothesis: The eligible zone of this selector family needs a member shortlist of at least 1.25x the per-pathway quota. At exactly 1.25x (shortlist 5, quota 4, two pathways) iter_013 reached Jaccard 0.105 and failed only on repeat 1's -0.507, a value iter_013 itself showed to be inside a month-scale noise floor. Variance reduction in the selection statistic is the one intervention that has ever improved Jaccard and the increments together (iter_010: 40 -> 100 draws moved Jaccard +23.6% and repeat 1 from -0.056 to +0.146), so running that configuration at 140 draws should widen the Jaccard margin to roughly 0.112 and sharpen gene choice enough to bring repeat 1 above zero -- yielding an eligible run whose increments sit near iter_014's +0.700 / +0.834 rather than run_010's +0.146 / +0.483.
+- changed: `train.py` restored to its iter_013 state (`MAX_GENES_PER_PATHWAY=4`, `MEMBER_POOL=5`, `GENE_IQR_PERCENTILE=50.0`, threshold 0.00), the `_robust_gamma` non-finite guard from iter_017 re-applied so the run cannot die the way experiment 16 did, then `STABILITY_SUBSAMPLES` 100 -> 140 and `CANDIDATE["name"]` -> `v2_pathway8_one_module_mtry035_pool5_s140_guarded`.
+- red_line_audit: Only `train.py` edited. `STABILITY_SUBSAMPLES` governs only how the train-only DR ranking is aggregated inside the fitting partition. The guard replaces non-finite selector pseudo-outcome entries with the finite median and retains every patient, so red line 4 holds, and it touches only `train.py`'s ranking copy, never `prepare.py`'s locked evaluation path, so the estimand is unchanged. Detectability filtering unchanged. No hard-coded gene symbols, patient indices, or assessment rankings. No gene-by-ACT product. Gates, bootstrap, threshold, budget, and the locked clinical comparator untouched. Development CSVs only.
+- runtime: this configuration ran 883 s at 100 draws, of which the selector is about 612 s. At 140 draws the selector projects to about 857 s for a total near 1,128 s against the 1,500 s wall. Experiment 16 reached 693 s before raising, consistent with that projection.
+- watch: repeat 1's increment has swung 1.8 months between neighbouring configurations, so this is a genuine coin-flip on the increment gate rather than a confident prediction. Only an *eligible* run with reward above -4.787 displaces run_010; anything else leaves run_010 as the frozen answer, which is an acceptable outcome with one slot still in reserve.
+- run_id: run_019_20260822T052632Z
+- eligible: false
+- failed_gates: [all_repeat_genomic_increment_positive, gene_selection_jaccard_at_least_0_10]
+- reward: -1000000.000
+- diagnostic_score: -6.237
+- repeat_1_increment: -0.507 months
+- repeat_1_lcb: -4.448 months
+- repeat_2_increment: +1.281 months
+- repeat_2_lcb: -2.725 months
+- repeat_range: 1.789 months
+- development_alignment_cg: 4.318 months
+- development_cindex_cg: 0.690
+- gene_jaccard: 0.093
+- development_act_usage_cg: tree_split=0.705; path_traversal=0.174; terminal_difference_mean=0.174, median=0.164, p10=0.095, p90=0.269, nonzero_patients=1.000
+- repeat_1_act_usage_cg: tree_split=0.699; path_traversal=0.172; terminal_difference_mean=0.172, median=0.164, p10=0.093, p90=0.265, nonzero_patients=1.000
+- repeat_2_act_usage_cg: tree_split=0.711; path_traversal=0.176; terminal_difference_mean=0.176, median=0.164, p10=0.097, p90=0.274, nonzero_patients=1.000
+- verdict: INELIGIBLE
+- lesson: The non-finite guard worked -- two Cox fits diverged and the run completed instead of dying as experiment 16 did -- but 140 draws moved Jaccard the wrong way (0.105 -> 0.093) and left repeat 1 unchanged at -0.507, so more aggregation is not a reliable route past the frontier.
+
+#### The guard is validated
+`grep -c ConvergenceWarning` on the run log returns 2, i.e. the exact pathology
+that killed experiment 16 occurred twice here and was absorbed. The fix is
+correct and should be retained in any future work in this arena.
+
+#### Repeat 1 was bit-identical to iter_013, which localises the effect
+Repeat 1's increment (-0.5073), mean (-0.4968), sd (1.2567) and LCB (-4.4482)
+match iter_013 to every printed digit. That is not a coincidence: raising the
+aggregation from 100 to 140 draws did not change a single gene selected in any
+of repeat 1's four folds, so its predictions, policy and fixed-seed bootstrap
+are identical. All of the difference between the two runs lives in repeat 2,
+whose selections did drift -- and drifted *away* from repeat 1's, which is
+exactly why Jaccard fell from 0.105 to 0.093. More draws stabilise the statistic
+within a fitting partition but do nothing to make two different partitions agree,
+which is the quantity the Jaccard gate actually measures.
+
+This retires the aggregation lever. Its one success (iter_010, 40 -> 100) is now
+better read as escaping a genuinely under-aggregated regime rather than as a
+monotone improvement.
+
+#### Runtime near-miss: 140 draws is effectively at the wall
+Wall clock was **1,499.2 s against the 1,500 s limit -- 0.8 s of margin**. The
+iter_019 projection of about 1,128 s was badly wrong; the linear-in-draws model
+ignores that the full-development selector call works on 517-row halves rather
+than 387-row ones, and it ignores machine variance. Any future run in this arena
+should treat `STABILITY_SUBSAMPLES = 140` as unaffordable and 100 as the
+practical ceiling. Experiment 16's crash and experiment 19's 0.8-second margin
+between them consumed two of twenty slots on this configuration.
