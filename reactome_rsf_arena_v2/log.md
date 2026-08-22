@@ -1033,3 +1033,59 @@ selectivity over more pathways*: pathway concentration was measured at
 `p = 1` -> Jaccard 0.056 (iter_015) and `p = 2` -> Jaccard 0.090 (iter_012),
 a 1.6x gain that the `n^2/M` model does not explain and that predicts further
 gains at `p = 4`.
+
+### iter_018 — same pure-DR selectivity spread over four pathways
+- type: PARAM
+- hypothesis: Pathway concentration has been measured twice and spreading wins: one pathway per fold gave Jaccard 0.056 (iter_015), two gave 0.090 (iter_012), a 1.6x gain the `n_genes^2 / M` model does not predict, because what matters is the chance that two folds match on *at least one* pathway and per-slot pathway agreement is only 0.143. Halving `MAX_GENES_PER_PATHWAY` again to 2, so eight genes come from four pathways, should extend that trend past the 0.10 floor while keeping iter_012's pure-frequency member selection -- the configuration with the search's largest increments (+1.291 / +1.708) and its lowest repeat-2 dispersion (sd 1.377, would-be reward -2.708).
+- changed: `MAX_GENES_PER_PATHWAY` 4 -> 2, `MEMBER_POOL` 6 -> 2 so the shortlist again equals the per-pathway quota and members are chosen purely on co-selection frequency, `CANDIDATE["benefit_threshold_months"]` back to 0.00 (iter_017 closed the threshold lever), and `CANDIDATE["name"]` -> `v2_pathway8_four_pathways_mtry035_s100`. `STABILITY_SUBSAMPLES=100`, `n_genes=8`, `module_count=1`, `max_features=0.35`, `GENE_IQR_PERCENTILE=50.0`, `MIN_PATHWAY_MEMBERS=12` unchanged. The `_robust_gamma` non-finite guard from iter_017 is retained.
+- red_line_audit: Only `train.py` edited. Detectability filtering runs first, unchanged. All co-selection frequencies come from fitting-partition half-samples via the locked cross-fitted train-only benefit pseudo-outcome. The guard retains every patient, so red line 4 holds. Threshold returns to zero for the genomic policy; the locked comparator's zero-month threshold was never touched. No hard-coded gene symbols, patient indices, or assessment rankings. No gene-by-ACT product. Estimand, gates, bootstrap, budget, and comparator geometry untouched. Development CSVs only.
+- watch: iter_002 found that mixing unrelated pathway blocks into one standardized mean can cancel signal, and this puts four blocks into a single module -- the failure mode is Jaccard clearing 0.10 while both increments collapse toward zero. That would leave run_010 as the final answer and would mean the arena's Jaccard floor and its increment gate cannot be satisfied simultaneously by any selector in this family.
+- run_id: run_018_20260822T050009Z
+- eligible: false
+- failed_gates: [gene_selection_jaccard_at_least_0_10]
+- reward: -1000000.000
+- diagnostic_score: -3.024
+- repeat_1_increment: +1.055 months
+- repeat_1_lcb: -3.005 months
+- repeat_2_increment: +1.036 months
+- repeat_2_lcb: -2.422 months
+- repeat_range: 0.019 months
+- development_alignment_cg: 4.976 months
+- development_cindex_cg: 0.693
+- gene_jaccard: 0.070
+- development_act_usage_cg: tree_split=0.707; path_traversal=0.171; terminal_difference_mean=0.171, median=0.162, p10=0.087, p90=0.270, nonzero_patients=1.000
+- repeat_1_act_usage_cg: tree_split=0.711; path_traversal=0.168; terminal_difference_mean=0.168, median=0.159, p10=0.078, p90=0.262, nonzero_patients=1.000
+- repeat_2_act_usage_cg: tree_split=0.703; path_traversal=0.174; terminal_difference_mean=0.174, median=0.164, p10=0.095, p90=0.277, nonzero_patients=1.000
+- verdict: INELIGIBLE
+- lesson: Spreading over four pathways reversed the trend rather than extending it (Jaccard 0.090 at two pathways, 0.070 at four), so pathway spread is non-monotone with an optimum at two -- even though this run produced the most repeat-consistent result of the search (+1.055 and +1.036, range 0.019) and its best C-index (0.693).
+
+#### The pathway-spread curve is now complete and peaks at two
+| pathways per fold | 1 (iter_015) | 2 (iter_012) | 4 (iter_018) |
+|---|---|---|---|
+| Jaccard | 0.056 | **0.090** | 0.070 |
+| repeat 1 / repeat 2 increment | -0.357 / +1.157 | +1.291 / +1.708 | +1.055 / +1.036 |
+
+Concentrating loses because per-slot pathway agreement is only 0.143, so a fold
+that commits to one pathway usually shares nothing. Spreading too far loses for
+the opposite reason: with `MAX_GENES_PER_PATHWAY = 2` each shared pathway
+contributes only about `2^2/M` genes, so matches stop being worth anything. Two
+pathways is the maximum of the product, and it is where iter_012 already sat.
+
+#### What this run says about the arena
+iter_018 is the strongest *scientific* result of the search -- both repeats
+agree to within 0.019 months on an increment above one month, the genomic model
+leads the locked comparator on C-index by 0.013 and on policy value by 0.90
+months -- and it is **ineligible**, because eight genes drawn two-at-a-time from
+four fold-specific pathways do not repeat across folds. The Jaccard floor is
+doing exactly what it was designed to do: refusing a result whose gene identity
+is not reproducible, however stable its *value* estimate looks. That is the
+correct call, and it is worth recording that the two properties are genuinely
+dissociable in this data.
+
+#### Two slots left
+`best_run.txt` still names run_010 at reward -4.787. The eligible zone of this
+selector family requires a member shortlist at least 1.25x the per-pathway
+quota; at exactly 1.25x (shortlist 5, quota 4) iter_013 reached Jaccard 0.105
+and failed only on repeat 1's -0.507, which sits inside the month-scale noise
+floor. That configuration at higher aggregation is the last credible hypothesis,
+and it is the one experiment 16 was attempting when it crashed.
