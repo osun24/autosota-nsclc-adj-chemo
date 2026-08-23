@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "max_experiments": 20,
+  "wall_time_seconds": 2100,
+  "outer_folds": 4,
+  "outer_repeats": 2,
+  "inner_folds": 3,
+  "forest_seeds": [42, 43, 44],
+  "patient_bootstraps": 4000,
+  "max_selected_genes": 16,
+  "max_total_features": 34,
+  "max_trees_per_forest": 1000,
+  "smoke_trees": 40,
+  "smoke_train_sha256": "84f1877ab1ea4b04a8ca9d0e971a7157c6bfa4ce24b7c090e433e88e6db8f21b",
+  "tau_months": 60.0,
+  "multiplicity_alpha": 0.05,
+  "clinical_tlearner": {
+    "observation": {
+      "n_estimators": 1000,
+      "max_depth": 9,
+      "min_samples_leaf": 8,
+      "min_samples_split": 16,
+      "max_features": 1.0
+    },
+    "act": {
+      "n_estimators": 1000,
+      "max_depth": 7,
+      "min_samples_leaf": 12,
+      "min_samples_split": 24,
+      "max_features": 1.0
+    }
+  },
+  "full_run_forest_accounting": {
+    "outer_assessments": 8,
+    "policy_panels": 2,
+    "treatment_arms": 2,
+    "seeds": 3,
+    "maximum_forests": 96,
+    "maximum_total_trees": 96000
+  }
+}
