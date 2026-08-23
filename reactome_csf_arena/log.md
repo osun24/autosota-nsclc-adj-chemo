@@ -619,3 +619,217 @@ Three conclusions carry forward:
    and the genomic policy never once ordered patients better than the clinical
    one. The next experiment therefore changes selector logic, as the experiment
    3 decision rule prespecified.
+
+---
+
+## Experiment 4 (prespecified before launch; ledger slot 5)
+
+### Hypothesis
+
+The panel fails because of *which members* of the selected pathways enter it.
+The inherited selector uses its two statistics in the opposite of the useful
+order: within a chosen pathway it keeps every gene at or above the median DR
+co-selection count and then orders by **expression spread**, so the genes that
+actually enter the panel are the widest-spread members of a benefit-associated
+pathway rather than its most benefit-associated members. Widest spread is also
+maximal split opportunity, which is why eight genes take 0.81 of variable
+importance while adding no policy value. Ordering members by DR co-selection
+frequency instead, with spread demoted to a tie-break, should produce a panel
+whose genes are chosen for treatment-benefit association, and should raise both
+repeat increments above experiment 1's -4.008 and -3.195.
+
+Prespecified directional predictions:
+
+- Genomic variable importance falls below experiment 1's 0.807, because
+  benefit-ranked members are not selected for having the most split points.
+- The selected panel differs from experiment 1's on most folds; if it does not
+  differ at all, the hypothesis is untestable as posed and the run is reported
+  as such rather than reinterpreted.
+- Both repeat increments rise above -4.008 and -3.195. If they become positive
+  in both repeats with the other gates passing, the candidate is eligible.
+- The identified risk is gene stability: `gene_top_counts` is re-estimated
+  inside every fitting partition, whereas expression spread is nearly constant
+  across partitions, so the Jaccard could fall from 0.136 toward the 0.10 gate.
+  A Jaccard failure with improved increments would be a real finding about the
+  stability-versus-relevance trade-off, and would point to raising the
+  aggregation (more subsamples or a tighter `STABILITY_TOP_K`) rather than
+  reverting to spread ordering.
+
+### Rationale
+
+Three runs have now held the panel fixed while moving everything around it.
+Representation moved through raw and modules (experiment 2) and leaf size moved
+through its useful range (experiment 3), and in every configuration where the
+clinical CATE survived, the genomic policy ordered patients worse than the
+clinical one. `program.md` allows selector logic once the representation and
+regularization branches are settled, and the experiment 3 decision rule named
+this exact target in advance. This is also a swap of two statistics the
+selector already computes, not new selector machinery: no policy trees, no SHAP,
+no extra tuning surface.
+
+### Exact change
+
+In `train.py` `stability_select_genes`, replace the median-gate-then-spread
+member ordering with a direct benefit ordering:
+
+```text
+before: keep members with gene_top_counts >= pathway median, order that group
+        by descending expression spread, then append the rest by spread
+after:  order all members by descending gene_top_counts, tie-broken by
+        descending expression spread, then by gene symbol
+```
+
+`CANDIDATE` returns to the experiment 1 geometry exactly:
+`representation = raw`, `module_count = 8`, `min_node_size = 5`, name
+`csf_pathway8_raw_drorder`. The detectability filter, `MIN_PATHWAY_MEMBERS`,
+`TOP_PATHWAYS`, `MAX_GENES_PER_PATHWAY`, `STABILITY_SUBSAMPLES`,
+`STABILITY_TOP_K`, `WINSOR_PERCENT`, the pathway-level co-selection rule, and
+the trailing mean-score fallback are all unchanged, so experiment 4 differs
+from experiment 1 in the member-ordering rule alone.
+
+### Red-line audit
+
+1. Test untouched; selector still sees only the fitting partition. OK.
+2. Only `train.py` edited. OK.
+3. Fit-only: `gene_top_counts` and `gene_spread` are both computed inside the
+   fitting partition, from its own half-samples; no assessment row, outcome, or
+   covariate summary is involved. OK.
+4. ACT stays `W`; the DR pseudo-outcome is the locked cross-fitted quantity and
+   enters selection only, never X, and no gene-by-ACT product is built. OK.
+5. Estimand untouched. OK.
+6. Selection scores never become the reward; grading stays with the locked
+   assessment-fold AIPW scores. OK.
+7. No censored patient dropped; winsorization still replaces rather than
+   removes non-finite pseudo-outcomes. OK.
+8. Genes are targeted at effect modification by construction: the ordering key
+   is now the treatment-benefit co-selection count itself. No hard-coded
+   symbols, no patient indices, no assessment ranking. OK.
+9. Forest geometry identical for clinical and C+G; unchanged from experiment 1. OK.
+10. All mandatory CSF diagnostics will be recorded. OK.
+11. C-index secondary. OK.
+12. No probes; one full launcher slot. OK.
+13. No metric shopping; `run_004` is explicitly not steering this. OK.
+14. Ledger slot 5 of 20; 30-minute wall; 1000 trees; 26 <= 34 features. OK.
+15. Claims remain observational. OK.
+
+### Prespecified decision rule
+
+- Promote only on an eligible reward improvement.
+- If increments improve but stay negative, the selector direction is right and
+  the next experiment tightens the same axis (panel width or aggregation),
+  not a new selector family.
+- If increments do not improve, the DR benefit signal itself does not identify
+  effect modifiers at this sample size, and the remaining slots go to reporting
+  `NO_ELIGIBLE_CANDIDATE` honestly rather than to searching for a lucky panel.
+
+### Experiment 4 result (`run_005_20260823T081451Z`, 1181.2 s, ledger slot 5)
+
+`reward = -1000000` (sentinel). `eligible = false`.
+Diagnostic leader score before eligibility `-12.376`
+= robust selection LCB `-11.443` minus repeat increment range `0.933`.
+Mean source increment gap `1.219` months. Better than experiment 1's `-12.657`
+on every component; still behind experiment 3's degenerate `-4.745`, which the
+previous section rules out as a guide.
+
+Failed gates (2 of 12, back to experiment 1's pair and no others):
+
+- `all_repeat_genomic_increment_positive`
+- `all_repeat_genomic_value_at_least_clinical`
+
+```text
+repeat_1  increment=-2.400  selection_lcb=-11.443  ci95=[-8.693, 3.595]  mean=-2.445 sd=3.156
+repeat_2  increment=-1.467  selection_lcb= -9.403  ci95=[-7.532, 4.206]  mean=-1.504 sd=2.973
+range=0.933  worst_lcb=-11.443
+```
+
+Source-specific OOF increments (diagnostic only):
+
+```text
+repeat_1  former_train=-1.798  former_validation=-4.201  gap=2.403
+repeat_2  former_train=-1.475  former_validation=-1.441  gap=0.034
+```
+
+C-index: repeat_1 clinical `0.6806` vs C+G `0.6836`; repeat_2 clinical
+`0.6869` vs C+G `0.6661`. Within the 0.03 gate.
+
+Gene stability: Jaccard `0.1027`, down from `0.1362` and only just above the
+0.10 gate, exactly the risk written into the prespecification. Full-development
+panel `TGFBR3, SMAD7, SMAD4, SMAD5, SIRT1, CHD9, EP300, TBL1XR1`. Most
+frequently reselected across the eight folds: `HIBCH` 5, `MCCC1` 4, `ACAD8` 3,
+`ACADSB` 3, `AUH` 3, `TGFBR3` 3. Fold panels are drawn from three recurring
+blocks: branched-chain amino-acid catabolism (`HIBCH`, `MCCC1`, `ACAD8`,
+`ACADSB`, `AUH`, `ALDH6A1`), TGF-beta/SMAD (`TGFBR3`, `SMAD1/4/5/7`, `BMP2`),
+and PI3K/phosphoinositide (`PIK3CB`, `PIK3R1`, `PTPN13`, `RAB4A`, `MTMR2`).
+
+#### Mandatory CSF diagnostics
+
+```text
+act_mechanism: W supplied separately as treatment; ACT is absent from X
+rsf_act_split/path/terminal: NA by design (undefined for causal survival
+  forests; ACT is W, not an X feature)
+
+development_csf_cg: seed_agreement=0.9953; seed_tau_correlation=0.9991;
+  genomic_vimp_fraction=0.8214; benefit_iqr=3.190; median_abs_benefit=1.828;
+  nontrivial_fraction=0.9328; act_recommended=0.6958
+development_csf_clinical: seed_agreement=0.9971; seed_tau_correlation=0.9999;
+  genomic_vimp_fraction=0.0000; benefit_iqr=4.382; median_abs_benefit=2.124;
+  nontrivial_fraction=0.9371; act_recommended=0.5169
+
+repeat_1_csf_cg: seed_agreement=0.9971; seed_tau_correlation=0.9992;
+  genomic_vimp_fraction=0.8212; benefit_iqr=3.386; median_abs_benefit=1.943;
+  nontrivial_fraction=0.9352; act_recommended=0.6809
+repeat_1_csf_clinical: seed_agreement=0.9971; seed_tau_correlation=0.9999;
+  genomic_vimp_fraction=0.0000; benefit_iqr=4.265; median_abs_benefit=2.067;
+  nontrivial_fraction=0.9420; act_recommended=0.5261
+
+repeat_2_csf_cg: seed_agreement=0.9936; seed_tau_correlation=0.9989;
+  genomic_vimp_fraction=0.8217; benefit_iqr=2.994; median_abs_benefit=1.712;
+  nontrivial_fraction=0.9304; act_recommended=0.7108
+repeat_2_csf_clinical: seed_agreement=0.9971; seed_tau_correlation=0.9999;
+  genomic_vimp_fraction=0.0000; benefit_iqr=4.499; median_abs_benefit=2.181;
+  nontrivial_fraction=0.9323; act_recommended=0.5077
+```
+
+Overlap and constants unchanged by construction: overlap 0.860 / 0.877, IPTW
+ESS 360.1 / 384.5, all-observation 45.88 / 45.90, all-ACT 45.58 / 45.46.
+
+#### Interpretation: the selector direction is right, the shift is not fixed
+
+Against experiment 1, which this run differs from only in the member-ordering
+rule:
+
+```text
+                          exp 1            exp 4
+repeat increments    -4.008 / -3.195  -2.400 / -1.467   +1.6 / +1.7 months
+C+G alignment         1.083 / 0.753    2.691 / 2.481
+C+G value (months)   46.272 / 46.055  47.076 / 46.919
+repeat range              0.813            0.933
+source gap                1.713            1.219
+gene Jaccard              0.136            0.103
+genomic vimp              0.807            0.821
+```
+
+Ordering pathway members by treatment-benefit co-selection instead of
+expression spread recovers about 1.7 months of the deficit in both repeats and
+raises the genomic policy's own value, while gene identity moves onto
+biologically coherent blocks. The prediction that genomic variable importance
+would fall was wrong: it stayed at 0.821. Importance is therefore not the
+quantity that tracks policy quality here, and the earlier crowd-out reading
+should be narrowed to say that split *opportunity* explains importance while
+member *relevance* explains policy value.
+
+What remains is a systematic positive shift in the genomic CATE, unchanged
+across all four runs. The C+G forest's mean predicted benefit is 1.05-1.29
+months against the clinical 0.47-0.52, so it recommends ACT for 0.68-0.71 of
+patients against the clinical 0.51-0.53. Because the all-ACT constant (45.5) is
+below the all-observation constant (45.9), that inflation is directly costly and
+is the whole of the residual deficit: the genomic policy treats too many people
+rather than ranking them wrongly.
+
+Two candidate mechanisms for the shift, of which only the first is addressable
+inside `train.py`: fewer effective observations per honest leaf once eight
+continuous columns fragment the space, or residual confounding, since the
+supplied `W.hat` is a locked clinical-only propensity and any gene-treatment
+association beyond the clinical covariates is not orthogonalized away. The
+locked nuisance pipeline is not editable, so the next experiment attacks
+fragility of member choice, the axis the experiment 4 decision rule named.
