@@ -41,35 +41,23 @@ MIN_PATHWAY_MEMBERS = 12
 TOP_PATHWAYS = 20
 # Spread the block over several pathways: folds then need only share one
 # pathway anywhere in a short list rather than agree on a single top choice.
-# Experiment 6 spread the eight slots over four blocks and stability collapsed
-# (Jaccard 0.103 -> 0.063, below the gate) while both increments fell by more
-# than two months: cross-fold agreement comes from folds reaching deep into the
-# same block, not from folds sharing several blocks.  Value moved with
-# stability rather than against it, so experiment 7 continues the same axis in
-# the other direction and makes the panel the core of a single pathway.
-MAX_GENES_PER_PATHWAY = 8
+MAX_GENES_PER_PATHWAY = 4
 
 
-# Experiment 8 halves the panel to the arena floor of four genes, the last lever
-# that changes how much genomic information reaches X rather than how it is
-# arranged.  Forest geometry is still experiment 1's; experiments 5 to 7 moved
-# only selector constants and left the genomic CATE's positive shift untouched
-# (mean tau 0.83-1.37 months against the clinical 0.47-0.52, ACT recommended
-# 0.65-0.77 against 0.51-0.53), which is the whole of the remaining deficit.
-# Experiment 2 showed that averaging the panel into modules cancels
-# gene-specific direction, and experiment 3 showed that leaf-size
-# regularization improves the increment only by flattening both policies: at
-# min_node_size 25 the clinical CATE loses its own out-of-fold discrimination
-# (alignment 5.09/3.95 -> 0.47/-2.30) and both arms drift toward blanket ACT.
-# Fine leaves are therefore necessary, and ordering pathway members by benefit
-# rather than expression spread recovered 1.7 months in both repeats, so the
-# selector's member statistic is where the remaining work is.
+# Experiment 4 changes the selector's member ordering and nothing else, so the
+# forest geometry returns exactly to experiment 1.  Experiment 2 showed that
+# averaging the panel into modules cancels gene-specific direction, and
+# experiment 3 showed that leaf-size regularization improves the increment only
+# by flattening both policies: at min_node_size 25 the clinical CATE loses its
+# own out-of-fold discrimination (alignment 5.09/3.95 -> 0.47/-2.30) and both
+# arms drift toward blanket ACT.  Fine leaves are therefore necessary and the
+# remaining deficit is gene identity, which is what the selector edit targets.
 CANDIDATE = {
-    "name": "csf_pathway4_raw_oneblock",
+    "name": "csf_pathway8_raw_drorder",
     "selector": "dr_gene",
-    "n_genes": 4,
+    "n_genes": 8,
     "representation": "raw",
-    "module_count": 4,
+    "module_count": 8,
     "benefit_threshold_months": 0.00,
     "csf": {
         "num_trees": 1000,
@@ -203,11 +191,6 @@ def stability_select_genes(
             values = _dr_ranking(part, available, inner_folds)
             score_total += values
             top_k = min(STABILITY_TOP_K, len(available))
-            # Experiment 5 required a gene to reach the top of both halves of a
-            # draw, mirroring the pathway rule.  That made the count sparse
-            # enough that members tied at zero and fell through to the
-            # expression-spread tie-break, and both increments fell by more than
-            # a month, so the per-half count is restored.
             gene_top_counts[np.argpartition(-values, top_k - 1)[:top_k]] += 1.0
             pathway_scores = (membership @ values) / sizes
             chosen = np.zeros(len(names), dtype=bool)

@@ -1,0 +1,746 @@
+/Users/owensun/miniconda3/lib/python3.10/site-packages/sklearn/model_selection/_split.py:737: UserWarning: The least populated class in y has only 2 members, which is less than n_splits=3.
+  warnings.warn(
+/Users/owensun/miniconda3/lib/python3.10/site-packages/sklearn/model_selection/_split.py:737: UserWarning: The least populated class in y has only 1 members, which is less than n_splits=3.
+  warnings.warn(
+/Users/owensun/miniconda3/lib/python3.10/site-packages/sklearn/model_selection/_split.py:737: UserWarning: The least populated class in y has only 2 members, which is less than n_splits=3.
+  warnings.warn(
+/Users/owensun/miniconda3/lib/python3.10/site-packages/sklearn/model_selection/_split.py:737: UserWarning: The least populated class in y has only 2 members, which is less than n_splits=3.
+  warnings.warn(
+/Users/owensun/miniconda3/lib/python3.10/site-packages/sklearn/model_selection/_split.py:737: UserWarning: The least populated class in y has only 2 members, which is less than n_splits=3.
+  warnings.warn(
+/Users/owensun/miniconda3/lib/python3.10/site-packages/sklearn/model_selection/_split.py:737: UserWarning: The least populated class in y has only 2 members, which is less than n_splits=3.
+  warnings.warn(
+/Users/owensun/miniconda3/lib/python3.10/site-packages/sklearn/model_selection/_split.py:737: UserWarning: The least populated class in y has only 2 members, which is less than n_splits=3.
+  warnings.warn(
+/Users/owensun/miniconda3/lib/python3.10/site-packages/sklearn/model_selection/_split.py:737: UserWarning: The least populated class in y has only 2 members, which is less than n_splits=3.
+  warnings.warn(
+/Users/owensun/miniconda3/lib/python3.10/site-packages/sklearn/model_selection/_split.py:737: UserWarning: The least populated class in y has only 2 members, which is less than n_splits=3.
+  warnings.warn(
+/Users/owensun/miniconda3/lib/python3.10/site-packages/sklearn/model_selection/_split.py:737: UserWarning: The least populated class in y has only 2 members, which is less than n_splits=3.
+  warnings.warn(
+/Users/owensun/miniconda3/lib/python3.10/site-packages/sklearn/model_selection/_split.py:737: UserWarning: The least populated class in y has only 2 members, which is less than n_splits=3.
+  warnings.warn(
+[repeat 1 fold 1/4] selected=ACAD8,HIBCH,ACADSB,AUH,SMAD4...
+/Users/owensun/miniconda3/lib/python3.10/site-packages/sklearn/model_selection/_split.py:737: UserWarning: The least populated class in y has only 1 members, which is less than n_splits=3.
+  warnings.warn(
+/Users/owensun/miniconda3/lib/python3.10/site-packages/sklearn/model_selection/_split.py:737: UserWarning: The least populated class in y has only 2 members, which is less than n_splits=3.
+  warnings.warn(
+/Users/owensun/miniconda3/lib/python3.10/site-packages/sklearn/model_selection/_split.py:737: UserWarning: The least populated class in y has only 2 members, which is less than n_splits=3.
+  warnings.warn(
+/Users/owensun/miniconda3/lib/python3.10/site-packages/sklearn/model_selection/_split.py:737: UserWarning: The least populated class in y has only 2 members, which is less than n_splits=3.
+  warnings.warn(
+/Users/owensun/miniconda3/lib/python3.10/site-packages/sklearn/model_selection/_split.py:737: UserWarning: The least populated class in y has only 2 members, which is less than n_splits=3.
+  warnings.warn(
+[repeat 1 fold 2/4] selected=MCCC1,SLC25A44,ACADSB,HIBCH,EP300...
+/Users/owensun/miniconda3/lib/python3.10/site-packages/sklearn/model_selection/_split.py:737: UserWarning: The least populated class in y has only 2 members, which is less than n_splits=3.
+  warnings.warn(
+/Users/owensun/miniconda3/lib/python3.10/site-packages/sklearn/model_selection/_split.py:737: UserWarning: The least populated class in y has only 2 members, which is less than n_splits=3.
+  warnings.warn(
+/Users/owensun/miniconda3/lib/python3.10/site-packages/sklearn/model_selection/_split.py:737: UserWarning: The least populated class in y has only 2 members, which is less than n_splits=3.
+  warnings.warn(
+[repeat 1 fold 3/4] selected=SMAD1,SMAD5,SMAD4,TGFBR3,SIRT1...
+/Users/owensun/miniconda3/lib/python3.10/site-packages/sklearn/model_selection/_split.py:737: UserWarning: The least populated class in y has only 2 members, which is less than n_splits=3.
+  warnings.warn(
+/Users/owensun/miniconda3/lib/python3.10/site-packages/sklearn/model_selection/_split.py:737: UserWarning: The least populated class in y has only 2 members, which is less than n_splits=3.
+  warnings.warn(
+/Users/owensun/miniconda3/lib/python3.10/site-packages/sklearn/model_selection/_split.py:737: UserWarning: The least populated class in y has only 2 members, which is less than n_splits=3.
+  warnings.warn(
+/Users/owensun/miniconda3/lib/python3.10/site-packages/sksurv/linear_model/coxph.py:170: RuntimeWarning: overflow encountered in exp
+  risk_set2 += np.exp(xw[k])
+[repeat 1 fold 4/4] selected=PIP5K1B,RAB4A,PIK3CB,RAB14,PIK3R1...
+/Users/owensun/miniconda3/lib/python3.10/site-packages/sklearn/model_selection/_split.py:737: UserWarning: The least populated class in y has only 2 members, which is less than n_splits=3.
+  warnings.warn(
+/Users/owensun/miniconda3/lib/python3.10/site-packages/sklearn/model_selection/_split.py:737: UserWarning: The least populated class in y has only 1 members, which is less than n_splits=3.
+  warnings.warn(
+/Users/owensun/miniconda3/lib/python3.10/site-packages/sklearn/model_selection/_split.py:737: UserWarning: The least populated class in y has only 2 members, which is less than n_splits=3.
+  warnings.warn(
+/Users/owensun/miniconda3/lib/python3.10/site-packages/sklearn/model_selection/_split.py:737: UserWarning: The least populated class in y has only 2 members, which is less than n_splits=3.
+  warnings.warn(
+/Users/owensun/miniconda3/lib/python3.10/site-packages/sklearn/model_selection/_split.py:737: UserWarning: The least populated class in y has only 2 members, which is less than n_splits=3.
+  warnings.warn(
+/Users/owensun/miniconda3/lib/python3.10/site-packages/sklearn/model_selection/_split.py:737: UserWarning: The least populated class in y has only 2 members, which is less than n_splits=3.
+  warnings.warn(
+/Users/owensun/miniconda3/lib/python3.10/site-packages/sklearn/model_selection/_split.py:737: UserWarning: The least populated class in y has only 2 members, which is less than n_splits=3.
+  warnings.warn(
+/Users/owensun/miniconda3/lib/python3.10/site-packages/sklearn/model_selection/_split.py:737: UserWarning: The least populated class in y has only 2 members, which is less than n_splits=3.
+  warnings.warn(
+/Users/owensun/miniconda3/lib/python3.10/site-packages/sklearn/model_selection/_split.py:737: UserWarning: The least populated class in y has only 2 members, which is less than n_splits=3.
+  warnings.warn(
+/Users/owensun/miniconda3/lib/python3.10/site-packages/sklearn/model_selection/_split.py:737: UserWarning: The least populated class in y has only 2 members, which is less than n_splits=3.
+  warnings.warn(
+/Users/owensun/miniconda3/lib/python3.10/site-packages/sklearn/model_selection/_split.py:737: UserWarning: The least populated class in y has only 2 members, which is less than n_splits=3.
+  warnings.warn(
+[repeat 2 fold 1/4] selected=HACD3,ACSL4,HACD2,ACSL3,MCCC1...
+/Users/owensun/miniconda3/lib/python3.10/site-packages/sklearn/model_selection/_split.py:737: UserWarning: The least populated class in y has only 1 members, which is less than n_splits=3.
+  warnings.warn(
+/Users/owensun/miniconda3/lib/python3.10/site-packages/sklearn/model_selection/_split.py:737: UserWarning: The least populated class in y has only 2 members, which is less than n_splits=3.
+  warnings.warn(
+/Users/owensun/miniconda3/lib/python3.10/site-packages/sklearn/model_selection/_split.py:737: UserWarning: The least populated class in y has only 2 members, which is less than n_splits=3.
+  warnings.warn(
+/Users/owensun/miniconda3/lib/python3.10/site-packages/sklearn/model_selection/_split.py:737: UserWarning: The least populated class in y has only 2 members, which is less than n_splits=3.
+  warnings.warn(
+/Users/owensun/miniconda3/lib/python3.10/site-packages/sklearn/model_selection/_split.py:737: UserWarning: The least populated class in y has only 2 members, which is less than n_splits=3.
+  warnings.warn(
+[repeat 2 fold 2/4] selected=PTPN13,PIK3CB,PIK3R1,RAB4A,HIBCH...
+/Users/owensun/miniconda3/lib/python3.10/site-packages/sklearn/model_selection/_split.py:737: UserWarning: The least populated class in y has only 2 members, which is less than n_splits=3.
+  warnings.warn(
+/Users/owensun/miniconda3/lib/python3.10/site-packages/sklearn/model_selection/_split.py:737: UserWarning: The least populated class in y has only 2 members, which is less than n_splits=3.
+  warnings.warn(
+/Users/owensun/miniconda3/lib/python3.10/site-packages/sklearn/model_selection/_split.py:737: UserWarning: The least populated class in y has only 2 members, which is less than n_splits=3.
+  warnings.warn(
+[repeat 2 fold 3/4] selected=TGFBR3,SMAD5,SMAD7,BMP2,PHKG2...
+/Users/owensun/miniconda3/lib/python3.10/site-packages/sklearn/model_selection/_split.py:737: UserWarning: The least populated class in y has only 2 members, which is less than n_splits=3.
+  warnings.warn(
+/Users/owensun/miniconda3/lib/python3.10/site-packages/sklearn/model_selection/_split.py:737: UserWarning: The least populated class in y has only 2 members, which is less than n_splits=3.
+  warnings.warn(
+/Users/owensun/miniconda3/lib/python3.10/site-packages/sklearn/model_selection/_split.py:737: UserWarning: The least populated class in y has only 2 members, which is less than n_splits=3.
+  warnings.warn(
+[repeat 2 fold 4/4] selected=AUH,HIBCH,ACAD8,MCCC1,UBE2G1...
+/Users/owensun/miniconda3/lib/python3.10/site-packages/sklearn/model_selection/_split.py:737: UserWarning: The least populated class in y has only 2 members, which is less than n_splits=3.
+  warnings.warn(
+/Users/owensun/miniconda3/lib/python3.10/site-packages/sklearn/model_selection/_split.py:737: UserWarning: The least populated class in y has only 2 members, which is less than n_splits=3.
+  warnings.warn(
+/Users/owensun/miniconda3/lib/python3.10/site-packages/sklearn/model_selection/_split.py:737: UserWarning: The least populated class in y has only 2 members, which is less than n_splits=3.
+  warnings.warn(
+{
+  "budget": {
+    "forest_seeds": [
+      42,
+      43,
+      44
+    ],
+    "full_run_forest_accounting": {
+      "causal_forests": 48,
+      "internal_nuisance_survival_forests": 96,
+      "maximum_total_trees": 88000,
+      "maximum_trees_per_internal_nuisance_forest": 250,
+      "secondary_prognostic_forests": 16
+    },
+    "grf_version": "2.6.1",
+    "inner_folds": 3,
+    "locked_model_rules": {
+      "benefit_threshold_months": 0.0,
+      "honesty": true,
+      "honesty_prune_leaves": true,
+      "horizon_months": 60.0,
+      "matched_clinical_and_genomic_geometry": true,
+      "mtry": "all",
+      "nuisance_time_grid_points": 121,
+      "stabilize_splits": true,
+      "target": "RMST",
+      "tune_parameters": "none"
+    },
+    "max_experiments": 20,
+    "max_selected_genes": 16,
+    "max_total_features": 34,
+    "max_trees_per_forest": 1000,
+    "multiplicity_alpha": 0.05,
+    "outer_folds": 4,
+    "outer_repeats": 2,
+    "patient_bootstraps": 4000,
+    "r_num_threads": 2,
+    "rscript_executable": "Rscript",
+    "schema_version": 3,
+    "smoke_reductions_applied": false,
+    "smoke_train_sha256": "d53b4e23a695b82f8955cc4012f745fe71bf49379026052d5bfa014aeb75ad22",
+    "smoke_trees": 40,
+    "tau_months": 60.0,
+    "wall_time_seconds": 1800
+  },
+  "candidate": {
+    "benefit_threshold_months": 0.0,
+    "csf": {
+      "alpha": 0.05,
+      "honesty": true,
+      "honesty_fraction": 0.5,
+      "imbalance_penalty": 0.0,
+      "min_node_size": 5,
+      "mtry": "all",
+      "num_trees": 1000,
+      "sample_fraction": 0.5,
+      "stabilize_splits": true
+    },
+    "module_count": 8,
+    "n_genes": 8,
+    "name": "csf_pathway8_raw_drorder",
+    "representation": "raw",
+    "selector": "dr_gene"
+  },
+  "data": {
+    "confirmatory_validation_used": false,
+    "development_act": 152,
+    "development_events": 465,
+    "development_n": 1034,
+    "forest_seeds": [
+      42,
+      43,
+      44
+    ],
+    "former_train_n": 775,
+    "former_validation_n": 259,
+    "former_validation_used_as_development": true,
+    "outer_folds": 4,
+    "outer_repeats": 2,
+    "reactome_collection_sha256": "5d61f289a2400cddfbb3a3353829fd2284a360bbe50f2093b566c4b7bea93341",
+    "test_used": false,
+    "train_sha256": "b93f3cee3858716bca8add447bc837c734e203f6cb37962b1081e3c118d2c65d",
+    "validation_sha256": "824689aeaa34984727f2551bd512214164d0559d05cbec5817b0f88c9adb15a9"
+  },
+  "development_oof": {
+    "constant_policy_values": {
+      "all_act_months": 45.52076289645203,
+      "all_observation_months": 45.88866079584544
+    },
+    "incremental_alignment_months": -1.9334793165614137,
+    "models": {
+      "clinical": {
+        "act_mechanism": {
+          "different_terminal_node_fraction": null,
+          "patient_path_fraction": null,
+          "reason": "RSF ACT-use diagnostics are not defined for causal survival forests",
+          "role": "W supplied separately as treatment; ACT is absent from X",
+          "tree_split_fraction": null
+        },
+        "act_recommended_fraction": 0.5169245647969052,
+        "alignment_months": 4.519366724474455,
+        "anti_policy_value_months": 43.445028483911514,
+        "genomic_variable_importance_fraction": 0.0,
+        "harrell_cindex": 0.6837391460863844,
+        "mean_predicted_benefit_months": 0.49191423016877656,
+        "median_absolute_predicted_benefit_months": 2.1241188547980414,
+        "nontrivial_benefit_fraction": 0.937137330754352,
+        "predicted_benefit_iqr_months": 4.381954427544484,
+        "seed_agreement": 0.9970980116328954,
+        "seed_tau_correlation": 0.999865037530477,
+        "value_months": 47.964395208385966
+      },
+      "clinical_plus_genomic": {
+        "act_mechanism": {
+          "different_terminal_node_fraction": null,
+          "patient_path_fraction": null,
+          "reason": "RSF ACT-use diagnostics are not defined for causal survival forests",
+          "role": "W supplied separately as treatment; ACT is absent from X",
+          "tree_split_fraction": null
+        },
+        "act_recommended_fraction": 0.6958413926499033,
+        "alignment_months": 2.5858874079130416,
+        "anti_policy_value_months": 44.411768142192216,
+        "genomic_variable_importance_fraction": 0.8214192486695103,
+        "harrell_cindex": 0.6748682634358882,
+        "mean_predicted_benefit_months": 1.170097166012385,
+        "median_absolute_predicted_benefit_months": 1.8277281266413192,
+        "nontrivial_benefit_fraction": 0.9327852998065764,
+        "predicted_benefit_iqr_months": 3.189813253404335,
+        "seed_agreement": 0.9953240200333223,
+        "seed_tau_correlation": 0.9990858677951702,
+        "value_months": 46.99765555010526
+      }
+    },
+    "overlap": {
+      "iptw_effective_sample_size": 372.317733574238,
+      "raw_propensity_in_0_05_0_95_fraction": 0.8684719535783365
+    },
+    "repeat_increment_max_months": -1.466780858036742,
+    "repeat_increment_min_months": -2.4001777750860853,
+    "source_diagnostics": {
+      "former_train": {
+        "clinical_alignment_months": 4.430895412768649,
+        "genomic_act_recommended_fraction": 0.6974193548387098,
+        "genomic_alignment_months": 2.793914232977812,
+        "incremental_alignment_months": -1.636981179790837,
+        "n": 775.0
+      },
+      "former_validation": {
+        "clinical_alignment_months": 4.7840974834397265,
+        "genomic_act_recommended_fraction": 0.6911196911196911,
+        "genomic_alignment_months": 1.9634133174682802,
+        "incremental_alignment_months": -2.8206841659714463,
+        "n": 259.0
+      }
+    }
+  },
+  "eligible": false,
+  "estimator": "honest causal survival forest policy, independently evaluated by outer-cross-fitted IPCW-AIPW restricted-time arm scores",
+  "gates": {
+    "all_repeat_cindex_drop_no_more_than_0_03": true,
+    "all_repeat_genomic_alignment_positive": true,
+    "all_repeat_genomic_increment_positive": false,
+    "all_repeat_genomic_seed_agreement_at_least_0_85": true,
+    "all_repeat_genomic_seed_tau_correlation_at_least_0_50": true,
+    "all_repeat_genomic_value_at_least_best_constant": true,
+    "all_repeat_genomic_value_at_least_clinical": false,
+    "all_repeat_genomic_variable_importance_at_least_0_01": true,
+    "all_repeat_iptw_effective_sample_size_at_least_0_30n": true,
+    "all_repeat_nontrivial_benefit_fraction_at_least_0_10": true,
+    "all_repeat_raw_propensity_overlap_at_least_0_80": true,
+    "gene_selection_jaccard_at_least_0_10": true
+  },
+  "gene_selection": {
+    "frequency": [
+      {
+        "count": 5,
+        "gene": "HIBCH"
+      },
+      {
+        "count": 4,
+        "gene": "MCCC1"
+      },
+      {
+        "count": 3,
+        "gene": "ACAD8"
+      },
+      {
+        "count": 3,
+        "gene": "ACADSB"
+      },
+      {
+        "count": 3,
+        "gene": "AUH"
+      },
+      {
+        "count": 3,
+        "gene": "TGFBR3"
+      },
+      {
+        "count": 2,
+        "gene": "CHD9"
+      },
+      {
+        "count": 2,
+        "gene": "MEF2C"
+      },
+      {
+        "count": 2,
+        "gene": "PIK3CB"
+      },
+      {
+        "count": 2,
+        "gene": "PIK3R1"
+      },
+      {
+        "count": 2,
+        "gene": "PTPN13"
+      },
+      {
+        "count": 2,
+        "gene": "RAB4A"
+      },
+      {
+        "count": 2,
+        "gene": "SIRT1"
+      },
+      {
+        "count": 2,
+        "gene": "SMAD4"
+      },
+      {
+        "count": 2,
+        "gene": "SMAD5"
+      },
+      {
+        "count": 2,
+        "gene": "SMAD7"
+      },
+      {
+        "count": 1,
+        "gene": "ACSL3"
+      },
+      {
+        "count": 1,
+        "gene": "ACSL4"
+      },
+      {
+        "count": 1,
+        "gene": "AGL"
+      },
+      {
+        "count": 1,
+        "gene": "ALDH6A1"
+      },
+      {
+        "count": 1,
+        "gene": "BMP2"
+      },
+      {
+        "count": 1,
+        "gene": "CALM1"
+      },
+      {
+        "count": 1,
+        "gene": "EP300"
+      },
+      {
+        "count": 1,
+        "gene": "HACD2"
+      },
+      {
+        "count": 1,
+        "gene": "HACD3"
+      },
+      {
+        "count": 1,
+        "gene": "MTMR2"
+      },
+      {
+        "count": 1,
+        "gene": "PHKG2"
+      },
+      {
+        "count": 1,
+        "gene": "PIP5K1B"
+      },
+      {
+        "count": 1,
+        "gene": "PLEKHA1"
+      },
+      {
+        "count": 1,
+        "gene": "PPP1R3C"
+      },
+      {
+        "count": 1,
+        "gene": "RAB14"
+      },
+      {
+        "count": 1,
+        "gene": "SLC25A44"
+      },
+      {
+        "count": 1,
+        "gene": "SMAD1"
+      },
+      {
+        "count": 1,
+        "gene": "TBL1XR1"
+      },
+      {
+        "count": 1,
+        "gene": "UBA1"
+      },
+      {
+        "count": 1,
+        "gene": "UBE2E3"
+      },
+      {
+        "count": 1,
+        "gene": "UBE2G1"
+      },
+      {
+        "count": 1,
+        "gene": "UBE2S"
+      },
+      {
+        "count": 1,
+        "gene": "ZFYVE16"
+      }
+    ],
+    "full_development_modules": [
+      [
+        "TGFBR3"
+      ],
+      [
+        "SMAD7"
+      ],
+      [
+        "SMAD4"
+      ],
+      [
+        "SMAD5"
+      ],
+      [
+        "SIRT1"
+      ],
+      [
+        "CHD9"
+      ],
+      [
+        "EP300"
+      ],
+      [
+        "TBL1XR1"
+      ]
+    ],
+    "full_development_selection": [
+      "TGFBR3",
+      "SMAD7",
+      "SMAD4",
+      "SMAD5",
+      "SIRT1",
+      "CHD9",
+      "EP300",
+      "TBL1XR1"
+    ],
+    "mean_pairwise_jaccard": 0.10269492412349555,
+    "per_repeat_outer_fold": [
+      [
+        [
+          "ACAD8",
+          "HIBCH",
+          "ACADSB",
+          "AUH",
+          "SMAD4",
+          "TGFBR3",
+          "ZFYVE16",
+          "SMAD7"
+        ],
+        [
+          "MCCC1",
+          "SLC25A44",
+          "ACADSB",
+          "HIBCH",
+          "EP300",
+          "SIRT1",
+          "CHD9",
+          "MEF2C"
+        ],
+        [
+          "SMAD1",
+          "SMAD5",
+          "SMAD4",
+          "TGFBR3",
+          "SIRT1",
+          "CHD9",
+          "TBL1XR1",
+          "MEF2C"
+        ],
+        [
+          "PIP5K1B",
+          "RAB4A",
+          "PIK3CB",
+          "RAB14",
+          "PIK3R1",
+          "MTMR2",
+          "PLEKHA1",
+          "PTPN13"
+        ]
+      ],
+      [
+        [
+          "HACD3",
+          "ACSL4",
+          "HACD2",
+          "ACSL3",
+          "MCCC1",
+          "ACADSB",
+          "ALDH6A1",
+          "HIBCH"
+        ],
+        [
+          "PTPN13",
+          "PIK3CB",
+          "PIK3R1",
+          "RAB4A",
+          "HIBCH",
+          "AUH",
+          "MCCC1",
+          "ACAD8"
+        ],
+        [
+          "TGFBR3",
+          "SMAD5",
+          "SMAD7",
+          "BMP2",
+          "PHKG2",
+          "CALM1",
+          "AGL",
+          "PPP1R3C"
+        ],
+        [
+          "AUH",
+          "HIBCH",
+          "ACAD8",
+          "MCCC1",
+          "UBE2G1",
+          "UBA1",
+          "UBE2E3",
+          "UBE2S"
+        ]
+      ]
+    ]
+  },
+  "generalization": {
+    "mean_source_increment_gap_months": 1.2185061311561078,
+    "repeat_increment_range_months": 0.9333969170493432,
+    "robust_selection_lcb": -11.443012301034821,
+    "score_before_eligibility": -12.376409218084165
+  },
+  "limitations": [
+    "Search uncertainty bootstraps fixed OOF predictions and does not refit the full pipeline in each draw.",
+    "The two repeated cross-fits reuse patients and are stability views, not independent validation cohorts.",
+    "Former train and validation rows are now adaptive development data; only the human-held test can provide one-shot confirmation.",
+    "IPCW-AIPW validity requires adequate measured-confounder adjustment, treatment positivity, and conditionally independent censoring.",
+    "Random row-level cross-validation does not establish transportability across source studies or expression platforms.",
+    "Source-specific OOF metrics are adaptive diagnostics, not independent confirmation and not part of reward."
+  ],
+  "objective": "worst repeated-development OOF selection LCB minus the repeat increment range for A60(C+G)-A60(C), where A60(d)=V60(d)-V60(1-d)",
+  "phase": "pooled_development_repeated_crossfit",
+  "repeat_results": [
+    {
+      "constant_policy_values": {
+        "all_act_months": 45.58308131205984,
+        "all_observation_months": 45.87878458895055
+      },
+      "fold_seed": 20270821,
+      "incremental_alignment_months": -2.4001777750860853,
+      "models": {
+        "clinical": {
+          "act_mechanism": {
+            "different_terminal_node_fraction": null,
+            "patient_path_fraction": null,
+            "reason": "RSF ACT-use diagnostics are not defined for causal survival forests",
+            "role": "W supplied separately as treatment; ACT is absent from X",
+            "tree_split_fraction": null
+          },
+          "act_recommended_fraction": 0.5261121856866537,
+          "alignment_months": 5.09069014835665,
+          "anti_policy_value_months": 43.18558787632687,
+          "genomic_variable_importance_fraction": 0.0,
+          "harrell_cindex": 0.6806047778943253,
+          "mean_predicted_benefit_months": 0.5179525149674227,
+          "median_absolute_predicted_benefit_months": 2.0672617638559565,
+          "nontrivial_benefit_fraction": 0.941972920696325,
+          "predicted_benefit_iqr_months": 4.264892378229913,
+          "seed_agreement": 0.9970955174443547,
+          "seed_tau_correlation": 0.9998719347525611,
+          "value_months": 48.27627802468352
+        },
+        "clinical_plus_genomic": {
+          "act_mechanism": {
+            "different_terminal_node_fraction": null,
+            "patient_path_fraction": null,
+            "reason": "RSF ACT-use diagnostics are not defined for causal survival forests",
+            "role": "W supplied separately as treatment; ACT is absent from X",
+            "tree_split_fraction": null
+          },
+          "act_recommended_fraction": 0.6808510638297872,
+          "alignment_months": 2.6905123732705647,
+          "anti_policy_value_months": 44.38567676386992,
+          "genomic_variable_importance_fraction": 0.821176598651906,
+          "harrell_cindex": 0.6836057026881086,
+          "mean_predicted_benefit_months": 1.0506846285226115,
+          "median_absolute_predicted_benefit_months": 1.9432727134192018,
+          "nontrivial_benefit_fraction": 0.9352030947775629,
+          "predicted_benefit_iqr_months": 3.3855524966025055,
+          "seed_agreement": 0.9970967645386251,
+          "seed_tau_correlation": 0.9992271806913176,
+          "value_months": 47.07618913714048
+        }
+      },
+      "overlap": {
+        "iptw_effective_sample_size": 360.09137541217456,
+        "raw_propensity_in_0_05_0_95_fraction": 0.8597678916827853
+      },
+      "paired_bootstrap": {
+        "ci95_high": 3.5950883583791167,
+        "ci95_low": -8.69269659882841,
+        "draws": 4000,
+        "mean": -2.4444669411088342,
+        "sd": 3.1559416362963977,
+        "selection_lcb": -11.443012301034821,
+        "selection_lcb_quantile_percent": 0.25
+      },
+      "repeat": 1,
+      "source_diagnostics": {
+        "former_train": {
+          "clinical_alignment_months": 5.147199067978946,
+          "genomic_act_recommended_fraction": 0.687741935483871,
+          "genomic_alignment_months": 3.3487351820516764,
+          "incremental_alignment_months": -1.7984638859272692,
+          "n": 775
+        },
+        "former_validation": {
+          "clinical_alignment_months": 4.921599751803463,
+          "genomic_act_recommended_fraction": 0.6602316602316602,
+          "genomic_alignment_months": 0.7209267485394761,
+          "incremental_alignment_months": -4.2006730032639865,
+          "n": 259
+        }
+      }
+    },
+    {
+      "constant_policy_values": {
+        "all_act_months": 45.45844448084422,
+        "all_observation_months": 45.89853700274033
+      },
+      "fold_seed": 20280821,
+      "incremental_alignment_months": -1.466780858036742,
+      "models": {
+        "clinical": {
+          "act_mechanism": {
+            "different_terminal_node_fraction": null,
+            "patient_path_fraction": null,
+            "reason": "RSF ACT-use diagnostics are not defined for causal survival forests",
+            "role": "W supplied separately as treatment; ACT is absent from X",
+            "tree_split_fraction": null
+          },
+          "act_recommended_fraction": 0.5077369439071566,
+          "alignment_months": 3.9480433005922606,
+          "anti_policy_value_months": 43.70446909149615,
+          "genomic_variable_importance_fraction": 0.0,
+          "harrell_cindex": 0.6868735142784436,
+          "mean_predicted_benefit_months": 0.4658759453701304,
+          "median_absolute_predicted_benefit_months": 2.1809759457401268,
+          "nontrivial_benefit_fraction": 0.9323017408123792,
+          "predicted_benefit_iqr_months": 4.499016476859055,
+          "seed_agreement": 0.9971005058214361,
+          "seed_tau_correlation": 0.9998581403083927,
+          "value_months": 47.65251239208841
+        },
+        "clinical_plus_genomic": {
+          "act_mechanism": {
+            "different_terminal_node_fraction": null,
+            "patient_path_fraction": null,
+            "reason": "RSF ACT-use diagnostics are not defined for causal survival forests",
+            "role": "W supplied separately as treatment; ACT is absent from X",
+            "tree_split_fraction": null
+          },
+          "act_recommended_fraction": 0.7108317214700194,
+          "alignment_months": 2.4812624425555185,
+          "anti_policy_value_months": 44.437859520514515,
+          "genomic_variable_importance_fraction": 0.8216618986871147,
+          "harrell_cindex": 0.6661308241836678,
+          "mean_predicted_benefit_months": 1.2895097035021585,
+          "median_absolute_predicted_benefit_months": 1.7121835398634366,
+          "nontrivial_benefit_fraction": 0.9303675048355899,
+          "predicted_benefit_iqr_months": 2.994074010206164,
+          "seed_agreement": 0.9935512755280196,
+          "seed_tau_correlation": 0.9989445548990227,
+          "value_months": 46.91912196307003
+        }
+      },
+      "overlap": {
+        "iptw_effective_sample_size": 384.54409173630137,
+        "raw_propensity_in_0_05_0_95_fraction": 0.8771760154738878
+      },
+      "paired_bootstrap": {
+        "ci95_high": 4.20586190912017,
+        "ci95_low": -7.531953454910186,
+        "draws": 4000,
+        "mean": -1.5036947997496686,
+        "sd": 2.9730259260768457,
+        "selection_lcb": -9.402602802782333,
+        "selection_lcb_quantile_percent": 0.25
+      },
+      "repeat": 2,
+      "source_diagnostics": {
+        "former_train": {
+          "clinical_alignment_months": 3.7145917575583525,
+          "genomic_act_recommended_fraction": 0.7070967741935484,
+          "genomic_alignment_months": 2.239093283903948,
+          "incremental_alignment_months": -1.4754984736544046,
+          "n": 775
+        },
+        "former_validation": {
+          "clinical_alignment_months": 4.64659521507599,
+          "genomic_act_recommended_fraction": 0.722007722007722,
+          "genomic_alignment_months": 3.2058998863970842,
+          "incremental_alignment_months": -1.4406953286789062,
+          "n": 259
+        }
+      }
+    }
+  ],
+  "reward": -1000000.0,
+  "schema_version": 3
+}
+

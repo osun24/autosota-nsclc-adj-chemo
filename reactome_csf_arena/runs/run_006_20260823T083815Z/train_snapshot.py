@@ -41,21 +41,11 @@ MIN_PATHWAY_MEMBERS = 12
 TOP_PATHWAYS = 20
 # Spread the block over several pathways: folds then need only share one
 # pathway anywhere in a short list rather than agree on a single top choice.
-# Experiment 6 spread the eight slots over four blocks and stability collapsed
-# (Jaccard 0.103 -> 0.063, below the gate) while both increments fell by more
-# than two months: cross-fold agreement comes from folds reaching deep into the
-# same block, not from folds sharing several blocks.  Value moved with
-# stability rather than against it, so experiment 7 continues the same axis in
-# the other direction and makes the panel the core of a single pathway.
-MAX_GENES_PER_PATHWAY = 8
+MAX_GENES_PER_PATHWAY = 4
 
 
-# Experiment 8 halves the panel to the arena floor of four genes, the last lever
-# that changes how much genomic information reaches X rather than how it is
-# arranged.  Forest geometry is still experiment 1's; experiments 5 to 7 moved
-# only selector constants and left the genomic CATE's positive shift untouched
-# (mean tau 0.83-1.37 months against the clinical 0.47-0.52, ACT recommended
-# 0.65-0.77 against 0.51-0.53), which is the whole of the remaining deficit.
+# Experiment 5 tightens the gene-level co-selection rule; the candidate block
+# is unchanged from experiment 4, which itself restored experiment 1 geometry.
 # Experiment 2 showed that averaging the panel into modules cancels
 # gene-specific direction, and experiment 3 showed that leaf-size
 # regularization improves the increment only by flattening both policies: at
@@ -65,11 +55,11 @@ MAX_GENES_PER_PATHWAY = 8
 # rather than expression spread recovered 1.7 months in both repeats, so the
 # selector's member statistic is where the remaining work is.
 CANDIDATE = {
-    "name": "csf_pathway4_raw_oneblock",
+    "name": "csf_pathway8_raw_bothhalves",
     "selector": "dr_gene",
-    "n_genes": 4,
+    "n_genes": 8,
     "representation": "raw",
-    "module_count": 4,
+    "module_count": 8,
     "benefit_threshold_months": 0.00,
     "csf": {
         "num_trees": 1000,
@@ -199,20 +189,25 @@ def stability_select_genes(
     for _ in range(draws):
         left, right = _stratified_halves(fit, rng)
         flags = []
+        gene_flags = []
         for part in (left, right):
             values = _dr_ranking(part, available, inner_folds)
             score_total += values
             top_k = min(STABILITY_TOP_K, len(available))
-            # Experiment 5 required a gene to reach the top of both halves of a
-            # draw, mirroring the pathway rule.  That made the count sparse
-            # enough that members tied at zero and fell through to the
-            # expression-spread tie-break, and both increments fell by more than
-            # a month, so the per-half count is restored.
-            gene_top_counts[np.argpartition(-values, top_k - 1)[:top_k]] += 1.0
+            reached_top = np.zeros(len(available), dtype=bool)
+            reached_top[np.argpartition(-values, top_k - 1)[:top_k]] = True
+            gene_flags.append(reached_top)
             pathway_scores = (membership @ values) / sizes
             chosen = np.zeros(len(names), dtype=bool)
             chosen[np.argsort(-pathway_scores, kind="stable")[:top_pathways]] = True
             flags.append(chosen)
+        # Score a gene only when it reaches the top of *both* complementary
+        # halves, which is the rule this function's docstring describes and the
+        # rule ``pathway_counts`` already uses.  Counting each half separately
+        # let a gene accumulate evidence from single-half flukes, and member
+        # choice was correspondingly fragile: experiment 4 reproduced only
+        # about 1.5 of eight genes across fitting partitions.
+        gene_top_counts += (gene_flags[0] & gene_flags[1]).astype(float)
         pathway_counts += (flags[0] & flags[1]).astype(float)
 
     mean_score = score_total / float(2 * draws)

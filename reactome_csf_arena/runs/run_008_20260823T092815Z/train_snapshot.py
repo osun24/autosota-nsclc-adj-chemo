@@ -50,12 +50,8 @@ TOP_PATHWAYS = 20
 MAX_GENES_PER_PATHWAY = 8
 
 
-# Experiment 8 halves the panel to the arena floor of four genes, the last lever
-# that changes how much genomic information reaches X rather than how it is
-# arranged.  Forest geometry is still experiment 1's; experiments 5 to 7 moved
-# only selector constants and left the genomic CATE's positive shift untouched
-# (mean tau 0.83-1.37 months against the clinical 0.47-0.52, ACT recommended
-# 0.65-0.77 against 0.51-0.53), which is the whole of the remaining deficit.
+# The candidate block has been unchanged since experiment 4, which restored
+# experiment 1 geometry; experiments 5 to 7 move only selector constants.
 # Experiment 2 showed that averaging the panel into modules cancels
 # gene-specific direction, and experiment 3 showed that leaf-size
 # regularization improves the increment only by flattening both policies: at
@@ -65,11 +61,11 @@ MAX_GENES_PER_PATHWAY = 8
 # rather than expression spread recovered 1.7 months in both repeats, so the
 # selector's member statistic is where the remaining work is.
 CANDIDATE = {
-    "name": "csf_pathway4_raw_oneblock",
+    "name": "csf_pathway8_raw_oneblock",
     "selector": "dr_gene",
-    "n_genes": 4,
+    "n_genes": 8,
     "representation": "raw",
-    "module_count": 4,
+    "module_count": 8,
     "benefit_threshold_months": 0.00,
     "csf": {
         "num_trees": 1000,

@@ -41,39 +41,30 @@ MIN_PATHWAY_MEMBERS = 12
 TOP_PATHWAYS = 20
 # Spread the block over several pathways: folds then need only share one
 # pathway anywhere in a short list rather than agree on a single top choice.
-# Experiment 6 spread the eight slots over four blocks and stability collapsed
-# (Jaccard 0.103 -> 0.063, below the gate) while both increments fell by more
-# than two months: cross-fold agreement comes from folds reaching deep into the
-# same block, not from folds sharing several blocks.  Value moved with
-# stability rather than against it, so experiment 7 continues the same axis in
-# the other direction and makes the panel the core of a single pathway.
-MAX_GENES_PER_PATHWAY = 8
+MAX_GENES_PER_PATHWAY = 4
 
 
-# Experiment 8 halves the panel to the arena floor of four genes, the last lever
-# that changes how much genomic information reaches X rather than how it is
-# arranged.  Forest geometry is still experiment 1's; experiments 5 to 7 moved
-# only selector constants and left the genomic CATE's positive shift untouched
-# (mean tau 0.83-1.37 months against the clinical 0.47-0.52, ACT recommended
-# 0.65-0.77 against 0.51-0.53), which is the whole of the remaining deficit.
-# Experiment 2 showed that averaging the panel into modules cancels
-# gene-specific direction, and experiment 3 showed that leaf-size
-# regularization improves the increment only by flattening both policies: at
-# min_node_size 25 the clinical CATE loses its own out-of-fold discrimination
-# (alignment 5.09/3.95 -> 0.47/-2.30) and both arms drift toward blanket ACT.
-# Fine leaves are therefore necessary, and ordering pathway members by benefit
-# rather than expression spread recovered 1.7 months in both repeats, so the
-# selector's member statistic is where the remaining work is.
+# Experiment 3 regularizes leaf size at the raw representation.  Experiment 2
+# compressed the same eight genes into two module means: genomic variable
+# importance fell 0.807 -> 0.557 and the benefit IQR recovered 2.79 -> 3.96,
+# but both repeat increments fell, so averaging cancels the gene-specific
+# direction and representation is not the binding constraint.  What both runs
+# share is a genomic alignment near zero against a clinical 4.5-5.1 months
+# while seed agreement stays at 0.99: variance that is stable across seeds but
+# does not carry out of fold.  With honesty at 0.50 and sample_fraction 0.50 a
+# tree splits on ~194 rows and a leaf's 60-month RMST contrast can rest on five
+# honest observations, so min_node_size is raised 5 -> 25.  It applies to the
+# clinical forest identically, which makes a positive increment harder to reach.
 CANDIDATE = {
-    "name": "csf_pathway4_raw_oneblock",
+    "name": "csf_pathway8_raw_node25",
     "selector": "dr_gene",
-    "n_genes": 4,
+    "n_genes": 8,
     "representation": "raw",
-    "module_count": 4,
+    "module_count": 8,
     "benefit_threshold_months": 0.00,
     "csf": {
         "num_trees": 1000,
-        "min_node_size": 5,
+        "min_node_size": 25,
         "sample_fraction": 0.50,
         "honesty_fraction": 0.50,
         "alpha": 0.05,
@@ -203,11 +194,6 @@ def stability_select_genes(
             values = _dr_ranking(part, available, inner_folds)
             score_total += values
             top_k = min(STABILITY_TOP_K, len(available))
-            # Experiment 5 required a gene to reach the top of both halves of a
-            # draw, mirroring the pathway rule.  That made the count sparse
-            # enough that members tied at zero and fell through to the
-            # expression-spread tie-break, and both increments fell by more than
-            # a month, so the per-half count is restored.
             gene_top_counts[np.argpartition(-values, top_k - 1)[:top_k]] += 1.0
             pathway_scores = (membership @ values) / sizes
             chosen = np.zeros(len(names), dtype=bool)
@@ -228,24 +214,20 @@ def stability_select_genes(
     for position in pathway_order:
         members = membership[position].indices
         taken = 0
-        # Order members by the benefit signal itself.  The previous rule kept
-        # every member at or above the pathway's median DR co-selection count
-        # and then ordered that group by expression spread, so the genes that
-        # actually entered the panel were the widest-spread members of a
-        # benefit-associated pathway rather than its most benefit-associated
-        # members.  Widest spread is also the most split points, which is how
-        # eight genes took 0.81 of the causal forest's variable importance in
-        # experiment 1 while adding no policy value.  Spread is already enforced
-        # as a detectability floor over the whole pool, so here it is demoted to
-        # a tie-break and the co-selection count does the ordering.
-        def _by_benefit(item: int) -> tuple[float, float, str]:
-            return (
-                -gene_top_counts[item],
-                -gene_spread[available[item]],
-                available[item],
-            )
+        # Use the two ordering keys for what each is good at.  The DR
+        # co-selection frequency carries the benefit signal but is re-estimated
+        # inside every fitting partition, so it is used only for a coarse
+        # median gate; expression spread is a covariate summary that barely
+        # moves between partitions, so it does the actual ordering.  ``>=``
+        # keeps at least half of every pathway, so no pathway can be emptied.
+        def _by_spread(item: int) -> tuple[float, str]:
+            return (-gene_spread[available[item]], available[item])
 
-        ordered_members = sorted(members, key=_by_benefit)
+        counts = gene_top_counts[members]
+        cutoff = float(np.median(counts))
+        gated = [item for item in members if gene_top_counts[item] >= cutoff]
+        rest = [item for item in members if gene_top_counts[item] < cutoff]
+        ordered_members = sorted(gated, key=_by_spread) + sorted(rest, key=_by_spread)
         for gene_position in ordered_members:
             if taken >= MAX_GENES_PER_PATHWAY:
                 break

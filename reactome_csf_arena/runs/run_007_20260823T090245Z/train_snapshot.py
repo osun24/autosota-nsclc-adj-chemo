@@ -41,21 +41,17 @@ MIN_PATHWAY_MEMBERS = 12
 TOP_PATHWAYS = 20
 # Spread the block over several pathways: folds then need only share one
 # pathway anywhere in a short list rather than agree on a single top choice.
-# Experiment 6 spread the eight slots over four blocks and stability collapsed
-# (Jaccard 0.103 -> 0.063, below the gate) while both increments fell by more
-# than two months: cross-fold agreement comes from folds reaching deep into the
-# same block, not from folds sharing several blocks.  Value moved with
-# stability rather than against it, so experiment 7 continues the same axis in
-# the other direction and makes the panel the core of a single pathway.
-MAX_GENES_PER_PATHWAY = 8
+# At four genes per pathway an eight-gene panel is two blocks, and the fold
+# panels of experiments 4 and 5 switched between branched-chain catabolism,
+# TGF-beta/SMAD and PI3K blocks depending on the fitting partition, so two folds
+# could share almost nothing (Jaccard 0.10) and one-member swaps moved the
+# increment by over a month.  Two per pathway spreads the same eight slots over
+# four blocks, so folds overlap through the blocks they share.
+MAX_GENES_PER_PATHWAY = 2
 
 
-# Experiment 8 halves the panel to the arena floor of four genes, the last lever
-# that changes how much genomic information reaches X rather than how it is
-# arranged.  Forest geometry is still experiment 1's; experiments 5 to 7 moved
-# only selector constants and left the genomic CATE's positive shift untouched
-# (mean tau 0.83-1.37 months against the clinical 0.47-0.52, ACT recommended
-# 0.65-0.77 against 0.51-0.53), which is the whole of the remaining deficit.
+# Experiment 5 tightens the gene-level co-selection rule; the candidate block
+# is unchanged from experiment 4, which itself restored experiment 1 geometry.
 # Experiment 2 showed that averaging the panel into modules cancels
 # gene-specific direction, and experiment 3 showed that leaf-size
 # regularization improves the increment only by flattening both policies: at
@@ -65,11 +61,11 @@ MAX_GENES_PER_PATHWAY = 8
 # rather than expression spread recovered 1.7 months in both repeats, so the
 # selector's member statistic is where the remaining work is.
 CANDIDATE = {
-    "name": "csf_pathway4_raw_oneblock",
+    "name": "csf_pathway8_raw_spread4blocks",
     "selector": "dr_gene",
-    "n_genes": 4,
+    "n_genes": 8,
     "representation": "raw",
-    "module_count": 4,
+    "module_count": 8,
     "benefit_threshold_months": 0.00,
     "csf": {
         "num_trees": 1000,
