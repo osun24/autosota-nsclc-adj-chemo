@@ -197,7 +197,8 @@ months, so the negative increment is a stable property of the candidate, not
 noise. What changes when the eight raw genes enter X is the shape of the CATE:
 
 - Genomic variable importance takes 0.80 of the total, so with `mtry` = all
-  and 26 clinical columns, the eight continuous genes absorb most splits.
+  and 18 clinical columns, the eight continuous genes absorb most splits:
+  they are 31 percent of the candidate columns but 81 percent of the importance.
 - The benefit IQR contracts from 4.38 to 2.79 months while the mean predicted
   benefit rises from 0.49 to 1.18, so tau shifts positive and flattens.
 - ACT recommendation rises from 0.517 to 0.722, pushing the genomic policy
@@ -210,3 +211,197 @@ clinical comparator is strong, and eight noisy continuous columns dilute it.
 This makes the number of genomic split candidates, not the selector's gene
 identity, the first thing to test.
 
+
+---
+
+## Experiment 2 (prespecified before launch; ledger slot 3)
+
+### Hypothesis
+
+The eight-raw-gene deficit is caused by the *number* of genomic split
+candidates, not by which genes the selector picks. Compressing the same eight
+selected genes into two fit-only standardized module means should shrink
+genomic variable importance well below experiment 1's 0.807, restore the
+clinical CATE's discrimination (benefit IQR back toward the clinical 4.38
+months and ACT recommendation back toward ~0.52), and raise the increment
+`A60(C+G) - A60(clinical)` in both repeats.
+
+Prespecified directional prediction, so the result can falsify the mechanism
+rather than merely be described afterwards:
+
+- If crowd-out is the cause, genomic VIMP falls (to roughly 0.2-0.5), benefit
+  IQR rises above 2.79 months, ACT recommendation falls below 0.72, and both
+  repeat increments rise above experiment 1's -4.008 and -3.195.
+- If instead the eight genes carry no usable effect-modification signal at
+  all, compression will leave the increments near zero-or-negative while VIMP
+  drops, since averaging cannot create signal that is absent.
+- If increments *fall* while VIMP drops, gene-specific direction matters and
+  averaging cancels it, which is exactly the v2 warning; the next experiment
+  would then attack regularization at fixed raw representation instead.
+
+### Rationale
+
+`program.md` puts raw-versus-module representation ahead of regularization and
+ahead of any selector change, and experiment 1 supplies the specific failure
+this addresses: genomic variable importance 0.807 from 31 percent of the
+columns, against a clinical
+comparator whose alignment is 4.52 months versus C+G's 0.92. With `mtry` fixed
+at all features, eight continuous gene columns compete against 18 clinical
+columns at every split, so the measured crowd-out is a representation problem
+before it is a gene-identity problem. Two modules is the smallest compression
+that still keeps more than one genomic axis, so gene-specific direction is
+only partly averaged; `v2_findings.md` warns that full one-module compression
+can cancel gene-specific effect modification.
+
+### Exact change
+
+In `train.py` `CANDIDATE`, only:
+
+```text
+name:           csf_pathway8_raw_honest_s100 -> csf_pathway8_module2_honest_s100
+representation: raw    -> module
+module_count:   8      -> 2
+```
+
+Unchanged: the selector and every one of its constants, `n_genes = 8`,
+`num_trees = 1000`, `min_node_size = 5`, `sample_fraction = 0.50`,
+`honesty_fraction = 0.50`, `alpha = 0.05`, `imbalance_penalty = 0.00`, the
+zero-month threshold, seeds, folds, and bootstraps. The modules are built by
+the locked `FeatureTransformer`: fit-only median imputation, fit-only
+standardization, then `np.array_split` of the selected panel into two
+contiguous groups, which follows the selector's pathway-block ordering. Total
+treatment-effect features fall from 26 to 20, against the locked cap of 34.
+
+### Red-line audit
+
+1. Test untouched; loader still restricted to the two development CSVs. OK.
+2. Only `train.py` edited; three `CANDIDATE` fields. OK.
+3. Fit-only adaptation: module scaler and imputer are fit inside the locked
+   transformer on fitting rows only. OK.
+4. ACT stays `W`; modules are built from genes only, no ACT term, no
+   gene-by-ACT product. OK.
+5. Estimand untouched: horizon 60, threshold 0, LCB and range penalty. OK.
+6. Learning and grading stay separate. OK.
+7. No censored patient dropped. OK.
+8. Selection unchanged and still fit-partition-only with Reactome structure;
+   no hard-coded symbols; the module grouping is positional, not symbol-based. OK.
+9. Identical geometry for clinical and C+G; the clinical forest is untouched
+   by representation because it receives no genes. OK.
+10. All mandatory CSF diagnostics will be recorded. OK.
+11. C-index secondary, gate only. OK.
+12. No probes; one full launcher slot. OK.
+13. No metric shopping; eligible reward remains the leaderboard. OK.
+14. Ledger slot 3 of 20; 30-minute wall; <=1000 trees per forest;
+    28 <= 34 features; module_count 2 within the locked 1-4 range. OK.
+15. Claims remain observational. OK.
+
+### Prespecified decision rule
+
+- Promote only on an eligible reward improvement.
+- If ineligible, compare genomic VIMP, benefit IQR, ACT recommendation rate,
+  and both increments against experiment 1 to decide which of the three
+  branches above holds, then move to causal-forest regularization at the
+  representation that scored better.
+
+### Experiment 2 result (`run_003_20260823T072640Z`, 1209.8 s, ledger slot 3)
+
+`reward = -1000000` (sentinel). `eligible = false`.
+Diagnostic leader score before eligibility `-15.771`
+= robust selection LCB `-14.034` minus repeat increment range `1.737`.
+Mean source increment gap `2.033` months. Worse than experiment 1 on every
+component, so `diagnostic_leader.txt` stays on `run_001`.
+
+Failed gates (4 of 12, two more than experiment 1):
+
+- `all_repeat_genomic_increment_positive`
+- `all_repeat_genomic_value_at_least_clinical`
+- `all_repeat_genomic_alignment_positive` (newly failing)
+- `all_repeat_genomic_value_at_least_best_constant` (newly failing)
+
+```text
+repeat_1  increment=-5.458  selection_lcb=-14.034  ci95=[-11.068, -0.754]  mean=-5.478 sd=2.646
+repeat_2  increment=-3.720  selection_lcb=-10.751  ci95=[ -8.907,  1.041]  mean=-3.746 sd=2.526
+range=1.737  worst_lcb=-14.034
+```
+
+Source-specific OOF increments (diagnostic only):
+
+```text
+repeat_1  former_train=-5.372  former_validation=-5.714  gap=0.342
+repeat_2  former_train=-2.788  former_validation=-6.511  gap=3.723
+```
+
+C-index: repeat_1 clinical `0.6806` vs C+G `0.6759`; repeat_2 clinical
+`0.6869` vs C+G `0.6781`. Both within the 0.03 noninferiority gate.
+
+Gene stability is unchanged by construction: Jaccard `0.136`, identical
+selections to experiment 1, since only the representation of the selected
+panel changed. Full-development modules:
+`[TGFBR3, SMAD7, SMAD5, BMPR1A]` and `[TBL1XR1, NRIP1, CHD9, MEF2C]`.
+
+#### Mandatory CSF diagnostics
+
+```text
+act_mechanism: W supplied separately as treatment; ACT is absent from X
+rsf_act_split/path/terminal: NA by design (undefined for causal survival
+  forests; ACT is W, not an X feature)
+
+development_csf_cg: seed_agreement=0.9945; seed_tau_correlation=0.9996;
+  genomic_vimp_fraction=0.5571; benefit_iqr=3.955; median_abs_benefit=2.143;
+  nontrivial_fraction=0.9289; act_recommended=0.6465
+development_csf_clinical: seed_agreement=0.9971; seed_tau_correlation=0.9999;
+  genomic_vimp_fraction=0.0000; benefit_iqr=4.382; median_abs_benefit=2.124;
+  nontrivial_fraction=0.9371; act_recommended=0.5169
+
+repeat_1_csf_cg: seed_agreement=0.9955; seed_tau_correlation=0.9996;
+  genomic_vimp_fraction=0.5623; benefit_iqr=4.197; median_abs_benefit=2.240;
+  nontrivial_fraction=0.9304; act_recommended=0.6257
+repeat_1_csf_clinical: seed_agreement=0.9971; seed_tau_correlation=0.9999;
+  genomic_vimp_fraction=0.0000; benefit_iqr=4.265; median_abs_benefit=2.067;
+  nontrivial_fraction=0.9420; act_recommended=0.5261
+
+repeat_2_csf_cg: seed_agreement=0.9936; seed_tau_correlation=0.9996;
+  genomic_vimp_fraction=0.5519; benefit_iqr=3.714; median_abs_benefit=2.046;
+  nontrivial_fraction=0.9275; act_recommended=0.6673
+repeat_2_csf_clinical: seed_agreement=0.9971; seed_tau_correlation=0.9999;
+  genomic_vimp_fraction=0.0000; benefit_iqr=4.499; median_abs_benefit=2.181;
+  nontrivial_fraction=0.9323; act_recommended=0.5077
+```
+
+Overlap and constants are identical to experiment 1 by construction (the
+locked nuisance pipeline does not depend on the candidate): overlap 0.860 /
+0.877, IPTW ESS 360.1 / 384.5, all-observation 45.88 / 45.90, all-ACT
+45.58 / 45.46.
+
+#### Interpretation: third branch of the prespecified prediction
+
+Every *mechanistic* prediction of the crowd-out hypothesis held, and the
+*policy* prediction failed:
+
+```text
+                        exp 1 (raw 8)   exp 2 (module 2)   predicted direction
+genomic vimp fraction        0.807           0.557         down    -> held
+benefit IQR (months)         2.788           3.955         up      -> held
+ACT recommended              0.722           0.646         down    -> held
+repeat increments      -4.008 / -3.195  -5.458 / -3.720    up      -> FAILED
+```
+
+So reducing genomic split competition does restore the CATE's shape, but the
+restored shape is not a better policy. This is the third branch written down
+before the run: gene-specific direction carries the little information the
+panel has, and averaging four genes into a module mean cancels it. Two module
+means still absorb 0.557 of variable importance from only 2 of 20 columns,
+which also confirms that continuous columns dominate GRF's split-frequency
+importance largely through split opportunity rather than signal.
+
+The deeper reading is that the panel's problem is not representation. In both
+experiments the genomic policy converges to recommending ACT for roughly
+two-thirds of patients while the all-ACT constant (45.5 months) is *below* the
+all-observation constant (45.9), and the genomic alignment collapses from the
+clinical 4.5-5.1 months to about 0. Genes are not reordering who benefits;
+they are adding variance that erases the clinical ordering and biasing the
+policy toward blanket treatment.
+
+Per the prespecified rule, representation reverts to raw, which scored better
+on every component, and the next experiment attacks causal-forest
+regularization.
