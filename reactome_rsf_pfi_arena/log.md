@@ -597,3 +597,31 @@ Recommendation: adopt 3.12 only if the 3.10 stack cannot be recovered, and in
 either case record the interpreter and the resolved versions of numpy, scipy,
 scikit-learn and scikit-survival in every future `result.json` so this failure
 is detectable from the artifacts rather than from bytecode timestamps.
+
+### ARENA PAUSED after experiment 6 — do not launch experiment 7
+
+The search is on hold pending a human decision about the execution
+environment, per the iter_006 detail above. Six of twenty slots are consumed
+(experiment 5 to an external kill, experiment 6 to a void comparison) and
+fourteen remain. `best_run.txt` names run_002 (reward 5.686, C-index 0.7069),
+established under the pre-experiment-6 environment.
+
+**Before any further run**, resolve which interpreter and library stack the
+arena is standardized on:
+
+- If the original environment is recovered, confirm it by reproducing the
+  nuisance constant `0.2183461156` — the four pre-experiment-1 smokes returned
+  screening RMST `0.5041604586` / C `0.647166` on the 64-gene pool, and any
+  correct restoration must return those values before a real slot is spent.
+- If Python 3.12 is adopted instead, runs 001-004 become historical, the
+  leader has to be re-established under 3.12, and the log's cross-run
+  comparisons must restart from that point. On this machine 3.12 currently
+  reproduces screening RMST `-3.6257158786` / C `0.659096` on the same smoke
+  pool.
+
+Whichever is chosen, pin the interpreter explicitly at launch rather than
+relying on `python3` from PATH, and record the resolved interpreter and the
+numpy / scipy / scikit-learn / scikit-survival versions in this log for every
+subsequent experiment. The arena's integrity check covers file contents and
+seeds; it does not reach the environment, and this failure was only detectable
+from bytecode timestamps.
