@@ -37,7 +37,7 @@ except ImportError:
 # element of every reduced list, so those lists are ordered with the intended
 # reference geometry first rather than smallest first.
 CANDIDATE = {
-    "name": "deep_fine_reference_v4",
+    "name": "reference_600_trees_v5",
     "screening_space": {
         "n_estimators": [150, 250],
         "max_depth": [4, 6],
@@ -46,9 +46,9 @@ CANDIDATE = {
         "max_features": [0.25, 0.5],
     },
     "reduced_space": {
-        "n_estimators": [400, 200, 600],
-        "max_depth": [8, 6, 4],
-        "min_samples_leaf": [8, 16, 32],
+        "n_estimators": [600, 400, 200],
+        "max_depth": [6, 4, 8],
+        "min_samples_leaf": [16, 8, 32],
         "split_leaf_multiplier": [2, 3],
         "max_features": ["sqrt", "log2", 0.25],
     },
