@@ -1,0 +1,4 @@
+stage,trial,top_n,rmst_difference_months,harrell_cindex,rsf_n_estimators,rsf_max_depth,rsf_min_samples_leaf,rsf_min_samples_split,rsf_max_features
+reduced,0,0,-0.2651558409715043,0.6815062966663977,20,3,10,20,sqrt
+reduced,1,1,0.3536787896847585,0.6724119739071607,20,3,10,20,sqrt
+reduced,2,2,3.123058802034233,0.6720535387327222,20,3,10,20,sqrt
