@@ -447,3 +447,153 @@ under a new candidate name. Standing leader is unchanged: run_002 at reward
 longer than a supervising session reliably stays alive in the foreground. Every
 remaining launch should be detached so that the process outlives its launcher;
 an interrupted attempt is indistinguishable in cost from a failed one.
+
+### iter_006 — relaunch of the interrupted 600-tree reference
+- type: PARAM
+- hypothesis: unchanged from iter_005, which produced no data. Reference
+  geometry has always used 400 trees; depth, leaf and `max_features` are each
+  settled by a controlled comparison (depth 6 > depth 8, leaf 16 > leaf 8,
+  sqrt > log2/0.25/0.5/1.0), leaving n_estimators the only reference dimension
+  never varied. Raising the reference to 600 trees reduces the forest's Monte
+  Carlo variance and should lift the controlled curve mean above run 003's
+  2.021 at the identical ranking.
+- changed: `CANDIDATE["name"]` -> `reference_600_trees_v6_relaunch`, the sole
+  edit against the interrupted experiment 5 snapshot. Both search spaces are
+  byte-identical to that snapshot: `reduced_space` holds the run 003 ordering
+  with n_estimators -> [600, 400, 200], making the reference 600 trees /
+  depth 6 / leaf 16 / multiplier 2 / sqrt, and `screening_space` is unchanged
+  from runs 003-004 so the ranking is reproduced exactly for the third time and
+  trees is the only moving part. The rename is required, not cosmetic: red
+  line 11 forbids rerunning snapshot `a60036d6…`, which experiment 5 consumed.
+- prespecified_readout: curve mean/median against run 003's 2.021 / 2.121. A
+  lower mean retires 600 trees and settles the reference at 400.
+- cost_projection: screening and PFI reproduce runs 003-004 at ~7.5 ks; the
+  reduced stage grows with trees to ~0.2 ks. Total ~7.7 ks against 14.4 ks.
+- red_line_audit: unchanged in kind from iter_005 and re-verified against the
+  running snapshot. Only train.py edited and log.md appended; locked files pass
+  `integrity.verify_lock` (the launcher re-checks at entry). No dataset path,
+  gene symbol, row id, prediction or outcome in train.py; no gene prefilter or
+  pre-ranking, so all 8,647 eligible genes enter the screening forest under
+  launcher verification. Locked fit-only transforms, held-out-only permutation,
+  paired counterfactual prediction, paired permutation and the 60-month
+  IPCW-AIPW estimand with lexicographic C-index are untouched. No rows dropped.
+  All of N=0..32 evaluated before selection. Max trees 600 <= 1,000.
+  Experiment 6 of 20, fresh snapshot. Claims remain observational.
+- launched: detached with `nohup`/`disown` in its own process group, so the
+  candidate outlives its supervising session — the direct fix for what cost
+  experiment 5.
+- run_id: run_006_20260823T081802Z
+- screening_rmst_difference: 0.222 months
+- screening_cindex: 0.666
+- final_top_n: 0
+- final_rmst_difference: 5.468 months
+- final_cindex: 0.684
+- final_genes: []
+- runtime: 6,883.2 s against the 14,400 s wall
+- verdict: NOT_LEADER — run_002 stands at 5.686 / 0.7069, unchanged
+- lesson: The comparison this experiment was designed to make is void; the
+  execution environment changed between run 004 and run 006, so the curve is
+  not on run 003's numerical footing and 600 trees is neither confirmed nor
+  retired.
+
+#### iter_006 detail — the readout, and why it cannot be believed
+
+**Wall clock 6,883.2 s** (well inside the 14,400 s wall). The winner was a free
+trial at **N=0** — clinical covariates only, no genes — at 200 trees / depth 8 /
+leaf 8 / `max_features` 0.25, reward 5.468. Its fold spread is the widest yet
+seen (11.311 / -0.072 / 5.165), so even taken at face value this is a
+dispersion draw rather than an evenly supported result, and it does not
+displace run_002 (5.686 / 0.7069). `best_run.txt` is unchanged.
+
+**Prespecified readout at face value — but see below:**
+
+| curve statistic | run 003 ref = 400 trees | run 006 ref = 600 trees |
+| --- | --- | --- |
+| RMST mean | **2.021** | 1.297 |
+| RMST median | **2.121** | 1.294 |
+| RMST minimum | **-0.714** | -2.875 |
+| negative panels | **4 of 33** | 6 of 33 |
+| RMST maximum | **4.847** | 4.263 |
+| C-index max | **0.7229** | 0.7110 |
+
+Every statistic moves the wrong way, which by the stated rule would retire 600
+trees. That verdict is **not** recorded, because the run violates the premise
+the comparison rests on.
+
+**The screening stage did not reproduce runs 003-004, and could not have.**
+The design claimed the ranking would be "reproduced exactly for the third
+time": identical `screening_space`, identical data, identical seeds. It was
+not. Screening trial 0 has identical parameters in runs 003, 004 and 006, and
+returned C = 0.6707625514377751 in the first two and 0.662343204007026 in the
+third. The constant screening RMST — the same value in all 12 trials of a run,
+because the all-gene forest never splits on `Adjuvant Chemo`, so every
+recommendation is "observe" and the estimate collapses to the nuisance layer —
+moved from **0.2183461156** in runs 001-004 to **0.2219237706** in run 006. The
+selected screening geometry changed with it (250 trees / `max_features` 0.25 ->
+150 trees / 0.5), so the gene ranking differs, so the reduced curve is a
+different curve. Trees were not the only moving part.
+
+**This is a persistent environment shift, not run-to-run noise.** Recomputing
+the nuisance layer directly today returns 0.2219237706 to ten decimals, and
+does so identically with threads unpinned and with
+`OMP_NUM_THREADS=OPENBLAS_NUM_THREADS=MKL_NUM_THREADS=1`, so it is not a
+floating-point reduction-order effect. The nuisance layer contains no RNG at
+all — `StratifiedKFold` at a fixed seed, an L2 logistic propensity, and two
+`CoxPHSurvivalAnalysis` fits — so given identical inputs it cannot return two
+values. The smoke runs confirm it independently and bracket the timing: the
+four smokes taken before experiment 1 all return screening RMST
+**0.5041604586** / C 0.647166 on the 64-gene reduced pool, and today's smoke on
+the same pool returns **-3.6257158786** / C 0.659096.
+
+**What was excluded.** `affyfRMATrain.csv` (b93f3cee…), `affyfRMAValidation.csv`
+(824689ae…) and the MSigDB GMT (5d61f289…) hash today exactly as every run
+recorded them, and the CSVs have not been touched since May 3. `budget.json` is
+byte-identical across all five recorded runs, seeds included, and both it and
+`prepare.py` have exactly one commit in their history. The Reactome manifest's
+only working-tree change is two timestamps; `gmt_sha256` is unchanged, and gene
+columns are `sorted()`, so column order is fixed. Gene count (8,647), feature
+count (8,666), row count (1,034), event count (465) and treated count (152) are
+identical in every run, as are the clinical imputation medians. Only one
+scikit-survival installation exists on the machine and no file under
+site-packages has been modified since May 3.
+
+**What the evidence points to.** The arena's `__pycache__` holds bytecode under
+*two* interpreter tags: `prepare.cpython-310.pyc` written 16:12 local, when the
+arena was scaffolded and the four matching smokes ran, and
+`train.cpython-310.pyc` rewritten 21:39, the minute experiment 5 was launched —
+against `prepare.cpython-312.pyc` and `run.cpython-312.pyc` first written at
+23:22, which is this session's smoke. No 3.12 process imported `prepare.py`
+before 23:22. The natural reading is that experiments 1-5 ran under CPython
+3.10 and this session's launch used 3.12, which is the `python3` on PATH. That
+reading is incomplete: no 3.10 environment on this machine currently has
+scikit-survival installed, so if one existed it has since been removed. The
+mechanism is therefore *evidenced but not proven*, and the honest statement is
+narrower and sufficient: **the execution environment changed between run 004
+and run 006, and runs are only comparable within an environment.**
+
+**Consequences.**
+1. Experiment 6's slot bought no answer about tree count. 600 trees is
+   untested, exactly as it was after experiment 5.
+2. The four surviving curves are not a single series. Runs 001-004 share a
+   footing; run 006 sits on another. Cross-boundary comparisons — including
+   run 006's reward against `best_run.txt` — are apples to oranges. Run 002
+   remains the leader only because run 006 did not beat it on either footing.
+3. Everything the log concludes from runs 001-004 (resolution raises the
+   curve's floor, deep-and-fine is a worse reference, reward is part level and
+   part spread) is *internally* consistent and stands, because those
+   comparisons are all within the old environment.
+4. The arena has no environment lock. `integrity.verify_lock` pins file
+   contents and `budget.json` pins seeds, but nothing pins the interpreter or
+   library versions, and `run.py` inherits whatever `sys.executable` launched
+   it. A reproducibility guarantee that stops at file hashes does not reach
+   the numbers.
+
+**This needs a human decision before experiment 7.** Either the 3.10
+environment is identified and restored, so the series continues on its original
+footing with runs 005 and 006 written off, or 3.12 is adopted as the arena's
+environment, in which case runs 001-004 become historical and the leader must
+be re-established under 3.12 — which costs slots from the fourteen that remain.
+Recommendation: adopt 3.12 only if the 3.10 stack cannot be recovered, and in
+either case record the interpreter and the resolved versions of numpy, scipy,
+scikit-learn and scikit-survival in every future `result.json` so this failure
+is detectable from the artifacts rather than from bytecode timestamps.
