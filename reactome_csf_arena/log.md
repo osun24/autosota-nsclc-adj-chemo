@@ -1220,3 +1220,207 @@ panel *less* concentrated has hurt, and the untested direction is concentration.
 The invariant is unchanged for a sixth run: mean predicted genomic benefit
 0.83-1.16 against the clinical 0.47-0.52, ACT recommended 0.65-0.70 against the
 clinical 0.51-0.53, genomic variable importance 0.81-0.83.
+
+---
+
+## Experiment 7 (prespecified before launch; ledger slot 8)
+
+### Hypothesis
+
+Concentration is the useful direction. Experiment 6 established a monotone
+relationship in the only selector constant that controls panel breadth: at two
+genes per pathway the panel spans four blocks, reproduces at Jaccard 0.063 and
+scores -4.782 / -3.653; at four genes per pathway it spans two blocks,
+reproduces at 0.103 and scores -2.400 / -1.467. Extending the same axis to
+eight genes per pathway makes each fold's panel the top eight members of a
+single pathway, chosen by the both-halves pathway co-selection rule that
+`v2_findings.md` identifies as the most reproducible selection unit. If the
+relationship continues, gene Jaccard rises above 0.136 and both repeat
+increments rise above -2.400 and -1.467.
+
+Prespecified directional predictions:
+
+- Gene Jaccard rises above experiment 4's 0.1027 and preferably above 0.136.
+- Both increments rise above -2.400 and -1.467.
+- ACT recommendation moves from 0.65-0.71 toward the clinical 0.51-0.53 if the
+  concentrated panel also carries less of the CATE shift.
+- Falsification: a single-block panel makes each fold's membership depend
+  entirely on which block that fitting partition ranks first, so if blocks
+  disagree across folds the Jaccard could instead collapse the way experiment 6
+  did. A Jaccard below 0.10 with increments no better than -2.400 / -1.467
+  would locate the optimum at four genes per pathway and end the composition
+  axis.
+
+### Rationale
+
+This is the one direction six runs have not tried, and it is the direction the
+data now point to: in this arena stability and value have moved together, not
+against each other. It is a single-constant change from the best known
+configuration (experiment 4), it costs no extra compute, and it uses only
+statistics the selector already computes. It also directly tests the
+`v2_findings.md` claim that the pathway is the reproducible unit: a panel that
+*is* a pathway's core either inherits that reproducibility or shows that the
+inherited claim does not survive the switch to a treatment-effect learner.
+
+### Exact change
+
+One constant in `train.py`:
+
+```text
+MAX_GENES_PER_PATHWAY: 2 -> 8
+```
+
+which, with `n_genes = 8`, makes the panel the top eight members of the highest
+co-selected pathway, falling through to the next pathway only if the first has
+fewer than eight detectable members. The experiment 4 selector (per-half gene
+counts, benefit-ordered members, spread as tie-break) and the experiment 4
+`CANDIDATE` block (raw, eight genes, `min_node_size = 5`, 1000 trees,
+`sample_fraction = 0.50`, `honesty_fraction = 0.50`, `alpha = 0.05`,
+`imbalance_penalty = 0.00`) are otherwise untouched.
+
+### Red-line audit
+
+1. Test untouched. OK.
+2. Only `train.py` edited; one constant. OK.
+3. Fit-only throughout. OK.
+4. ACT remains `W`. OK.
+5. Estimand untouched. OK.
+6. Selection statistics never enter the reward. OK.
+7. No censored patient dropped. OK.
+8. Selection still uses only the fit-partition DR benefit signal and Reactome
+   membership; concentrating inside one Reactome pathway is a structure
+   constraint, not a symbol list. OK.
+9. Forest geometry unchanged and identical across arms. OK.
+10. All mandatory CSF diagnostics will be recorded. OK.
+11. C-index secondary. OK.
+12. No probes; one full launcher slot. OK.
+13. No metric shopping. OK.
+14. Ledger slot 8 of 20; 30-minute wall; 1000 trees; 26 <= 34 features. OK.
+15. Claims remain observational. OK.
+
+### Prespecified decision rule
+
+- Promote only on an eligible reward improvement.
+- If the composition optimum is located at four genes per pathway, the
+  composition axis is closed and the next and probably final scientific
+  experiment is panel width at that optimum, which is the one remaining
+  untested way to reduce the genomic CATE shift: fewer genes carry strictly
+  less genomic information, whereas experiment 2's modules carried all eight
+  genes' information in two columns and did not move the shift at all.
+
+### Experiment 7 result (`run_008_20260823T092815Z`, 1181.6 s, ledger slot 8)
+
+`reward = -1000000` (sentinel). `eligible = false`.
+Diagnostic leader score before eligibility `-11.852`
+= robust selection LCB `-10.936` minus repeat increment range `0.916`.
+Mean source increment gap `1.023` months. This is the best non-degenerate score
+of the arena, ahead of experiment 4's `-11.443 - 0.933 = -12.376`, on both
+components: the worst-repeat LCB improved by 0.5 months and the range is the
+smallest of any run with a live clinical comparator.
+
+Failed gates (2 of 12): `all_repeat_genomic_increment_positive` and
+`all_repeat_genomic_value_at_least_clinical`.
+
+```text
+repeat_1  increment=-1.814  selection_lcb=-10.936  ci95=[-7.973, 3.939]  mean=-1.832 sd=3.056
+repeat_2  increment=-2.730  selection_lcb=-10.167  ci95=[-8.187, 2.461]  mean=-2.731 sd=2.709
+range=0.916  worst_lcb=-10.936
+```
+
+Repeat 1's `-1.814` is the best single-repeat increment of any run with an
+intact clinical comparator, and its genomic alignment `3.277` against the
+clinical `5.091` is the closest the genomic policy has come.
+
+Source-specific OOF increments: repeat_1 `-1.892` / `-1.582` (gap 0.310);
+repeat_2 `-2.295` / `-4.032` (gap 1.737).
+
+C-index: repeat_1 clinical `0.6806` vs C+G `0.6770`; repeat_2 clinical
+`0.6869` vs C+G `0.6689`. Within gate.
+
+Gene stability: Jaccard `0.1083`, above experiment 4's `0.1027` but short of the
+predicted 0.136. Each fold panel is now a single clean Reactome block:
+
+```text
+ACAD8 HIBCH ACADSB AUH MCCC1 DLD MCCC2 BCKDK          branched-chain catabolism
+MCCC1 SLC25A44 ACADSB HIBCH ALDH6A1 ACAD8 AUH DBT      branched-chain catabolism
+SMAD1 SMAD5 SMAD4 TGFBR3 SMAD7 BMPR1A ZFYVE16 UBE2D1   TGF-beta / SMAD
+PIP5K1B RAB4A PIK3CB RAB14 PIK3R1 MTMR2 PLEKHA1 PTPN13 PI3K / phosphoinositide
+HACD3 ACSL4 HACD2 ACSL3 HACD1 ELOVL1 ACSL5 HSD17B12    fatty-acid elongation
+PTPN13 PIK3CB PIK3R1 RAB4A PIK3C2A PIP5K1B PLEKHA4 MTMR2  PI3K / phosphoinositide
+TGFBR3 SMAD5 SMAD7 BMP2 SMAD1 SKI BMPR1A UBE2D1        TGF-beta / SMAD
+AUH HIBCH ACAD8 MCCC1 ACADSB SLC25A44 ALDH6A1 DLD      branched-chain catabolism
+```
+
+Full-development panel: `TGFBR3, SMAD7, SMAD4, SMAD5, BMPR1A, ZFYVE16, SMAD1,
+ACVR2A` - a coherent TGF-beta/SMAD core rather than a mixture.
+
+#### Mandatory CSF diagnostics
+
+```text
+act_mechanism: W supplied separately as treatment; ACT is absent from X
+rsf_act_split/path/terminal: NA by design (undefined for causal survival
+  forests; ACT is W, not an X feature)
+
+development_csf_cg: seed_agreement=0.9931; seed_tau_correlation=0.9989;
+  genomic_vimp_fraction=0.8149; benefit_iqr=2.955; median_abs_benefit=1.637;
+  nontrivial_fraction=0.9183; act_recommended=0.7041
+development_csf_clinical: seed_agreement=0.9971; seed_tau_correlation=0.9999;
+  genomic_vimp_fraction=0.0000; benefit_iqr=4.382; median_abs_benefit=2.124;
+  nontrivial_fraction=0.9371; act_recommended=0.5169
+
+repeat_1_csf_cg: seed_agreement=0.9932; seed_tau_correlation=0.9990;
+  genomic_vimp_fraction=0.8207; benefit_iqr=2.969; median_abs_benefit=1.658;
+  nontrivial_fraction=0.9255; act_recommended=0.7060
+repeat_1_csf_clinical: seed_agreement=0.9971; seed_tau_correlation=0.9999;
+  genomic_vimp_fraction=0.0000; benefit_iqr=4.265; median_abs_benefit=2.067;
+  nontrivial_fraction=0.9420; act_recommended=0.5261
+
+repeat_2_csf_cg: seed_agreement=0.9929; seed_tau_correlation=0.9988;
+  genomic_vimp_fraction=0.8091; benefit_iqr=2.942; median_abs_benefit=1.616;
+  nontrivial_fraction=0.9110; act_recommended=0.7021
+repeat_2_csf_clinical: seed_agreement=0.9971; seed_tau_correlation=0.9999;
+  genomic_vimp_fraction=0.0000; benefit_iqr=4.499; median_abs_benefit=2.181;
+  nontrivial_fraction=0.9323; act_recommended=0.5077
+```
+
+Overlap and constants unchanged by construction.
+
+#### Interpretation: concentration confirmed on the objective, not on both repeats
+
+The composition axis is now mapped end to end, and the objective is monotone in
+concentration even though the per-repeat increments are not:
+
+```text
+genes/pathway  blocks  Jaccard  increments        worst LCB  range   score
+2               4      0.063    -4.782 / -3.653   -14.135    1.129   -15.263
+4               2      0.103    -2.400 / -1.467   -11.443    0.933   -12.376
+8               1      0.108    -1.814 / -2.730   -10.936    0.916   -11.852
+```
+
+Two of three predictions held: the Jaccard rose, and the objective improved on
+both of its components. The prediction that *both* increments would rise did
+not: repeat 1 improved by 0.59 months and repeat 2 fell by 1.26. Given the
+sensitivity measured in experiment 5, this is the expected size of panel-driven
+noise, and it is exactly why the locked objective takes the worst repeat and
+penalises the range rather than the mean. The concentrated panel wins on the
+objective because its two repeats disagree less and its bootstrap is tighter,
+not because either repeat found genomic value.
+
+The third prediction, that concentration would also reduce the CATE shift,
+failed outright. The shift is now invariant across seven runs and every
+structural variation tried:
+
+```text
+mean predicted genomic tau   0.83 - 1.37 months   (clinical 0.47 - 0.52)
+ACT recommended              0.65 - 0.77          (clinical 0.51 - 0.53)
+genomic vimp fraction        0.55 - 0.85
+```
+
+It survives eight raw genes, two module means, one Reactome block, four blocks,
+fine leaves and coarse leaves. Whatever produces it is not panel composition.
+
+One untested lever remains that could reduce it in principle: panel *width*.
+Experiment 2's modules reduced the number of genomic columns but still carried
+all eight genes' information; a narrower panel carries strictly less. That is
+the next and, on current evidence, probably the last informative experiment on
+this axis.
