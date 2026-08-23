@@ -329,3 +329,126 @@ Axis 1 first: it targets the measured defect (fold-level pathway switching)
 and it improves the reward term directly through the repeat range, whereas
 axis 2 replaces a panel that is already clearing the stability gate and could
 lose it. Axis 2 is the fallback if axis 1 does not close repeat 2.
+
+## Experiment 3 (prespecified before running)
+
+**Candidate** `tlearner_bounded_pool_module16`
+
+Identical to experiment 2 in every respect — 16 genes, one sign-coherent
+module, both arms at locked clinical geometry, threshold 0.0 — except the
+construction of the candidate pool:
+
+- `POOL_PATHWAYS` 3 -> **5**
+- pool is now the union of each pathway's **top 8 members** by signed score,
+  rather than each pathway's entire membership (`PER_PATHWAY_TOP = 8`)
+
+This bounds the pool at 40 genes instead of the several hundred that whole-
+membership pooling produced.
+
+**Hypothesis.** Experiment 2's residual failure is fold-level anchor
+switching, not capacity or signal strength. Under whole-pathway pooling a
+single pathway flip replaces the entire pool, and two of eight folds did
+exactly that. Drawing a bounded quota from five pathways makes one flip cost
+one fifth of the pool instead of all of it, which will raise Jaccard, cut the
+repeat range, and pull repeat 2's increment up toward repeat 1's +1.470.
+
+**Why this and not the alternatives.**
+
+- *Not `benefit_threshold_months`.* It looked attractive because repeat 2's
+  C+G policy treats 36.9% against the clinical 38.2%, but the arithmetic kills
+  it: raising the threshold flips marginal patients from treat to no-treat,
+  and each flip moves value by only `-tau/n`. With a cohort-mean AIPW benefit
+  of about -0.2 months, trimming even 6% of patients buys on the order of
+  0.01 months against a 0.583-month shortfall. It is two orders of magnitude
+  too weak to be the fix, and it would make part of any "genomic" gain an
+  artifact of the decision rule rather than the panel.
+- *Not lower `max_features` or fewer columns.* Already at one column, the
+  arena minimum. Experiment 2 showed the module's contribution is real but
+  variable (+1.47 / -0.15); shrinking its influence shrinks the gain as well
+  as the loss and parks both increments near zero, which fails a strictly-
+  positive gate just as surely.
+- *Not yet the expression-variability filter.* It would replace a panel that
+  is already clearing the Jaccard gate. Held as the fallback.
+- *Not larger pathways.* Raising `MIN_PATHWAY_MEMBERS` would enlarge the pool
+  and push selection back toward a global ranking, undoing the mechanism that
+  produced experiment 2's Jaccard win.
+
+**Prespecified predictions and what would falsify them.**
+
+- Jaccard rises above 0.1462, and the repeat range falls below 1.622.
+- Both repeats' increments are positive. Repeat 2 has 0.153 months to make up
+  and repeat 1 has 1.470 in hand, so the run passes if bounding the pool is
+  worth even a fraction of the fold-heterogeneity it is aimed at.
+- If Jaccard rises but the increments do not move together, then fold-level
+  anchor switching was *not* what was driving the repeat gap, the remaining
+  variability is in the forests rather than the selection, and the next axis
+  is the expression-variability filter — changing *which* signal the module
+  tracks, not how stably it is picked.
+- If Jaccard falls, bounded quotas fragment the pool across families and
+  whole-pathway pooling was load-bearing; revert to experiment 2's pooling
+  and take the variability filter instead.
+
+**Result.** (to be appended after the run)
+
+**Result — run_003_20260823T191920Z, 226 s wall. ELIGIBLE. Reward -3.9105.**
+
+**All 13 gates pass.** `best_run.txt` and `diagnostic_leader.txt` both now
+name this run.
+
+| field | repeat 1 | repeat 2 |
+|---|---|---|
+| incremental alignment (months) | **+2.574** | **+1.939** |
+| selection LCB | -2.406 | **-3.275** |
+| bootstrap mean / CI95 | +2.543 / [-0.904, +5.906] | +1.904 / [-1.624, +5.177] |
+| alignment C / C+G | 5.098 / 7.672 | 5.361 / 7.300 |
+| value C / C+G / best constant | 48.152 / 48.596 / 45.514 | 48.526 / 48.881 / 45.483 |
+| Harrell C, C / C+G (drop) | 0.6561 / 0.6518 (0.0043) | 0.6641 / 0.6561 (0.0080) |
+| ACT recommended fraction C+G | 0.3056 | 0.3540 |
+| seed agreement / benefit corr | 0.9919 / 0.9991 | 0.9936 / 0.9989 |
+| predicted benefit mean / IQR / nontrivial | -5.333 / 15.474 / 0.9942 | -3.925 / 15.218 / 0.9961 |
+| genomic split fraction obs / ACT | 0.3794 / 0.2851 | 0.3852 / 0.2902 |
+| arm support obs (pt/ev) | 661.5 / 278.25 | 661.5 / 278.25 |
+| arm support ACT (pt/ev) | 114.0 / 70.5 | 114.0 / 70.5 |
+| raw propensity overlap / IPTW ESS | 0.8723 / 358.5 | 0.8694 / 366.3 |
+
+Reward **-3.9105** = robust LCB -3.2751 minus repeat range 0.6355.
+Gene Jaccard 0.1417. Full-development module: `IFNA8, KCNC3, OR2S2, KCNV1,
+TAAR5, ANO2, OR10H2, PTPN1, HTR6, OR2J2, OR3A2, OR52A1, OR10C1, OR2F1,
+KCNJ9, IFNA21`.
+
+**Scorecard against the prespecification.**
+
+- *Both increments positive*: **confirmed**. +2.574 and +1.939. Repeat 2 moved
+  +2.09 months, from -0.153 to +1.939 — far more than the 0.153 it needed.
+- *Repeat range below 1.622*: **confirmed**, 0.6355, a 61% reduction. This is
+  where most of the reward improvement came from.
+- *Jaccard above 0.1462*: **falsified** — 0.1417, essentially unchanged and a
+  hair lower.
+
+That last falsification is the interesting one, because it means my stated
+mechanism was wrong even though the prediction it was attached to came true.
+Bounding the pool did **not** work by making gene selection more repeatable;
+Jaccard is flat and the two histone/HLA folds (r1f3, r2f2) still switched
+families. What it did was change the *composition* of every fold's panel:
+with only eight genes drawn per pathway, each fold's 16 genes are now spread
+across five anchors instead of being dominated by one, so even a fold that
+switches its top anchor still shares its remaining four anchors with the
+others. `KCNC3` now appears in 7 of 8 folds, against 5 of 8 for the best gene
+in experiment 2. Fold-level *heterogeneity of the module* fell without
+fold-level *agreement on gene identity* rising. Jaccard was simply the wrong
+instrument for what mattered; the repeat range measured it directly.
+
+**Interpretation.** The winning candidate is the locked clinical T-learner
+plus a single averaged, sign-coherent Reactome module built from a bounded
+five-pathway quota. It buys about 2.3 months of incremental policy alignment
+in both repeated cross-fits, at a cost of under 0.008 in Harrell C. The
+olfactory/potassium-channel caveat recorded under experiment 2 stands
+unchanged and applies to this panel too.
+
+**Status: an eligible candidate exists.** The reward is negative because the
+objective is a 0.25%-quantile selection LCB (alpha/20 multiplicity), roughly
+2.8 bootstrap SDs below the mean, and the increment's bootstrap SD is about
+1.7 months. A positive reward would need a mean increment near 4.8 months
+against the 2.3 achieved. The remaining experiments go to enlarging the
+increment, since `best_run.txt` only advances on a strictly higher *eligible*
+reward and the frozen winner cannot be lost.
