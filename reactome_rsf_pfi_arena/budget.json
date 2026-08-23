@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "max_experiments": 20,
+  "wall_time_seconds": 14400,
+  "cv_folds": 3,
+  "screening_trials": 12,
+  "reduced_trials": 49,
+  "permutation_repeats": 3,
+  "max_top_genes": 32,
+  "max_trees_per_forest": 1000,
+  "tau_months": 60.0,
+  "forest_seed": 42,
+  "fold_seed": 20260824,
+  "permutation_seed": 20260825
+}

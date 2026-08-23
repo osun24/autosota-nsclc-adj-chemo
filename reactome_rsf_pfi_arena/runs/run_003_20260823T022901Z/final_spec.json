@@ -1,0 +1,90 @@
+{
+  "clinical_covariates": [
+    "Adjuvant Chemo",
+    "Age",
+    "IS_MALE",
+    "Stage_IA",
+    "Stage_IB",
+    "Stage_II",
+    "Stage_III",
+    "Histology_Adenocarcinoma",
+    "Histology_Adenosquamous Carcinoma",
+    "Histology_Large Cell Carcinoma",
+    "Histology_Squamous Cell Carcinoma",
+    "Race_African American",
+    "Race_Asian",
+    "Race_Caucasian",
+    "Race_Native Hawaiian or Other Pacific Islander",
+    "Race_Unknown",
+    "Smoked?_No",
+    "Smoked?_Unknown",
+    "Smoked?_Yes"
+  ],
+  "covariates": [
+    "Adjuvant Chemo",
+    "Age",
+    "IS_MALE",
+    "Stage_IA",
+    "Stage_IB",
+    "Stage_II",
+    "Stage_III",
+    "Histology_Adenocarcinoma",
+    "Histology_Adenosquamous Carcinoma",
+    "Histology_Large Cell Carcinoma",
+    "Histology_Squamous Cell Carcinoma",
+    "Race_African American",
+    "Race_Asian",
+    "Race_Caucasian",
+    "Race_Native Hawaiian or Other Pacific Islander",
+    "Race_Unknown",
+    "Smoked?_No",
+    "Smoked?_Unknown",
+    "Smoked?_Yes",
+    "LDLRAP1",
+    "SEC23A",
+    "GNG7",
+    "ANKFY1",
+    "PRIM2",
+    "PPFIBP2"
+  ],
+  "development_cv": {
+    "folds": [
+      {
+        "act_recommended_fraction": 0.32753623188405795,
+        "fold": 1,
+        "harrell_cindex": 0.7056800563777308,
+        "rmst_difference_months": 7.496326652351066
+      },
+      {
+        "act_recommended_fraction": 0.4608695652173913,
+        "fold": 2,
+        "harrell_cindex": 0.7128413938285968,
+        "rmst_difference_months": 4.348714532631705
+      },
+      {
+        "act_recommended_fraction": 0.1686046511627907,
+        "fold": 3,
+        "harrell_cindex": 0.698085708680176,
+        "rmst_difference_months": 2.977338020433753
+      }
+    ],
+    "harrell_cindex": 0.7048511330275514,
+    "rmst_difference_months": 4.942691961168536
+  },
+  "genes": [
+    "LDLRAP1",
+    "SEC23A",
+    "GNG7",
+    "ANKFY1",
+    "PRIM2",
+    "PPFIBP2"
+  ],
+  "rsf_params": {
+    "max_depth": 6,
+    "max_features": "sqrt",
+    "min_samples_leaf": 16,
+    "min_samples_split": 32,
+    "n_estimators": 200
+  },
+  "top_n": 6
+}

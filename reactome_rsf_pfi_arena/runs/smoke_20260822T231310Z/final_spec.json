@@ -1,0 +1,71 @@
+{
+  "clinical_covariates": [
+    "Adjuvant Chemo",
+    "Age",
+    "IS_MALE",
+    "Stage_IA",
+    "Stage_IB",
+    "Stage_II",
+    "Stage_III",
+    "Histology_Adenocarcinoma",
+    "Histology_Adenosquamous Carcinoma",
+    "Histology_Large Cell Carcinoma",
+    "Histology_Squamous Cell Carcinoma",
+    "Race_African American",
+    "Race_Asian",
+    "Race_Caucasian",
+    "Race_Native Hawaiian or Other Pacific Islander",
+    "Race_Unknown",
+    "Smoked?_No",
+    "Smoked?_Unknown",
+    "Smoked?_Yes"
+  ],
+  "covariates": [
+    "Adjuvant Chemo",
+    "Age",
+    "IS_MALE",
+    "Stage_IA",
+    "Stage_IB",
+    "Stage_II",
+    "Stage_III",
+    "Histology_Adenocarcinoma",
+    "Histology_Adenosquamous Carcinoma",
+    "Histology_Large Cell Carcinoma",
+    "Histology_Squamous Cell Carcinoma",
+    "Race_African American",
+    "Race_Asian",
+    "Race_Caucasian",
+    "Race_Native Hawaiian or Other Pacific Islander",
+    "Race_Unknown",
+    "Smoked?_No",
+    "Smoked?_Unknown",
+    "Smoked?_Yes"
+  ],
+  "development_cv": {
+    "folds": [
+      {
+        "act_recommended_fraction": 0.2804642166344294,
+        "fold": 1,
+        "harrell_cindex": 0.6890357650256347,
+        "rmst_difference_months": 7.744161230381599
+      },
+      {
+        "act_recommended_fraction": 0.18375241779497098,
+        "fold": 2,
+        "harrell_cindex": 0.6683354974031163,
+        "rmst_difference_months": 0.021699387525675042
+      }
+    ],
+    "harrell_cindex": 0.6793355139432834,
+    "rmst_difference_months": 3.8829303089536373
+  },
+  "genes": [],
+  "rsf_params": {
+    "max_depth": 3,
+    "max_features": "sqrt",
+    "min_samples_leaf": 10,
+    "min_samples_split": 20,
+    "n_estimators": 20
+  },
+  "top_n": 0
+}

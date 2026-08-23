@@ -1,0 +1,39 @@
+Adjuvant Chemo
+Age
+IS_MALE
+Stage_IA
+Stage_IB
+Stage_II
+Stage_III
+Histology_Adenocarcinoma
+Histology_Adenosquamous Carcinoma
+Histology_Large Cell Carcinoma
+Histology_Squamous Cell Carcinoma
+Race_African American
+Race_Asian
+Race_Caucasian
+Race_Native Hawaiian or Other Pacific Islander
+Race_Unknown
+Smoked?_No
+Smoked?_Unknown
+Smoked?_Yes
+ANKFY1
+RAB4B
+TRIM38
+PRIM2
+FRAT1
+CFL1
+FMO3
+LDLRAP1
+POLR3G
+SSB
+NDUFAF5
+CTDSP2
+HDAC2
+EEF1G
+INHA
+GLS2
+CALU
+KRAS
+TRIM68
+OSBPL3

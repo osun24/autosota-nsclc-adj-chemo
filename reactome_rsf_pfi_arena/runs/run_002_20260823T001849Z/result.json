@@ -1,0 +1,1054 @@
+{
+  "artifacts": {
+    "final_covariates.txt": {
+      "bytes": 378,
+      "sha256": "3e37f8b0bb71c7269efee8fc62ef579a01931299c65c51bb67e93852f5cf3bbd"
+    },
+    "final_rsf.pkl": {
+      "bytes": 243297119,
+      "sha256": "edf70f35e0cab5204712b131012a38b28fd77a54926a032b6f6d6a784869c3a4"
+    },
+    "final_spec.json": {
+      "bytes": 2055,
+      "sha256": "c3b0036e6ea49416c1302bd81071d66b15709bf5a62a293e032bd63e54137a8e"
+    },
+    "permutation_importance.csv": {
+      "bytes": 454723,
+      "sha256": "d4ba558fc66acd2d9caad278ae45ef62687998299ca06066b395abb61ed5af92"
+    },
+    "permutation_importance.png": {
+      "bytes": 143983,
+      "sha256": "f44aae7e7936dd831eac8fa7f4dea26b68a580bef007a88332abc83a7687157a"
+    },
+    "top_n_results.csv": {
+      "bytes": 3483,
+      "sha256": "500b6b67e3242db00d66797147796595505822e6f2159853c538dd812e5503d1"
+    },
+    "training_imputation_medians.csv": {
+      "bytes": 528,
+      "sha256": "4cfaf0258c2b93b3102a82b64e06dd6f9c616b55c15c9cc7c96d7ecddb9228d1"
+    }
+  },
+  "budget": {
+    "cv_folds": 3,
+    "fold_seed": 20260824,
+    "forest_seed": 42,
+    "max_experiments": 20,
+    "max_top_genes": 32,
+    "max_trees_per_forest": 1000,
+    "permutation_repeats": 3,
+    "permutation_seed": 20260825,
+    "reduced_trials": 49,
+    "schema_version": 1,
+    "screening_trials": 12,
+    "smoke_reductions_applied": false,
+    "tau_months": 60.0,
+    "wall_time_seconds": 14400
+  },
+  "candidate": {
+    "name": "screen_capacity_sqrt_reduced_v2",
+    "plot_top_k": 32,
+    "reduced_space": {
+      "max_depth": [
+        6,
+        4,
+        8
+      ],
+      "max_features": [
+        "sqrt",
+        "log2",
+        0.25
+      ],
+      "min_samples_leaf": [
+        16,
+        8,
+        32
+      ],
+      "n_estimators": [
+        400,
+        200,
+        600
+      ],
+      "split_leaf_multiplier": [
+        2,
+        3
+      ]
+    },
+    "screening_space": {
+      "max_depth": [
+        4,
+        6
+      ],
+      "max_features": [
+        0.05,
+        0.25
+      ],
+      "min_samples_leaf": [
+        16,
+        24
+      ],
+      "n_estimators": [
+        100,
+        150
+      ],
+      "split_leaf_multiplier": [
+        2
+      ]
+    }
+  },
+  "data": {
+    "confirmatory_validation_used": false,
+    "development_act": 152,
+    "development_events": 465,
+    "development_n": 1034,
+    "former_validation_used_as_development": true,
+    "reactome_collection_sha256": "5d61f289a2400cddfbb3a3353829fd2284a360bbe50f2093b566c4b7bea93341",
+    "reactome_genes_before_smoke_reduction": 8647,
+    "reactome_genes_used": 8647,
+    "test_used": false,
+    "train_sha256": "b93f3cee3858716bca8add447bc837c734e203f6cb37962b1081e3c118d2c65d",
+    "validation_sha256": "824689aeaa34984727f2551bd512214164d0559d05cbec5817b0f88c9adb15a9"
+  },
+  "eligible": true,
+  "final": {
+    "clinical_covariates": [
+      "Adjuvant Chemo",
+      "Age",
+      "IS_MALE",
+      "Stage_IA",
+      "Stage_IB",
+      "Stage_II",
+      "Stage_III",
+      "Histology_Adenocarcinoma",
+      "Histology_Adenosquamous Carcinoma",
+      "Histology_Large Cell Carcinoma",
+      "Histology_Squamous Cell Carcinoma",
+      "Race_African American",
+      "Race_Asian",
+      "Race_Caucasian",
+      "Race_Native Hawaiian or Other Pacific Islander",
+      "Race_Unknown",
+      "Smoked?_No",
+      "Smoked?_Unknown",
+      "Smoked?_Yes"
+    ],
+    "covariates": [
+      "Adjuvant Chemo",
+      "Age",
+      "IS_MALE",
+      "Stage_IA",
+      "Stage_IB",
+      "Stage_II",
+      "Stage_III",
+      "Histology_Adenocarcinoma",
+      "Histology_Adenosquamous Carcinoma",
+      "Histology_Large Cell Carcinoma",
+      "Histology_Squamous Cell Carcinoma",
+      "Race_African American",
+      "Race_Asian",
+      "Race_Caucasian",
+      "Race_Native Hawaiian or Other Pacific Islander",
+      "Race_Unknown",
+      "Smoked?_No",
+      "Smoked?_Unknown",
+      "Smoked?_Yes",
+      "LDLRAP1",
+      "SEC23A",
+      "GNG7",
+      "ANKFY1",
+      "PPFIBP2",
+      "SLC24A1"
+    ],
+    "development_cv": {
+      "folds": [
+        {
+          "act_recommended_fraction": 0.2956521739130435,
+          "fold": 1,
+          "harrell_cindex": 0.7081042988019732,
+          "rmst_difference_months": 5.3719763812932975
+        },
+        {
+          "act_recommended_fraction": 0.3217391304347826,
+          "fold": 2,
+          "harrell_cindex": 0.7131737853858512,
+          "rmst_difference_months": 4.641453354207681
+        },
+        {
+          "act_recommended_fraction": 0.17151162790697674,
+          "fold": 3,
+          "harrell_cindex": 0.6992908994086157,
+          "rmst_difference_months": 7.048614200599235
+        }
+      ],
+      "harrell_cindex": 0.7068620940062191,
+      "rmst_difference_months": 5.686031473649878
+    },
+    "genes": [
+      "LDLRAP1",
+      "SEC23A",
+      "GNG7",
+      "ANKFY1",
+      "PPFIBP2",
+      "SLC24A1"
+    ],
+    "rsf_params": {
+      "max_depth": 6,
+      "max_features": "sqrt",
+      "min_samples_leaf": 16,
+      "min_samples_split": 32,
+      "n_estimators": 400
+    },
+    "top_n": 6
+  },
+  "limitations": [
+    "Train and former validation are pooled adaptive development data; the reported CV scores are not external confirmation.",
+    "The PFI ranking and reduced-model search reuse development folds, so final CV performance is selection-adaptive.",
+    "Permutation importance is conditional on the fitted RSF and can divide credit unpredictably among correlated genes.",
+    "Zero importance for a feature unused by every assessment-fold forest is exact for those fitted forests, not proof of no biological effect.",
+    "IPCW-AIPW validity requires adequate measured-confounder adjustment, positivity, consistency, and conditionally independent censoring.",
+    "Random row-level CV does not establish transportability across source studies or expression platforms."
+  ],
+  "objective": {
+    "primary": "60-month cross-fitted IPCW-AIPW policy-versus-anti-policy RMST difference",
+    "secondary": "Harrell C-index",
+    "selection": "lexicographic with RMST first"
+  },
+  "permutation_importance": {
+    "features_used_in_any_fold": 1942,
+    "features_with_positive_rmst_importance": 0,
+    "rank_rule": "RMST importance descending, C-index importance descending, symbol ascending",
+    "repeats": 3,
+    "top_32_genes": [
+      "LDLRAP1",
+      "SEC23A",
+      "GNG7",
+      "ANKFY1",
+      "PPFIBP2",
+      "SLC24A1",
+      "DNM1L",
+      "LAMC2",
+      "SLCO4A1",
+      "INHA",
+      "ARHGAP25",
+      "KCNS3",
+      "PELI1",
+      "LRFN4",
+      "ANPEP",
+      "GLS2",
+      "IGFBP1",
+      "DEFA6",
+      "INTS14",
+      "GPT",
+      "P2RY10",
+      "ALDH9A1",
+      "ZNF274",
+      "H3C7",
+      "LATS1",
+      "CENPS",
+      "ARHGEF1",
+      "PCMT1",
+      "ATP6V1G2",
+      "STX1A",
+      "EIF3B",
+      "PYGL"
+    ]
+  },
+  "phase": "pooled_development_cv_search",
+  "reduced_search": {
+    "best_trial": 6,
+    "evaluated_top_n": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32
+    ],
+    "trials": [
+      {
+        "harrell_cindex": 0.6825071221534661,
+        "rmst_difference_months": 3.394965377171216,
+        "rsf_max_depth": 6,
+        "rsf_max_features": "sqrt",
+        "rsf_min_samples_leaf": 16,
+        "rsf_min_samples_split": 32,
+        "rsf_n_estimators": 400,
+        "stage": "reduced",
+        "top_n": 0,
+        "trial": 0
+      },
+      {
+        "harrell_cindex": 0.696541953983751,
+        "rmst_difference_months": 2.9318922650807604,
+        "rsf_max_depth": 6,
+        "rsf_max_features": "sqrt",
+        "rsf_min_samples_leaf": 16,
+        "rsf_min_samples_split": 32,
+        "rsf_n_estimators": 400,
+        "stage": "reduced",
+        "top_n": 1,
+        "trial": 1
+      },
+      {
+        "harrell_cindex": 0.6953238950576289,
+        "rmst_difference_months": 2.1234836613637773,
+        "rsf_max_depth": 6,
+        "rsf_max_features": "sqrt",
+        "rsf_min_samples_leaf": 16,
+        "rsf_min_samples_split": 32,
+        "rsf_n_estimators": 400,
+        "stage": "reduced",
+        "top_n": 2,
+        "trial": 2
+      },
+      {
+        "harrell_cindex": 0.699175133598565,
+        "rmst_difference_months": 3.681005463881185,
+        "rsf_max_depth": 6,
+        "rsf_max_features": "sqrt",
+        "rsf_min_samples_leaf": 16,
+        "rsf_min_samples_split": 32,
+        "rsf_n_estimators": 400,
+        "stage": "reduced",
+        "top_n": 3,
+        "trial": 3
+      },
+      {
+        "harrell_cindex": 0.7054624899917451,
+        "rmst_difference_months": 1.9724491180483352,
+        "rsf_max_depth": 6,
+        "rsf_max_features": "sqrt",
+        "rsf_min_samples_leaf": 16,
+        "rsf_min_samples_split": 32,
+        "rsf_n_estimators": 400,
+        "stage": "reduced",
+        "top_n": 4,
+        "trial": 4
+      },
+      {
+        "harrell_cindex": 0.7067162372685688,
+        "rmst_difference_months": 2.6494710610142604,
+        "rsf_max_depth": 6,
+        "rsf_max_features": "sqrt",
+        "rsf_min_samples_leaf": 16,
+        "rsf_min_samples_split": 32,
+        "rsf_n_estimators": 400,
+        "stage": "reduced",
+        "top_n": 5,
+        "trial": 5
+      },
+      {
+        "harrell_cindex": 0.7068620940062191,
+        "rmst_difference_months": 5.686031473649878,
+        "rsf_max_depth": 6,
+        "rsf_max_features": "sqrt",
+        "rsf_min_samples_leaf": 16,
+        "rsf_min_samples_split": 32,
+        "rsf_n_estimators": 400,
+        "stage": "reduced",
+        "top_n": 6,
+        "trial": 6
+      },
+      {
+        "harrell_cindex": 0.7079296411924254,
+        "rmst_difference_months": 4.105986740242861,
+        "rsf_max_depth": 6,
+        "rsf_max_features": "sqrt",
+        "rsf_min_samples_leaf": 16,
+        "rsf_min_samples_split": 32,
+        "rsf_n_estimators": 400,
+        "stage": "reduced",
+        "top_n": 7,
+        "trial": 7
+      },
+      {
+        "harrell_cindex": 0.7087303015820801,
+        "rmst_difference_months": -1.6460966964073698,
+        "rsf_max_depth": 6,
+        "rsf_max_features": "sqrt",
+        "rsf_min_samples_leaf": 16,
+        "rsf_min_samples_split": 32,
+        "rsf_n_estimators": 400,
+        "stage": "reduced",
+        "top_n": 8,
+        "trial": 8
+      },
+      {
+        "harrell_cindex": 0.7109522893301141,
+        "rmst_difference_months": 1.8829768761243917,
+        "rsf_max_depth": 6,
+        "rsf_max_features": "sqrt",
+        "rsf_min_samples_leaf": 16,
+        "rsf_min_samples_split": 32,
+        "rsf_n_estimators": 400,
+        "stage": "reduced",
+        "top_n": 9,
+        "trial": 9
+      },
+      {
+        "harrell_cindex": 0.7169106922298703,
+        "rmst_difference_months": 4.495369978003572,
+        "rsf_max_depth": 6,
+        "rsf_max_features": "sqrt",
+        "rsf_min_samples_leaf": 16,
+        "rsf_min_samples_split": 32,
+        "rsf_n_estimators": 400,
+        "stage": "reduced",
+        "top_n": 10,
+        "trial": 10
+      },
+      {
+        "harrell_cindex": 0.717019308949397,
+        "rmst_difference_months": -1.0235005081627861,
+        "rsf_max_depth": 6,
+        "rsf_max_features": "sqrt",
+        "rsf_min_samples_leaf": 16,
+        "rsf_min_samples_split": 32,
+        "rsf_n_estimators": 400,
+        "stage": "reduced",
+        "top_n": 11,
+        "trial": 11
+      },
+      {
+        "harrell_cindex": 0.7176927326104632,
+        "rmst_difference_months": 1.817077503575027,
+        "rsf_max_depth": 6,
+        "rsf_max_features": "sqrt",
+        "rsf_min_samples_leaf": 16,
+        "rsf_min_samples_split": 32,
+        "rsf_n_estimators": 400,
+        "stage": "reduced",
+        "top_n": 12,
+        "trial": 12
+      },
+      {
+        "harrell_cindex": 0.718937169882756,
+        "rmst_difference_months": 2.051926923220448,
+        "rsf_max_depth": 6,
+        "rsf_max_features": "sqrt",
+        "rsf_min_samples_leaf": 16,
+        "rsf_min_samples_split": 32,
+        "rsf_n_estimators": 400,
+        "stage": "reduced",
+        "top_n": 13,
+        "trial": 13
+      },
+      {
+        "harrell_cindex": 0.7204081505986333,
+        "rmst_difference_months": 0.5371629367265992,
+        "rsf_max_depth": 6,
+        "rsf_max_features": "sqrt",
+        "rsf_min_samples_leaf": 16,
+        "rsf_min_samples_split": 32,
+        "rsf_n_estimators": 400,
+        "stage": "reduced",
+        "top_n": 14,
+        "trial": 14
+      },
+      {
+        "harrell_cindex": 0.7214912144590577,
+        "rmst_difference_months": 2.3427796774887035,
+        "rsf_max_depth": 6,
+        "rsf_max_features": "sqrt",
+        "rsf_min_samples_leaf": 16,
+        "rsf_min_samples_split": 32,
+        "rsf_n_estimators": 400,
+        "stage": "reduced",
+        "top_n": 15,
+        "trial": 15
+      },
+      {
+        "harrell_cindex": 0.7215315578120248,
+        "rmst_difference_months": 2.1130357660457113,
+        "rsf_max_depth": 6,
+        "rsf_max_features": "sqrt",
+        "rsf_min_samples_leaf": 16,
+        "rsf_min_samples_split": 32,
+        "rsf_n_estimators": 400,
+        "stage": "reduced",
+        "top_n": 16,
+        "trial": 16
+      },
+      {
+        "harrell_cindex": 0.7232477019805483,
+        "rmst_difference_months": -1.8821636846709158,
+        "rsf_max_depth": 6,
+        "rsf_max_features": "sqrt",
+        "rsf_min_samples_leaf": 16,
+        "rsf_min_samples_split": 32,
+        "rsf_n_estimators": 400,
+        "stage": "reduced",
+        "top_n": 17,
+        "trial": 17
+      },
+      {
+        "harrell_cindex": 0.7247993694023598,
+        "rmst_difference_months": 2.1241556801412558,
+        "rsf_max_depth": 6,
+        "rsf_max_features": "sqrt",
+        "rsf_min_samples_leaf": 16,
+        "rsf_min_samples_split": 32,
+        "rsf_n_estimators": 400,
+        "stage": "reduced",
+        "top_n": 18,
+        "trial": 18
+      },
+      {
+        "harrell_cindex": 0.7217301712420167,
+        "rmst_difference_months": 4.124758369622893,
+        "rsf_max_depth": 6,
+        "rsf_max_features": "sqrt",
+        "rsf_min_samples_leaf": 16,
+        "rsf_min_samples_split": 32,
+        "rsf_n_estimators": 400,
+        "stage": "reduced",
+        "top_n": 19,
+        "trial": 19
+      },
+      {
+        "harrell_cindex": 0.7228784051341571,
+        "rmst_difference_months": 3.7522874978401872,
+        "rsf_max_depth": 6,
+        "rsf_max_features": "sqrt",
+        "rsf_min_samples_leaf": 16,
+        "rsf_min_samples_split": 32,
+        "rsf_n_estimators": 400,
+        "stage": "reduced",
+        "top_n": 20,
+        "trial": 20
+      },
+      {
+        "harrell_cindex": 0.7241321524109808,
+        "rmst_difference_months": 0.06428644897417131,
+        "rsf_max_depth": 6,
+        "rsf_max_features": "sqrt",
+        "rsf_min_samples_leaf": 16,
+        "rsf_min_samples_split": 32,
+        "rsf_n_estimators": 400,
+        "stage": "reduced",
+        "top_n": 21,
+        "trial": 21
+      },
+      {
+        "harrell_cindex": 0.7217705145949838,
+        "rmst_difference_months": -1.156112094967958,
+        "rsf_max_depth": 6,
+        "rsf_max_features": "sqrt",
+        "rsf_min_samples_leaf": 16,
+        "rsf_min_samples_split": 32,
+        "rsf_n_estimators": 400,
+        "stage": "reduced",
+        "top_n": 22,
+        "trial": 22
+      },
+      {
+        "harrell_cindex": 0.7226891017086962,
+        "rmst_difference_months": -0.3257541258625892,
+        "rsf_max_depth": 6,
+        "rsf_max_features": "sqrt",
+        "rsf_min_samples_leaf": 16,
+        "rsf_min_samples_split": 32,
+        "rsf_n_estimators": 400,
+        "stage": "reduced",
+        "top_n": 23,
+        "trial": 23
+      },
+      {
+        "harrell_cindex": 0.7203367738972299,
+        "rmst_difference_months": 0.4828423082894759,
+        "rsf_max_depth": 6,
+        "rsf_max_features": "sqrt",
+        "rsf_min_samples_leaf": 16,
+        "rsf_min_samples_split": 32,
+        "rsf_n_estimators": 400,
+        "stage": "reduced",
+        "top_n": 24,
+        "trial": 24
+      },
+      {
+        "harrell_cindex": 0.7195733535256987,
+        "rmst_difference_months": 1.6633119841037753,
+        "rsf_max_depth": 6,
+        "rsf_max_features": "sqrt",
+        "rsf_min_samples_leaf": 16,
+        "rsf_min_samples_split": 32,
+        "rsf_n_estimators": 400,
+        "stage": "reduced",
+        "top_n": 25,
+        "trial": 25
+      },
+      {
+        "harrell_cindex": 0.7221118814277823,
+        "rmst_difference_months": 4.8318228715374625,
+        "rsf_max_depth": 6,
+        "rsf_max_features": "sqrt",
+        "rsf_min_samples_leaf": 16,
+        "rsf_min_samples_split": 32,
+        "rsf_n_estimators": 400,
+        "stage": "reduced",
+        "top_n": 26,
+        "trial": 26
+      },
+      {
+        "harrell_cindex": 0.7207712407753372,
+        "rmst_difference_months": 2.018543224769108,
+        "rsf_max_depth": 6,
+        "rsf_max_features": "sqrt",
+        "rsf_min_samples_leaf": 16,
+        "rsf_min_samples_split": 32,
+        "rsf_n_estimators": 400,
+        "stage": "reduced",
+        "top_n": 27,
+        "trial": 27
+      },
+      {
+        "harrell_cindex": 0.7204671139606621,
+        "rmst_difference_months": 2.104463139160063,
+        "rsf_max_depth": 6,
+        "rsf_max_features": "sqrt",
+        "rsf_min_samples_leaf": 16,
+        "rsf_min_samples_split": 32,
+        "rsf_n_estimators": 400,
+        "stage": "reduced",
+        "top_n": 28,
+        "trial": 28
+      },
+      {
+        "harrell_cindex": 0.7203212572230119,
+        "rmst_difference_months": 2.469939179438524,
+        "rsf_max_depth": 6,
+        "rsf_max_features": "sqrt",
+        "rsf_min_samples_leaf": 16,
+        "rsf_min_samples_split": 32,
+        "rsf_n_estimators": 400,
+        "stage": "reduced",
+        "top_n": 29,
+        "trial": 29
+      },
+      {
+        "harrell_cindex": 0.7173761924564137,
+        "rmst_difference_months": 1.5897750546122837,
+        "rsf_max_depth": 6,
+        "rsf_max_features": "sqrt",
+        "rsf_min_samples_leaf": 16,
+        "rsf_min_samples_split": 32,
+        "rsf_n_estimators": 400,
+        "stage": "reduced",
+        "top_n": 30,
+        "trial": 30
+      },
+      {
+        "harrell_cindex": 0.717562392547031,
+        "rmst_difference_months": -0.7353143358844618,
+        "rsf_max_depth": 6,
+        "rsf_max_features": "sqrt",
+        "rsf_min_samples_leaf": 16,
+        "rsf_min_samples_split": 32,
+        "rsf_n_estimators": 400,
+        "stage": "reduced",
+        "top_n": 31,
+        "trial": 31
+      },
+      {
+        "harrell_cindex": 0.7174444658229734,
+        "rmst_difference_months": 1.3223338470064687,
+        "rsf_max_depth": 6,
+        "rsf_max_features": "sqrt",
+        "rsf_min_samples_leaf": 16,
+        "rsf_min_samples_split": 32,
+        "rsf_n_estimators": 400,
+        "stage": "reduced",
+        "top_n": 32,
+        "trial": 32
+      },
+      {
+        "harrell_cindex": 0.6953269983924726,
+        "rmst_difference_months": 1.2535293803403746,
+        "rsf_max_depth": 4,
+        "rsf_max_features": 0.25,
+        "rsf_min_samples_leaf": 32,
+        "rsf_min_samples_split": 96,
+        "rsf_n_estimators": 400,
+        "stage": "reduced",
+        "top_n": 3,
+        "trial": 33
+      },
+      {
+        "harrell_cindex": 0.7123829266930243,
+        "rmst_difference_months": 4.286309128354813,
+        "rsf_max_depth": 8,
+        "rsf_max_features": "sqrt",
+        "rsf_min_samples_leaf": 8,
+        "rsf_min_samples_split": 16,
+        "rsf_n_estimators": 400,
+        "stage": "reduced",
+        "top_n": 7,
+        "trial": 34
+      },
+      {
+        "harrell_cindex": 0.6830036557284458,
+        "rmst_difference_months": 3.1650041141702276,
+        "rsf_max_depth": 6,
+        "rsf_max_features": "sqrt",
+        "rsf_min_samples_leaf": 16,
+        "rsf_min_samples_split": 32,
+        "rsf_n_estimators": 600,
+        "stage": "reduced",
+        "top_n": 0,
+        "trial": 35
+      },
+      {
+        "harrell_cindex": 0.7053383565980003,
+        "rmst_difference_months": 1.2736456505262883,
+        "rsf_max_depth": 6,
+        "rsf_max_features": "sqrt",
+        "rsf_min_samples_leaf": 32,
+        "rsf_min_samples_split": 96,
+        "rsf_n_estimators": 400,
+        "stage": "reduced",
+        "top_n": 9,
+        "trial": 36
+      },
+      {
+        "harrell_cindex": 0.706672790580758,
+        "rmst_difference_months": 1.220340599186076,
+        "rsf_max_depth": 6,
+        "rsf_max_features": "sqrt",
+        "rsf_min_samples_leaf": 16,
+        "rsf_min_samples_split": 32,
+        "rsf_n_estimators": 200,
+        "stage": "reduced",
+        "top_n": 6,
+        "trial": 37
+      },
+      {
+        "harrell_cindex": 0.6988648001142027,
+        "rmst_difference_months": 2.192815162190802,
+        "rsf_max_depth": 8,
+        "rsf_max_features": 0.25,
+        "rsf_min_samples_leaf": 16,
+        "rsf_min_samples_split": 32,
+        "rsf_n_estimators": 400,
+        "stage": "reduced",
+        "top_n": 3,
+        "trial": 38
+      },
+      {
+        "harrell_cindex": 0.705142846502852,
+        "rmst_difference_months": 0.21834611561134748,
+        "rsf_max_depth": 8,
+        "rsf_max_features": 0.25,
+        "rsf_min_samples_leaf": 32,
+        "rsf_min_samples_split": 96,
+        "rsf_n_estimators": 200,
+        "stage": "reduced",
+        "top_n": 28,
+        "trial": 39
+      },
+      {
+        "harrell_cindex": 0.7226891017086962,
+        "rmst_difference_months": -0.3257541258625892,
+        "rsf_max_depth": 6,
+        "rsf_max_features": "sqrt",
+        "rsf_min_samples_leaf": 16,
+        "rsf_min_samples_split": 32,
+        "rsf_n_estimators": 400,
+        "stage": "reduced",
+        "top_n": 23,
+        "trial": 40
+      },
+      {
+        "harrell_cindex": 0.7244114525469069,
+        "rmst_difference_months": 1.0614585281043982,
+        "rsf_max_depth": 8,
+        "rsf_max_features": "sqrt",
+        "rsf_min_samples_leaf": 16,
+        "rsf_min_samples_split": 48,
+        "rsf_n_estimators": 200,
+        "stage": "reduced",
+        "top_n": 21,
+        "trial": 41
+      },
+      {
+        "harrell_cindex": 0.7199985103992751,
+        "rmst_difference_months": 0.5531560944914903,
+        "rsf_max_depth": 6,
+        "rsf_max_features": "sqrt",
+        "rsf_min_samples_leaf": 16,
+        "rsf_min_samples_split": 48,
+        "rsf_n_estimators": 600,
+        "stage": "reduced",
+        "top_n": 24,
+        "trial": 42
+      },
+      {
+        "harrell_cindex": 0.7171899923657963,
+        "rmst_difference_months": 0.8667412245027775,
+        "rsf_max_depth": 4,
+        "rsf_max_features": "log2",
+        "rsf_min_samples_leaf": 16,
+        "rsf_min_samples_split": 32,
+        "rsf_n_estimators": 200,
+        "stage": "reduced",
+        "top_n": 27,
+        "trial": 43
+      },
+      {
+        "harrell_cindex": 0.7192568133716492,
+        "rmst_difference_months": -0.3927378483314584,
+        "rsf_max_depth": 6,
+        "rsf_max_features": "sqrt",
+        "rsf_min_samples_leaf": 8,
+        "rsf_min_samples_split": 24,
+        "rsf_n_estimators": 600,
+        "stage": "reduced",
+        "top_n": 14,
+        "trial": 44
+      },
+      {
+        "harrell_cindex": 0.7150548979933837,
+        "rmst_difference_months": -3.79168377143672,
+        "rsf_max_depth": 4,
+        "rsf_max_features": "sqrt",
+        "rsf_min_samples_leaf": 8,
+        "rsf_min_samples_split": 16,
+        "rsf_n_estimators": 400,
+        "stage": "reduced",
+        "top_n": 32,
+        "trial": 45
+      },
+      {
+        "harrell_cindex": 0.7150611046630709,
+        "rmst_difference_months": 0.603290692658716,
+        "rsf_max_depth": 4,
+        "rsf_max_features": 0.25,
+        "rsf_min_samples_leaf": 16,
+        "rsf_min_samples_split": 32,
+        "rsf_n_estimators": 400,
+        "stage": "reduced",
+        "top_n": 27,
+        "trial": 46
+      },
+      {
+        "harrell_cindex": 0.7219970580385683,
+        "rmst_difference_months": -0.8076614898794277,
+        "rsf_max_depth": 8,
+        "rsf_max_features": "log2",
+        "rsf_min_samples_leaf": 16,
+        "rsf_min_samples_split": 48,
+        "rsf_n_estimators": 400,
+        "stage": "reduced",
+        "top_n": 22,
+        "trial": 47
+      },
+      {
+        "harrell_cindex": 0.6845041181253375,
+        "rmst_difference_months": 3.237019661610929,
+        "rsf_max_depth": 8,
+        "rsf_max_features": 0.25,
+        "rsf_min_samples_leaf": 8,
+        "rsf_min_samples_split": 24,
+        "rsf_n_estimators": 600,
+        "stage": "reduced",
+        "top_n": 0,
+        "trial": 48
+      }
+    ]
+  },
+  "reward": 5.686031473649878,
+  "run_id": "run_002_20260823T001849Z",
+  "schema_version": 1,
+  "screening": {
+    "best_params": {
+      "max_depth": 4,
+      "max_features": 0.25,
+      "min_samples_leaf": 16,
+      "min_samples_split": 32,
+      "n_estimators": 150
+    },
+    "best_trial": 0,
+    "n_features": 8666,
+    "n_reactome_genes": 8647,
+    "optimization_harrell_cindex": 0.668022306770856,
+    "optimization_rmst_difference_months": 0.21834611561134748,
+    "pfi_refit_oof": {
+      "harrell_cindex": 0.668022306770856,
+      "rmst_difference_months": 0.21834611561134715
+    },
+    "trials": [
+      {
+        "harrell_cindex": 0.668022306770856,
+        "rmst_difference_months": 0.21834611561134748,
+        "rsf_max_depth": 4,
+        "rsf_max_features": 0.25,
+        "rsf_min_samples_leaf": 16,
+        "rsf_min_samples_split": 32,
+        "rsf_n_estimators": 150,
+        "stage": "screening",
+        "top_n": null,
+        "trial": 0
+      },
+      {
+        "harrell_cindex": 0.6640702098475021,
+        "rmst_difference_months": 0.21834611561134748,
+        "rsf_max_depth": 6,
+        "rsf_max_features": 0.25,
+        "rsf_min_samples_leaf": 16,
+        "rsf_min_samples_split": 32,
+        "rsf_n_estimators": 150,
+        "stage": "screening",
+        "top_n": null,
+        "trial": 1
+      },
+      {
+        "harrell_cindex": 0.668022306770856,
+        "rmst_difference_months": 0.21834611561134748,
+        "rsf_max_depth": 4,
+        "rsf_max_features": 0.25,
+        "rsf_min_samples_leaf": 16,
+        "rsf_min_samples_split": 32,
+        "rsf_n_estimators": 150,
+        "stage": "screening",
+        "top_n": null,
+        "trial": 2
+      },
+      {
+        "harrell_cindex": 0.6562063593537616,
+        "rmst_difference_months": 0.21834611561134748,
+        "rsf_max_depth": 6,
+        "rsf_max_features": 0.05,
+        "rsf_min_samples_leaf": 16,
+        "rsf_min_samples_split": 32,
+        "rsf_n_estimators": 150,
+        "stage": "screening",
+        "top_n": null,
+        "trial": 3
+      },
+      {
+        "harrell_cindex": 0.6556694824258148,
+        "rmst_difference_months": 0.21834611561134748,
+        "rsf_max_depth": 4,
+        "rsf_max_features": 0.05,
+        "rsf_min_samples_leaf": 16,
+        "rsf_min_samples_split": 32,
+        "rsf_n_estimators": 150,
+        "stage": "screening",
+        "top_n": null,
+        "trial": 4
+      },
+      {
+        "harrell_cindex": 0.6668228678537957,
+        "rmst_difference_months": 0.21834611561134748,
+        "rsf_max_depth": 6,
+        "rsf_max_features": 0.25,
+        "rsf_min_samples_leaf": 24,
+        "rsf_min_samples_split": 48,
+        "rsf_n_estimators": 150,
+        "stage": "screening",
+        "top_n": null,
+        "trial": 5
+      },
+      {
+        "harrell_cindex": 0.6680067900966379,
+        "rmst_difference_months": 0.21834611561134748,
+        "rsf_max_depth": 4,
+        "rsf_max_features": 0.25,
+        "rsf_min_samples_leaf": 16,
+        "rsf_min_samples_split": 32,
+        "rsf_n_estimators": 100,
+        "stage": "screening",
+        "top_n": null,
+        "trial": 6
+      },
+      {
+        "harrell_cindex": 0.6562063593537616,
+        "rmst_difference_months": 0.21834611561134748,
+        "rsf_max_depth": 6,
+        "rsf_max_features": 0.05,
+        "rsf_min_samples_leaf": 16,
+        "rsf_min_samples_split": 32,
+        "rsf_n_estimators": 150,
+        "stage": "screening",
+        "top_n": null,
+        "trial": 7
+      },
+      {
+        "harrell_cindex": 0.6528128627022598,
+        "rmst_difference_months": 0.21834611561134748,
+        "rsf_max_depth": 6,
+        "rsf_max_features": 0.05,
+        "rsf_min_samples_leaf": 24,
+        "rsf_min_samples_split": 48,
+        "rsf_n_estimators": 150,
+        "stage": "screening",
+        "top_n": null,
+        "trial": 8
+      },
+      {
+        "harrell_cindex": 0.6562063593537616,
+        "rmst_difference_months": 0.21834611561134748,
+        "rsf_max_depth": 6,
+        "rsf_max_features": 0.05,
+        "rsf_min_samples_leaf": 16,
+        "rsf_min_samples_split": 32,
+        "rsf_n_estimators": 150,
+        "stage": "screening",
+        "top_n": null,
+        "trial": 9
+      },
+      {
+        "harrell_cindex": 0.6498274545826945,
+        "rmst_difference_months": 0.21834611561134748,
+        "rsf_max_depth": 4,
+        "rsf_max_features": 0.05,
+        "rsf_min_samples_leaf": 24,
+        "rsf_min_samples_split": 48,
+        "rsf_n_estimators": 100,
+        "stage": "screening",
+        "top_n": null,
+        "trial": 10
+      },
+      {
+        "harrell_cindex": 0.651281366956932,
+        "rmst_difference_months": 0.21834611561134748,
+        "rsf_max_depth": 6,
+        "rsf_max_features": 0.05,
+        "rsf_min_samples_leaf": 16,
+        "rsf_min_samples_split": 32,
+        "rsf_n_estimators": 100,
+        "stage": "screening",
+        "top_n": null,
+        "trial": 11
+      }
+    ]
+  },
+  "secondary_score": 0.7068620940062191,
+  "wall_clock_seconds": 2433.496867208276
+}
