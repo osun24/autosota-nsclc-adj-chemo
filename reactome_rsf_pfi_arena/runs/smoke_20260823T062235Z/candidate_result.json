@@ -1,0 +1,323 @@
+{
+  "artifacts": {
+    "final_covariates.txt": {
+      "bytes": 345,
+      "sha256": "2ac2dd848f11c30e70d9c791b2b4c797df0dea0f8fe6f7e77fce73b433e27137"
+    },
+    "final_rsf.pkl": {
+      "bytes": 4343989,
+      "sha256": "a7a63fe6b5429463f00b38812a1a3bb9557ffb2a60125c2de9c1316016a63bdf"
+    },
+    "final_spec.json": {
+      "bytes": 1741,
+      "sha256": "0f2348ffecfd18efd9d16f7d90f469741abc230b6a7de16c657f57cb74ab1193"
+    },
+    "permutation_importance.csv": {
+      "bytes": 6031,
+      "sha256": "a3d0f0487d225213f78582e25360cf2348d743b0b32551da1916db0f2254ae2f"
+    },
+    "permutation_importance.png": {
+      "bytes": 163428,
+      "sha256": "a3f40f5708bacafa27d52ac54c55da2113112546fb13370b3258e7855ceb4197"
+    },
+    "top_n_results.csv": {
+      "bytes": 345,
+      "sha256": "3a931800944d1608b256a455310febf2bd8d32e69ddd8df8d9f498b51698e0cf"
+    },
+    "training_imputation_medians.csv": {
+      "bytes": 453,
+      "sha256": "9cf8fe188c3fa80cd6bf6a0a84c84676a03665d22900ed5ad0f97dc26c9a0f54"
+    }
+  },
+  "budget": {
+    "cv_folds": 3,
+    "fold_seed": 20260824,
+    "forest_seed": 42,
+    "max_experiments": 20,
+    "max_top_genes": 32,
+    "max_trees_per_forest": 1000,
+    "permutation_repeats": 3,
+    "permutation_seed": 20260825,
+    "reduced_trials": 49,
+    "schema_version": 1,
+    "screening_trials": 12,
+    "smoke_reductions_applied": true,
+    "tau_months": 60.0,
+    "wall_time_seconds": 14400
+  },
+  "candidate": {
+    "name": "reference_600_trees_v5",
+    "plot_top_k": 32,
+    "reduced_space": {
+      "max_depth": [
+        6,
+        4,
+        8
+      ],
+      "max_features": [
+        "sqrt",
+        "log2",
+        0.25
+      ],
+      "min_samples_leaf": [
+        16,
+        8,
+        32
+      ],
+      "n_estimators": [
+        600,
+        400,
+        200
+      ],
+      "split_leaf_multiplier": [
+        2,
+        3
+      ]
+    },
+    "screening_space": {
+      "max_depth": [
+        4,
+        6
+      ],
+      "max_features": [
+        0.25,
+        0.5
+      ],
+      "min_samples_leaf": [
+        16
+      ],
+      "n_estimators": [
+        150,
+        250
+      ],
+      "split_leaf_multiplier": [
+        2
+      ]
+    }
+  },
+  "data": {
+    "confirmatory_validation_used": false,
+    "development_act": 152,
+    "development_events": 465,
+    "development_n": 1034,
+    "former_validation_used_as_development": true,
+    "reactome_collection_sha256": "5d61f289a2400cddfbb3a3353829fd2284a360bbe50f2093b566c4b7bea93341",
+    "reactome_genes_before_smoke_reduction": 8647,
+    "reactome_genes_used": 64,
+    "test_used": false,
+    "train_sha256": "b93f3cee3858716bca8add447bc837c734e203f6cb37962b1081e3c118d2c65d",
+    "validation_sha256": "824689aeaa34984727f2551bd512214164d0559d05cbec5817b0f88c9adb15a9"
+  },
+  "eligible": true,
+  "final": {
+    "clinical_covariates": [
+      "Adjuvant Chemo",
+      "Age",
+      "IS_MALE",
+      "Stage_IA",
+      "Stage_IB",
+      "Stage_II",
+      "Stage_III",
+      "Histology_Adenocarcinoma",
+      "Histology_Adenosquamous Carcinoma",
+      "Histology_Large Cell Carcinoma",
+      "Histology_Squamous Cell Carcinoma",
+      "Race_African American",
+      "Race_Asian",
+      "Race_Caucasian",
+      "Race_Native Hawaiian or Other Pacific Islander",
+      "Race_Unknown",
+      "Smoked?_No",
+      "Smoked?_Unknown",
+      "Smoked?_Yes"
+    ],
+    "covariates": [
+      "Adjuvant Chemo",
+      "Age",
+      "IS_MALE",
+      "Stage_IA",
+      "Stage_IB",
+      "Stage_II",
+      "Stage_III",
+      "Histology_Adenocarcinoma",
+      "Histology_Adenosquamous Carcinoma",
+      "Histology_Large Cell Carcinoma",
+      "Histology_Squamous Cell Carcinoma",
+      "Race_African American",
+      "Race_Asian",
+      "Race_Caucasian",
+      "Race_Native Hawaiian or Other Pacific Islander",
+      "Race_Unknown",
+      "Smoked?_No",
+      "Smoked?_Unknown",
+      "Smoked?_Yes",
+      "ABL1",
+      "ABAT"
+    ],
+    "development_cv": {
+      "folds": [
+        {
+          "act_recommended_fraction": 0.4758220502901354,
+          "fold": 1,
+          "harrell_cindex": 0.681691271851257,
+          "rmst_difference_months": 8.380442083384436
+        },
+        {
+          "act_recommended_fraction": 0.07736943907156674,
+          "fold": 2,
+          "harrell_cindex": 0.6688348981222533,
+          "rmst_difference_months": -2.134324479315975
+        }
+      ],
+      "harrell_cindex": 0.6720535387327222,
+      "rmst_difference_months": 3.123058802034233
+    },
+    "genes": [
+      "ABL1",
+      "ABAT"
+    ],
+    "rsf_params": {
+      "max_depth": 3,
+      "max_features": "sqrt",
+      "min_samples_leaf": 10,
+      "min_samples_split": 20,
+      "n_estimators": 20
+    },
+    "top_n": 2
+  },
+  "limitations": [
+    "Train and former validation are pooled adaptive development data; the reported CV scores are not external confirmation.",
+    "The PFI ranking and reduced-model search reuse development folds, so final CV performance is selection-adaptive.",
+    "Permutation importance is conditional on the fitted RSF and can divide credit unpredictably among correlated genes.",
+    "Zero importance for a feature unused by every assessment-fold forest is exact for those fitted forests, not proof of no biological effect.",
+    "IPCW-AIPW validity requires adequate measured-confounder adjustment, positivity, consistency, and conditionally independent censoring.",
+    "Random row-level CV does not establish transportability across source studies or expression platforms."
+  ],
+  "objective": {
+    "primary": "60-month cross-fitted IPCW-AIPW policy-versus-anti-policy RMST difference",
+    "secondary": "Harrell C-index",
+    "selection": "lexicographic with RMST first"
+  },
+  "permutation_importance": {
+    "features_used_in_any_fold": 69,
+    "features_with_positive_rmst_importance": 2,
+    "rank_rule": "RMST importance descending, C-index importance descending, symbol ascending",
+    "repeats": 1,
+    "top_32_genes": [
+      "ABL1",
+      "ABAT",
+      "ABCE1",
+      "AAMP",
+      "ABCG1",
+      "ABLIM3",
+      "ABI1",
+      "ABCC8",
+      "A4GALT",
+      "ABCA1",
+      "ABCC5",
+      "AACS",
+      "AAK1",
+      "ABCB11",
+      "ABCD1",
+      "ABHD17B",
+      "A2M",
+      "ABI2",
+      "ABCA8",
+      "ABCA3",
+      "ABHD5",
+      "ABCA6",
+      "ABHD3",
+      "AATF",
+      "ABCF2",
+      "ABCG2",
+      "ABCC4",
+      "ABCC1",
+      "A1CF",
+      "ABCB8",
+      "ABCB7",
+      "ABCD2"
+    ]
+  },
+  "phase": "smoke",
+  "reduced_search": {
+    "best_trial": 2,
+    "evaluated_top_n": [
+      0,
+      1,
+      2
+    ],
+    "trials": [
+      {
+        "harrell_cindex": 0.6815062966663977,
+        "rmst_difference_months": -0.2651558409715043,
+        "rsf_max_depth": 3,
+        "rsf_max_features": "sqrt",
+        "rsf_min_samples_leaf": 10,
+        "rsf_min_samples_split": 20,
+        "rsf_n_estimators": 20,
+        "stage": "reduced",
+        "top_n": 0,
+        "trial": 0
+      },
+      {
+        "harrell_cindex": 0.6724119739071607,
+        "rmst_difference_months": 0.3536787896847585,
+        "rsf_max_depth": 3,
+        "rsf_max_features": "sqrt",
+        "rsf_min_samples_leaf": 10,
+        "rsf_min_samples_split": 20,
+        "rsf_n_estimators": 20,
+        "stage": "reduced",
+        "top_n": 1,
+        "trial": 1
+      },
+      {
+        "harrell_cindex": 0.6720535387327222,
+        "rmst_difference_months": 3.123058802034233,
+        "rsf_max_depth": 3,
+        "rsf_max_features": "sqrt",
+        "rsf_min_samples_leaf": 10,
+        "rsf_min_samples_split": 20,
+        "rsf_n_estimators": 20,
+        "stage": "reduced",
+        "top_n": 2,
+        "trial": 2
+      }
+    ]
+  },
+  "reward": 3.123058802034233,
+  "schema_version": 1,
+  "screening": {
+    "best_params": {
+      "max_depth": 3,
+      "max_features": "sqrt",
+      "min_samples_leaf": 10,
+      "min_samples_split": 20,
+      "n_estimators": 20
+    },
+    "best_trial": 0,
+    "n_features": 83,
+    "n_reactome_genes": 64,
+    "optimization_harrell_cindex": 0.6590955640931745,
+    "optimization_rmst_difference_months": -3.625715878597228,
+    "pfi_refit_oof": {
+      "harrell_cindex": 0.6590955640931745,
+      "rmst_difference_months": -3.625715878597227
+    },
+    "trials": [
+      {
+        "harrell_cindex": 0.6590955640931745,
+        "rmst_difference_months": -3.625715878597228,
+        "rsf_max_depth": 3,
+        "rsf_max_features": "sqrt",
+        "rsf_min_samples_leaf": 10,
+        "rsf_min_samples_split": 20,
+        "rsf_n_estimators": 20,
+        "stage": "screening",
+        "top_n": null,
+        "trial": 0
+      }
+    ]
+  },
+  "secondary_score": 0.6720535387327222
+}
