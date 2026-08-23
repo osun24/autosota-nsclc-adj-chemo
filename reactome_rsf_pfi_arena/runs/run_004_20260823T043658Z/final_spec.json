@@ -1,0 +1,106 @@
+{
+  "clinical_covariates": [
+    "Adjuvant Chemo",
+    "Age",
+    "IS_MALE",
+    "Stage_IA",
+    "Stage_IB",
+    "Stage_II",
+    "Stage_III",
+    "Histology_Adenocarcinoma",
+    "Histology_Adenosquamous Carcinoma",
+    "Histology_Large Cell Carcinoma",
+    "Histology_Squamous Cell Carcinoma",
+    "Race_African American",
+    "Race_Asian",
+    "Race_Caucasian",
+    "Race_Native Hawaiian or Other Pacific Islander",
+    "Race_Unknown",
+    "Smoked?_No",
+    "Smoked?_Unknown",
+    "Smoked?_Yes"
+  ],
+  "covariates": [
+    "Adjuvant Chemo",
+    "Age",
+    "IS_MALE",
+    "Stage_IA",
+    "Stage_IB",
+    "Stage_II",
+    "Stage_III",
+    "Histology_Adenocarcinoma",
+    "Histology_Adenosquamous Carcinoma",
+    "Histology_Large Cell Carcinoma",
+    "Histology_Squamous Cell Carcinoma",
+    "Race_African American",
+    "Race_Asian",
+    "Race_Caucasian",
+    "Race_Native Hawaiian or Other Pacific Islander",
+    "Race_Unknown",
+    "Smoked?_No",
+    "Smoked?_Unknown",
+    "Smoked?_Yes",
+    "LDLRAP1",
+    "SEC23A",
+    "GNG7",
+    "ANKFY1",
+    "PRIM2",
+    "PPFIBP2",
+    "INHA",
+    "SLC24A1",
+    "KCNS3",
+    "P2RY10",
+    "SLCO4A1",
+    "DNM1L",
+    "ARHGAP25",
+    "LAMC2"
+  ],
+  "development_cv": {
+    "folds": [
+      {
+        "act_recommended_fraction": 0.336231884057971,
+        "fold": 1,
+        "harrell_cindex": 0.7232417195207893,
+        "rmst_difference_months": 4.165762425715095
+      },
+      {
+        "act_recommended_fraction": 0.22608695652173913,
+        "fold": 2,
+        "harrell_cindex": 0.7269126364190349,
+        "rmst_difference_months": 8.547116259547094
+      },
+      {
+        "act_recommended_fraction": 0.16569767441860464,
+        "fold": 3,
+        "harrell_cindex": 0.7093528406065193,
+        "rmst_difference_months": 3.5505353402714874
+      }
+    ],
+    "harrell_cindex": 0.7189061365343198,
+    "rmst_difference_months": 5.422947102000818
+  },
+  "genes": [
+    "LDLRAP1",
+    "SEC23A",
+    "GNG7",
+    "ANKFY1",
+    "PRIM2",
+    "PPFIBP2",
+    "INHA",
+    "SLC24A1",
+    "KCNS3",
+    "P2RY10",
+    "SLCO4A1",
+    "DNM1L",
+    "ARHGAP25",
+    "LAMC2"
+  ],
+  "rsf_params": {
+    "max_depth": 8,
+    "max_features": "sqrt",
+    "min_samples_leaf": 16,
+    "min_samples_split": 48,
+    "n_estimators": 600
+  },
+  "top_n": 14
+}

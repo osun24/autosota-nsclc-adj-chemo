@@ -333,4 +333,91 @@ observed, and it has never been the reference geometry.
   secondary are untouched; no rows dropped; N=0..32 all evaluated by the 49
   reduced trials; max trees 600 <= 1000. Experiment 4 of 20, fresh snapshot.
   Claims remain observational development-CV statements.
+- run_id: run_004_20260823T043658Z
+- screening_rmst_difference: 0.218 months (all 12 trials, identical)
+- screening_cindex: 0.671
+- final_top_n: 14
+- final_rmst_difference: 5.423 months
+- final_cindex: 0.719
+- final_genes: [LDLRAP1, SEC23A, GNG7, ANKFY1, PRIM2, PPFIBP2, INHA, SLC24A1,
+  KCNS3, P2RY10, SLCO4A1, DNM1L, ARHGAP25, LAMC2]
+- verdict: NOT_LEADER
+- lesson: Deep-and-fine is worse as a reference geometry, not better -- the
+  pooled free-trial evidence that motivated it was confounded with N, and the
+  controlled curve reversed it.
+
+#### iter_004 detail
+
+**Wall clock 7,559.6 s.** The screening stage reproduced run 003 exactly, as
+intended: same best parameters (250 trees / depth 4 / leaf 16 /
+`max_features` 0.25), same 2,848 used features, same 0.2183461156 across all 12
+trials. The gene ranking was therefore identical and the reference geometry was
+the only moving part.
+
+**Prespecified readout: hypothesis rejected on every statistic.**
+
+| curve statistic | run 003 ref = d6/leaf16 | run 004 ref = d8/leaf8 |
+| --- | --- | --- |
+| RMST mean | **2.021** | 1.277 |
+| RMST median | **2.121** | 1.603 |
+| RMST maximum | **4.847** | 3.891 |
+| negative panels | **4 of 33** | 6 of 33 |
+| C-index max | 0.7229 | **0.7275** |
+
+Deep-and-fine is retired as a reference; the reference returns to depth 6 /
+leaf 16 per the stated rule.
+
+**Why the pooled evidence misled, which is the transferable lesson.** The
+free-trial table that motivated this run ranked `400/d8/leaf8/sqrt` top at
+mean 3.065 -- but every one of those observations sat at N=7, because the
+sampler revisits similar points. Geometry and N were entangled, so what looked
+like a good geometry was substantially "N=7 is a good panel size." Run across
+all 33 panel sizes under control, the same geometry is clearly worse. Pooled
+observational trial tables are for generating hypotheses here; only the
+controlled N curve, with the ranking held fixed, settles them.
+
+**Two further readings.** First, iter_004 moved depth 6->8 and leaf 16->8
+together, so the drop is attributable to the pair and not to either alone;
+free trial t44 at `600/d8/leaf16` scored this run's best (5.423), which hints
+leaf 8 rather than depth 8 is the harmful half. Second, there is a real
+primary/secondary tension: the deeper reference produced the best C-index seen
+so far (0.7275, versus 0.7248 and 0.7229) while producing the worst RMST curve.
+Deeper forests discriminate better and prescribe worse.
+
+**The reward is part level and part spread.** Reward is the maximum of 49
+trials, so it tracks roughly mean + 2.2 standard deviations of the curve.
+Run 002 leads with a *lower* curve mean than run 003 (1.866 vs 2.021) because
+its curve was more dispersed. That is worth stating plainly: chasing the curve
+mean is the honest optimization, but part of the standing leader's margin is
+dispersion rather than quality. Fold consistency is the tiebreaker I trust --
+run 002's leader (5.372 / 4.641 / 7.049) remains the most evenly supported
+result, ahead of run 004's (4.166 / 8.547 / 3.551) and run 001's
+(2.247 / 9.160 / 4.232).
+
+### iter_005 — the last unvaried reference dimension
+- type: PARAM
+- hypothesis: Reference geometry has always used 400 trees. Depth, leaf and
+  `max_features` are now each settled by a controlled comparison
+  (depth 6 > depth 8, leaf 16 > leaf 8, sqrt > log2/0.25/0.5/1.0), leaving
+  n_estimators the only reference dimension never varied. Raising the reference
+  to 600 trees reduces the forest's Monte Carlo variance and should lift the
+  controlled curve mean above run 003's 2.021 at the identical ranking.
+- changed: `reduced_space` restored to the run 003 ordering except
+  n_estimators -> [600, 400, 200], making the reference
+  600 trees / depth 6 / leaf 16 / multiplier 2 / sqrt. `screening_space`
+  unchanged from runs 003-004, so the ranking is reproduced exactly for the
+  third time and trees is the only moving part.
+- prespecified_readout: curve mean/median against run 003's 2.021 / 2.121. A
+  lower mean retires 600 trees and settles the reference at 400.
+- cost_projection: screening and PFI reproduce runs 003-004 at ~7.5 ks; the
+  reduced stage grows with trees to ~0.2 ks. Total ~7.7 ks against 14.4 ks.
+- red_line_audit: unchanged in kind and re-verified. Only train.py edited and
+  log.md appended; locked files pass `integrity.verify_lock`. No dataset path,
+  gene symbol, row id, prediction or outcome in train.py; no gene prefilter or
+  pre-ranking, so all 8,647 eligible genes enter the screening forest under
+  launcher verification. Locked fit-only transforms, held-out-only permutation,
+  paired counterfactual prediction, paired permutation and the 60-month
+  IPCW-AIPW estimand with lexicographic C-index are untouched. No rows dropped.
+  All of N=0..32 evaluated before selection. Max trees 600 <= 1,000.
+  Experiment 5 of 20, fresh snapshot. Claims remain observational.
 - run_id: pending

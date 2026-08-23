@@ -1,0 +1,34 @@
+feature,median
+Adjuvant Chemo,0.0
+Age,65.0
+IS_MALE,1.0
+Stage_IA,0.0
+Stage_IB,0.0
+Stage_II,0.0
+Stage_III,0.0
+Histology_Adenocarcinoma,1.0
+Histology_Adenosquamous Carcinoma,0.0
+Histology_Large Cell Carcinoma,0.0
+Histology_Squamous Cell Carcinoma,0.0
+Race_African American,0.0
+Race_Asian,0.0
+Race_Caucasian,0.0
+Race_Native Hawaiian or Other Pacific Islander,0.0
+Race_Unknown,1.0
+Smoked?_No,0.0
+Smoked?_Unknown,0.0
+Smoked?_Yes,0.0
+LDLRAP1,7.7597904
+SEC23A,7.9061594
+GNG7,6.311321
+ANKFY1,6.1479893
+PRIM2,4.671529
+PPFIBP2,6.814455
+INHA,5.3259134
+SLC24A1,5.0951962
+KCNS3,8.682663
+P2RY10,4.887842
+SLCO4A1,6.2097554
+DNM1L,7.8665295
+ARHGAP25,7.649246
+LAMC2,6.4496155
