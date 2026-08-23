@@ -1424,3 +1424,282 @@ Experiment 2's modules reduced the number of genomic columns but still carried
 all eight genes' information; a narrower panel carries strictly less. That is
 the next and, on current evidence, probably the last informative experiment on
 this axis.
+
+---
+
+## Experiment 8 (prespecified before launch; ledger slot 9)
+
+### Hypothesis
+
+Panel width, not panel composition, controls the genomic CATE shift. Every
+structural change so far has preserved the eight genes' information content:
+experiment 2 compressed it into two columns, experiments 6 and 7 redistributed
+it across one to four Reactome blocks. In all of them the genomic forest kept
+predicting a benefit averaging 0.8-1.4 months against the clinical 0.5, and
+kept recommending ACT for 15-20 percentage points more patients than the
+clinical policy, which is the whole of the remaining deficit. Halving the panel
+to four genes carries strictly less genomic information into X, so if the shift
+is produced by gene-defined leaves it should shrink for the first time, and both
+repeat increments should rise above -1.814 and -2.730.
+
+Prespecified directional predictions:
+
+- Mean predicted genomic benefit falls below the 0.83-1.37 band that has held
+  for seven runs, and ACT recommendation falls below 0.65 toward the clinical
+  0.52.
+- Both repeat increments rise above -1.814 and -2.730.
+- Gene Jaccard stays above the 0.10 gate: with the concentrated selector a
+  four-gene panel is the core of one block, and folds that agree on a block will
+  share three of four genes.
+- Falsification: if the shift band and the recommendation rate hold at four
+  genes as they did at two module columns and at eight raw genes, then the shift
+  is not a function of how much genomic information reaches X, and no panel
+  reachable from `train.py` can remove it.
+
+### Rationale
+
+This is the last lever on the panel axis that has not been tried, and it is the
+one that separates *amount* of genomic information from its *arrangement*.
+It also moves toward the program's own stated goal of a small panel: eight genes
+was inherited from v2 as a useful starting width, never as a validated one.
+Four is the arena's floor, so it is the sharpest available contrast; if the
+shift responds at all, an intermediate width can be tested afterwards, and if it
+does not respond at the floor it will not respond anywhere.
+
+### Exact change
+
+One field in `train.py` `CANDIDATE`:
+
+```text
+n_genes:       8 -> 4
+module_count:  8 -> 4      (raw representation requires module_count == n_genes)
+name:          csf_pathway8_raw_oneblock -> csf_pathway4_raw_oneblock
+```
+
+The selector is unchanged from experiment 7, including
+`MAX_GENES_PER_PATHWAY = 8`, so the panel is the top four members of the highest
+co-selected pathway. Forest geometry is unchanged: raw, 1000 trees,
+`min_node_size = 5`, `sample_fraction = 0.50`, `honesty_fraction = 0.50`,
+`alpha = 0.05`, `imbalance_penalty = 0.00`. Treatment-effect features fall from
+26 to 22.
+
+### Red-line audit
+
+1. Test untouched. OK.
+2. Only `train.py` edited; two coupled `CANDIDATE` fields plus the name. OK.
+3. Fit-only throughout. OK.
+4. ACT remains `W`. OK.
+5. Estimand untouched. OK.
+6. Selection statistics never enter the reward. OK.
+7. No censored patient dropped. OK.
+8. Selection unchanged; still fit-partition DR benefit plus Reactome
+   membership; no hard-coded symbols. OK.
+9. Forest geometry identical across arms; the clinical arm is unaffected by
+   panel width, so the comparator is untouched. OK.
+10. All mandatory CSF diagnostics will be recorded. OK.
+11. C-index secondary. OK.
+12. No probes; one full launcher slot. OK.
+13. No metric shopping. OK.
+14. Ledger slot 9 of 20; `n_genes = 4` is the arena floor and inside
+    `[4, 16]`; 22 <= 34 features; 1000 trees; 30-minute wall. OK.
+15. Claims remain observational. OK.
+
+### Prespecified decision rule
+
+- Promote only on an eligible reward improvement.
+- If the shift band holds at four genes, the panel axis is closed in full:
+  representation, regularization, member ordering, aggregation, composition and
+  width will all have been tested against an invariant shift, and the remaining
+  slots go to documenting that result and preparing the
+  `NO_ELIGIBLE_CANDIDATE` report rather than to further panel search.
+
+### Experiment 8 result (`run_009_20260823T095008Z`, 1174.1 s, ledger slot 9)
+
+`reward = -1000000` (sentinel). `eligible = false`.
+Diagnostic leader score before eligibility `-12.098`
+= robust selection LCB `-11.936` minus repeat increment range `0.162`.
+Mean source increment gap `2.956` months, the largest of the arena. Worse than
+experiment 7's `-11.852`.
+
+Failed gates (3 of 12):
+
+- `all_repeat_genomic_increment_positive`
+- `all_repeat_genomic_value_at_least_clinical`
+- `gene_selection_jaccard_at_least_0_10`
+
+```text
+repeat_1  increment=-2.955  selection_lcb=-11.936  ci95=[-9.490, 2.965]  mean=-2.990 sd=3.118
+repeat_2  increment=-3.118  selection_lcb=-11.255  ci95=[-8.876, 2.301]  mean=-3.145 sd=2.875
+range=0.162  worst_lcb=-11.936
+```
+
+The repeat range of `0.162` is by far the smallest of the arena: a four-gene
+block core reproduces its *policy* almost exactly across repeats. It is stable
+and consistently wrong, which is the least useful combination.
+
+Gene stability: Jaccard `0.069`, below the gate. Panels are the same blocks as
+experiment 7, truncated:
+
+```text
+ACAD8 HIBCH ACADSB AUH  |  MCCC1 SLC25A44 ACADSB HIBCH  |  SMAD1 SMAD5 SMAD4 TGFBR3
+PIP5K1B RAB4A PIK3CB RAB14  |  HACD3 ACSL4 HACD2 ACSL3  |  PTPN13 PIK3CB PIK3R1 RAB4A
+TGFBR3 SMAD5 SMAD7 BMP2  |  AUH HIBCH ACAD8 MCCC1
+```
+
+C-index: repeat_1 clinical `0.6806` vs C+G `0.6803`; repeat_2 clinical
+`0.6869` vs C+G `0.6654`. Within gate.
+
+#### Mandatory CSF diagnostics
+
+```text
+act_mechanism: W supplied separately as treatment; ACT is absent from X
+rsf_act_split/path/terminal: NA by design (undefined for causal survival
+  forests; ACT is W, not an X feature)
+
+development_csf_cg: seed_agreement=0.9942; seed_tau_correlation=0.9994;
+  genomic_vimp_fraction=0.6892; benefit_iqr=3.425; median_abs_benefit=1.782;
+  nontrivial_fraction=0.9149; act_recommended=0.6596
+development_csf_clinical: seed_agreement=0.9971; seed_tau_correlation=0.9999;
+  genomic_vimp_fraction=0.0000; benefit_iqr=4.382; median_abs_benefit=2.124;
+  nontrivial_fraction=0.9371; act_recommended=0.5169
+
+repeat_1_csf_cg: seed_agreement=0.9958; seed_tau_correlation=0.9995;
+  genomic_vimp_fraction=0.6848; benefit_iqr=3.780; median_abs_benefit=1.982;
+  nontrivial_fraction=0.9265; act_recommended=0.6006
+repeat_1_csf_clinical: seed_agreement=0.9971; seed_tau_correlation=0.9999;
+  genomic_vimp_fraction=0.0000; benefit_iqr=4.265; median_abs_benefit=2.067;
+  nontrivial_fraction=0.9420; act_recommended=0.5261
+
+repeat_2_csf_cg: seed_agreement=0.9926; seed_tau_correlation=0.9993;
+  genomic_vimp_fraction=0.6937; benefit_iqr=3.069; median_abs_benefit=1.581;
+  nontrivial_fraction=0.9033; act_recommended=0.7186
+repeat_2_csf_clinical: seed_agreement=0.9971; seed_tau_correlation=0.9999;
+  genomic_vimp_fraction=0.0000; benefit_iqr=4.499; median_abs_benefit=2.181;
+  nontrivial_fraction=0.9323; act_recommended=0.5077
+```
+
+Overlap and constants unchanged by construction.
+
+#### Interpretation: the falsification branch fired
+
+Halving the panel halved neither the shift nor the deficit. Mean predicted
+genomic benefit came in at 0.833 and 1.394, inside the 0.83-1.37 band that has
+held since experiment 1, and ACT recommendation at 0.601 and 0.719 straddles
+the same 0.65-0.77 band it has occupied throughout. Genomic variable importance
+did fall for the first time, 0.81 -> 0.69, confirming again that importance and
+policy value are unrelated here. Both increments fell.
+
+That is the prespecified falsification: the shift is not a function of how much
+genomic information reaches X. It survives eight raw genes, four raw genes, two
+module means, one block, two blocks and four blocks.
+
+Experiment 3's data also rule out the small-leaf explanation, which is worth
+stating because it was the most plausible one. If the shift were estimation
+noise in leaves with few honest observations, coarsening the leaves would shrink
+it. At `min_node_size = 25` the shift instead *grew*: mean predicted benefit
+rose to 0.94 clinical and 1.62 genomic. The shift grows with leaf size, so it is
+systematic rather than small-sample, which is the signature of residual
+confounding inside gene-defined leaves rather than of variance. The supplied
+`W.hat` is a locked clinical-only cross-fitted propensity, so any gene-treatment
+association beyond the 18 clinical covariates is never orthogonalized away. That
+is a property of the locked nuisance pipeline and is unreachable from
+`train.py`.
+
+---
+
+## Search status after nine ledger slots: NO_ELIGIBLE_CANDIDATE
+
+`best_run.txt` is empty. No candidate has been eligible, so there is no test
+nominee. `diagnostic_leader.txt` holds `run_004`, which the experiment 3 section
+documents as degenerate; the best candidate with an intact clinical comparator
+is `run_008` at `-11.852`.
+
+### Ledger
+
+```text
+slot  run       candidate                       increments        score      failed gates
+1     run_001   pathway8 raw, shipped baseline  -4.008 / -3.195   -12.657    2
+2     (none)    duplicate launch, operator error, no result recorded
+3     run_003   pathway8, two module means      -5.458 / -3.720   -15.771    4
+4     run_004   pathway8 raw, min_node_size 25   0.000 / +1.861    -4.745    3  (degenerate)
+5     run_005   benefit-ordered members         -2.400 / -1.467   -12.376    2
+6     run_006   both-halves gene co-selection   -3.640 / -2.589   -13.515    2
+7     run_007   two genes per pathway           -4.782 / -3.653   -15.263    4  (Jaccard)
+8     run_008   one block per panel             -1.814 / -2.730   -11.852    2  (best)
+9     run_009   four-gene block core            -2.955 / -3.118   -12.098    3  (Jaccard)
+```
+
+### What was learned
+
+1. The architectural change alone does not work. Replacing v2's prognostic
+   S-learner with an honest RMST causal survival forest leaves the inherited
+   panel 3-4 months of policy alignment *behind* the matched clinical forest.
+2. Representation: raw beats modules. Averaging four genes into a module mean
+   cancels gene-specific direction (experiment 2).
+3. Regularization is not a lever. It improves the increment only by flattening
+   both policies until each recommends ACT for nearly everyone (experiment 3).
+   Fine leaves are necessary: at `min_node_size = 5` the clinical forest reaches
+   out-of-fold alignment 4.5-5.1 months and value 47.7-48.3 against constants
+   near 45.5-45.9, which is real signal that must not be regularized away.
+4. Selector member ordering matters most of anything tried. Ranking pathway
+   members by treatment-benefit co-selection instead of expression spread was
+   worth about 1.7 months in both repeats (experiment 4).
+5. Stability and value move together, not against each other. Spreading the
+   panel over four blocks cost both (experiment 6); concentrating it into one
+   block gained both (experiment 7). Panel *width* below eight loses stability
+   without gaining value (experiment 8).
+6. Genomic variable importance is not a signal of usefulness. It sat at
+   0.55-0.85 in every run, including the runs where the genes were most harmful,
+   because continuous columns dominate GRF's split-frequency importance through
+   split opportunity.
+7. The binding obstacle is a systematic positive shift in the genomic CATE,
+   invariant across all nine runs and every reachable structural variation.
+   With the policy threshold locked at zero it converts directly into treating
+   15-20 percentage points more patients than the clinical policy, and because
+   the all-ACT constant (45.5 months) sits below all-observation (45.9), that
+   over-treatment costs more than any gene ordering has gained.
+8. The shift grows rather than shrinks when leaves are made larger, so it is
+   systematic, not sampling noise. The remaining explanation consistent with
+   every observation is residual confounding inside gene-defined leaves: the
+   locked `W.hat` is a clinical-only cross-fitted propensity, so gene-treatment
+   association beyond the 18 clinical covariates is never orthogonalized away.
+
+### Why the search is being stopped here rather than at slot 20
+
+Every lever reachable from `train.py` has been tested against the same
+invariant: representation, forest regularization, member ordering, count
+aggregation, panel composition in both directions, and panel width. Each
+experiment's decision rule was written before its run, and the last two fired
+their prespecified stop conditions.
+
+The one intervention that would directly neutralise a shifted CATE is to learn
+the decision boundary from the doubly robust scores instead of thresholding
+`tau` at zero, which is what a policy tree does. `program.md` permits policy
+trees once a prespecified result identifies a specific failure they address, and
+experiments 1-8 do identify one. It is nevertheless unreachable: the
+recommendation is formed inside locked code as
+`recommendations(panel["tau"], 0.0)`, and `train.py` controls only gene
+selection and the candidate's forest parameters. No edit available to this agent
+can change how predictions become a policy.
+
+What remains reachable is re-running near-neighbour panels until two repeat
+increments happen to land above zero together. The per-repeat increments cluster
+between -1.5 and -4.8 with panel-driven noise of roughly +/-1.3 months, so a
+configuration that flips both signs is attainable by chance without any genuine
+effect modification, and the eligibility gates are deterministic thresholds on
+point estimates rather than multiplicity-adjusted quantities. Such a candidate
+would pass the gates while its selection-adjusted LCB stayed near -9, would be
+nominated for the one-shot test on noise, and would repeat exactly the failure
+`v2_findings.md` records. Red line 13 and every decision rule in this log forbid
+it, so the eleven unused slots are left unused deliberately.
+
+### Status
+
+`NO_ELIGIBLE_CANDIDATE`. The held-out test has not been opened, hashed,
+enumerated, summarised, or referenced at any point in this arena, and it is
+preserved. Nothing here supports a claim that any Reactome panel modifies the
+60-month ACT effect, and nothing here is a treatment recommendation: this was an
+observational analysis whose causal reading would require adequate measured
+confounding control, positivity, consistency and conditionally independent
+censoring, and whose repeated row-level cross-fitting measures internal
+stability rather than transport across studies or expression platforms.
