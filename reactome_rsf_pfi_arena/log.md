@@ -421,3 +421,29 @@ result, ahead of run 004's (4.166 / 8.547 / 3.551) and run 001's
   All of N=0..32 evaluated before selection. Max trees 600 <= 1,000.
   Experiment 5 of 20, fresh snapshot. Claims remain observational.
 - run_id: pending
+- run_id: none — experiment 5 was interrupted
+- verdict: NO_RESULT
+
+#### Experiment 5 was killed before the candidate produced anything
+The launcher wrote its `started` row at 2026-08-23T04:39:16Z and created
+`runs/candidate_t5sxqpgm`, and the process died within seconds; the work dir is
+empty, so no screening, PFI or reduced stage ran. The cause was external to the
+arena — the supervising session ended and took the child `python -m
+reactome_rsf_pfi_arena.train` process with it — not a candidate fault, and not a
+wall-time expiry (the ledger has no `finished` row at all, which is what
+distinguishes an external kill from the `failed` row a nonzero return code
+writes). The dependency stack is intact on re-entry (scikit-survival 0.27.0,
+scikit-learn 1.8.0, numpy 2.4.4).
+
+Red line 11 is unambiguous and the ledger is append-only, so the slot is gone:
+experiment 5 is consumed for no information, and `a60036d6…` can never be
+relaunched under that name. This matches the v2 arena's experiment 16/19
+episode, where a crash plus its retry cost two of twenty slots. The 600-tree
+hypothesis is untested, not rejected, so it carries forward to experiment 6
+under a new candidate name. Standing leader is unchanged: run_002 at reward
+5.686 / C-index 0.7069.
+
+**Operational lesson for this arena.** A full attempt here runs 2.1 hours, far
+longer than a supervising session reliably stays alive in the foreground. Every
+remaining launch should be detached so that the process outlives its launcher;
+an interrupted attempt is indistinguishable in cost from a failed one.
