@@ -833,3 +833,207 @@ supplied `W.hat` is a locked clinical-only propensity and any gene-treatment
 association beyond the clinical covariates is not orthogonalized away. The
 locked nuisance pipeline is not editable, so the next experiment attacks
 fragility of member choice, the axis the experiment 4 decision rule named.
+
+---
+
+## Experiment 5 (prespecified before launch; ledger slot 6)
+
+### Hypothesis
+
+Member choice is now benefit-driven but fragile: the Jaccard fell to 0.1027
+against a 0.10 gate. The reason is that the ordering statistic is weaker than
+the selector's own stated design. `stability_select_genes` documents that "a
+gene scores only when it reaches the top of *both* rankings, so evidence that
+rests on a few influential patients cannot promote it", but the code implements
+that rule only for pathways: `pathway_counts` increments on the intersection of
+the two complementary halves, while `gene_top_counts` increments once per half,
+independently. A gene can therefore accumulate a high count from single-half
+flukes. Applying the same both-halves intersection to the gene counts should
+make member choice reproduce across fitting partitions (Jaccard back above
+0.136) and concentrate the panel on genes whose benefit association survives
+sample splitting, raising both repeat increments above -2.400 and -1.467.
+
+Prespecified directional predictions:
+
+- Gene Jaccard rises above experiment 4's 0.1027, and preferably above
+  experiment 1's 0.1362.
+- Both repeat increments rise above -2.400 and -1.467.
+- The genomic ACT recommendation falls from 0.68-0.71 toward the clinical
+  0.51-0.53, since the residual deficit is over-treatment rather than
+  misranking.
+- Failure mode to watch, and the reason the diagnostic below is prespecified:
+  intersecting the two halves makes the count sparser, so if most members of a
+  chosen pathway land on a count of zero the ordering silently reverts to the
+  expression-spread tie-break and the run regresses toward experiment 1. The
+  test is the selected panel itself: if it returns to experiment 1's
+  spread-ordered membership, that is what happened, and the fix would be to
+  widen `STABILITY_TOP_K` rather than to abandon the intersection.
+
+### Rationale
+
+The experiment 4 decision rule prespecified that a genuine improvement should
+be followed by tightening the same axis, either panel width or aggregation, and
+not by a new selector family. Panel width was considered and rejected as the
+first move: with eight genes a Jaccard of 0.1027 corresponds to about 1.5 shared
+genes per fold pair, and shrinking the panel to six would make the same overlap
+score near 0.09, pushing an already-marginal gate below threshold for reasons
+that have nothing to do with the science. Aggregation is the safer half of the
+same axis, and this particular tightening costs no extra compute: it is the same
+200 half-sample rankings, combined the way the surrounding code and the
+docstring already say they should be.
+
+### Exact change
+
+In `train.py` `stability_select_genes`, accumulate the gene counts on the
+intersection of the two complementary halves of each draw, matching the
+existing pathway rule:
+
+```text
+before: for each half, gene_top_counts[top_k indices] += 1        (200 events)
+after:  per draw, gene_top_counts[top_k in half A AND half B] += 1 (100 events)
+```
+
+Nothing else changes: `STABILITY_SUBSAMPLES = 100`, `STABILITY_TOP_K = 300`,
+`WINSOR_PERCENT`, the detectability filter, `MIN_PATHWAY_MEMBERS`,
+`TOP_PATHWAYS`, `MAX_GENES_PER_PATHWAY`, the pathway co-selection rule, the
+mean-score fallback, and the whole `CANDIDATE` block including
+`min_node_size = 5` and raw eight-gene representation. Experiment 5 differs
+from experiment 4 in that one accumulation rule.
+
+### Red-line audit
+
+1. Test untouched. OK.
+2. Only `train.py` edited. OK.
+3. Fit-only: both halves are disjoint stratified subsets of the fitting
+   partition; nothing from the assessment fold is read. OK.
+4. ACT remains `W`; no ACT feature, no gene-by-ACT product. OK.
+5. Estimand untouched. OK.
+6. Selection statistics never enter the reward. OK.
+7. No censored patient dropped. OK.
+8. The count is still a fit-partition treatment-benefit signal restricted to
+   Reactome pathways; the intersection only makes it stricter. No hard-coded
+   symbols. OK.
+9. Forest geometry unchanged and identical across arms. OK.
+10. All mandatory CSF diagnostics will be recorded. OK.
+11. C-index secondary. OK.
+12. No probes; one full launcher slot; no new tuning surface, and the compute
+    is identical to experiment 4. OK.
+13. No metric shopping; the degenerate `run_004` leader is still excluded. OK.
+14. Ledger slot 6 of 20; 30-minute wall; 1000 trees; 26 <= 34 features. OK.
+15. Claims remain observational. OK.
+
+### Prespecified decision rule
+
+- Promote only on an eligible reward improvement.
+- If the panel regresses to spread-ordered membership, widen `STABILITY_TOP_K`
+  next, keeping the intersection.
+- If stability improves but the increments do not, member choice is no longer
+  the binding constraint and the remaining deficit is the CATE shift, which is
+  attributable to the locked clinical-only `W.hat` and therefore not fixable
+  from `train.py`; the program would then move toward an honest
+  `NO_ELIGIBLE_CANDIDATE` report rather than spending slots on panels.
+
+### Experiment 5 result (`run_006_20260823T083815Z`, 1180.0 s, ledger slot 6)
+
+`reward = -1000000` (sentinel). `eligible = false`.
+Diagnostic leader score before eligibility `-13.515`
+= robust selection LCB `-12.465` minus repeat increment range `1.051`.
+Mean source increment gap `1.019` months, the smallest so far. Worse than
+experiment 4's `-12.376`; the hypothesis is rejected.
+
+Failed gates (2 of 12): `all_repeat_genomic_increment_positive` and
+`all_repeat_genomic_value_at_least_clinical`.
+
+```text
+repeat_1  increment=-3.640  selection_lcb=-12.465  ci95=[-9.675, 2.090]  mean=-3.670 sd=3.012
+repeat_2  increment=-2.589  selection_lcb=-10.308  ci95=[-8.448, 2.962]  mean=-2.600 sd=2.924
+range=1.051  worst_lcb=-12.465
+```
+
+Source-specific OOF increments: repeat_1 `-3.325` / `-4.582` (gap 1.257);
+repeat_2 `-2.393` / `-3.174` (gap 0.781).
+
+C-index: repeat_1 clinical `0.6806` vs C+G `0.6835`; repeat_2 clinical
+`0.6869` vs C+G `0.6634`. Within gate.
+
+Gene stability: Jaccard `0.1053`, essentially unchanged from experiment 4's
+`0.1027` and still below experiment 1's `0.1362`. The full-development panel is
+byte-identical to experiment 4's, and fold panels moved only slightly, mostly
+by swapping one or two members inside the same block.
+
+#### Mandatory CSF diagnostics
+
+```text
+act_mechanism: W supplied separately as treatment; ACT is absent from X
+rsf_act_split/path/terminal: NA by design (undefined for causal survival
+  forests; ACT is W, not an X feature)
+
+development_csf_cg: seed_agreement=0.9911; seed_tau_correlation=0.9989;
+  genomic_vimp_fraction=0.8096; benefit_iqr=3.062; median_abs_benefit=1.745;
+  nontrivial_fraction=0.9192; act_recommended=0.6963
+development_csf_clinical: seed_agreement=0.9971; seed_tau_correlation=0.9999;
+  genomic_vimp_fraction=0.0000; benefit_iqr=4.382; median_abs_benefit=2.124;
+  nontrivial_fraction=0.9371; act_recommended=0.5169
+
+repeat_1_csf_cg: seed_agreement=0.9919; seed_tau_correlation=0.9990;
+  genomic_vimp_fraction=0.8091; benefit_iqr=3.246; median_abs_benefit=1.816;
+  nontrivial_fraction=0.9197; act_recommended=0.6567
+repeat_1_csf_clinical: seed_agreement=0.9971; seed_tau_correlation=0.9999;
+  genomic_vimp_fraction=0.0000; benefit_iqr=4.265; median_abs_benefit=2.067;
+  nontrivial_fraction=0.9420; act_recommended=0.5261
+
+repeat_2_csf_cg: seed_agreement=0.9903; seed_tau_correlation=0.9988;
+  genomic_vimp_fraction=0.8100; benefit_iqr=2.879; median_abs_benefit=1.674;
+  nontrivial_fraction=0.9188; act_recommended=0.7360
+repeat_2_csf_clinical: seed_agreement=0.9971; seed_tau_correlation=0.9999;
+  genomic_vimp_fraction=0.0000; benefit_iqr=4.499; median_abs_benefit=2.181;
+  nontrivial_fraction=0.9323; act_recommended=0.5077
+```
+
+Overlap and constants unchanged by construction.
+
+#### Interpretation: two findings, one of them the important one
+
+The stated failure mode partly occurred. Requiring a gene to reach the top of
+both complementary halves made the count sparse enough that ties fell through
+to the expression-spread tie-break more often, and the Jaccard did not recover
+(0.1027 -> 0.1053, against the predicted >0.136). The intersection is rejected
+and the per-half count of experiment 4 is restored.
+
+The more important finding is how *little* had to change for the policy to move
+this much. Between experiments 4 and 5 the full-development panel is identical
+and the fold panels differ by one or two members within the same biological
+block, yet both repeat increments moved by more than a month
+(-2.400 -> -3.640, -1.467 -> -2.589). Swapping `SMAD7` for `SMAD5` in one fold
+is worth about the same as everything representation and regularization
+achieved in experiments 2 and 3. That is a direct measurement of how weak the
+genomic effect-modification signal is at n = 1034 with 152 treated patients:
+panel-level conclusions here are not stable enough to support a claim about
+which genes matter, whatever the increment eventually does.
+
+Three quantities have now stayed fixed across all five runs and describe the
+real obstacle:
+
+```text
+                     clinical        C+G (exp 1/4/5)
+mean predicted tau   0.47-0.52       0.93-1.37
+ACT recommended      0.51-0.53       0.66-0.74
+genomic vimp         0               0.81-0.82
+```
+
+The genomic CATE is shifted positive by roughly 0.6-0.9 months regardless of
+representation, leaf size, or member ordering, and with the policy threshold
+locked at zero that shift is spent on treating an extra 15-20 percent of
+patients while the all-ACT constant sits below all-observation. Reducing
+genomic columns from eight to two in experiment 2 barely moved the shift
+(1.18 -> 1.13), so it is not caused by the number of genomic split candidates.
+The remaining candidate mechanism is that the supplied `W.hat` is a locked
+clinical-only propensity, so any gene-treatment association beyond the clinical
+covariates is not orthogonalized away inside gene-defined leaves. That is a
+property of the locked nuisance pipeline, not of `train.py`.
+
+A hazard for later experiments, recorded so no slot is wasted on it: the arena
+validator accepts `sample_fraction` up to 0.70, but the locked bridge builds
+every forest with `ci.group.size = 2` and honesty enabled, and `grf` rejects a
+sampling fraction above 0.5 in that configuration. `sample_fraction` is
+therefore treated as capped at 0.50 here.
