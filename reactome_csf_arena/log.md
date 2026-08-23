@@ -1037,3 +1037,186 @@ validator accepts `sample_fraction` up to 0.70, but the locked bridge builds
 every forest with `ci.group.size = 2` and honesty enabled, and `grf` rejects a
 sampling fraction above 0.5 in that configuration. `sample_fraction` is
 therefore treated as capped at 0.50 here.
+
+---
+
+## Experiment 6 (prespecified before launch; ledger slot 7)
+
+### Hypothesis
+
+The panel's instability is *block* instability, not member instability. With
+`MAX_GENES_PER_PATHWAY = 4` and eight genes, each fold's panel is two pathway
+blocks, and the eight fold panels of experiments 4 and 5 show those blocks
+switching between branched-chain amino-acid catabolism, TGF-beta/SMAD, and
+PI3K/phosphoinositide depending on which fitting partition is drawn. Two folds
+that pick different blocks share almost nothing, which is why the Jaccard sits
+at 0.10 and why one-or-two-member changes moved the increment by more than a
+month. Allowing at most two genes per pathway spreads the same eight slots over
+four blocks, so every fold's panel contains most blocks and folds overlap
+through the blocks they share. This should raise the Jaccard above 0.136,
+shrink the repeat increment range below 0.933, and, if block-specific noise is
+what has been dominating, raise both increments above -2.400 and -1.467.
+
+Prespecified directional predictions:
+
+- Gene Jaccard rises above 0.136.
+- Repeat increment range falls below experiment 4's 0.933.
+- Both increments rise above -2.400 and -1.467.
+- If the Jaccard rises but the increments do not, diversification bought
+  stability without value, which would say the blocks are individually
+  uninformative rather than individually noisy, and no further panel
+  composition experiment is warranted.
+
+### Rationale
+
+Experiment 5 measured the sensitivity directly: an identical full-development
+panel with one-or-two-member fold differences moved both increments by over a
+month. That makes panel *composition variance*, not member ranking, the live
+target, and `MAX_GENES_PER_PATHWAY` is the one selector constant that controls
+it. The change is also the natural reading of the constant's own comment, which
+says the block is spread over several pathways so that "folds then need only
+share one pathway anywhere in a short list"; at four genes per pathway that
+intent is only half-implemented.
+
+### Exact change
+
+Two edits in `train.py`, one of which is a reversion:
+
+```text
+1. revert experiment 5: gene_top_counts increments once per half again,
+   restoring the experiment 4 selector exactly (rejected change removed)
+2. MAX_GENES_PER_PATHWAY: 4 -> 2
+```
+
+The reversion is not a second experimental factor: experiment 5's intersection
+was tested and rejected, so the baseline for this run is the best known
+configuration, experiment 4, and the single new factor is the per-pathway cap.
+`CANDIDATE` is unchanged from experiments 4 and 5: raw, eight genes,
+`min_node_size = 5`, 1000 trees, `sample_fraction = 0.50`,
+`honesty_fraction = 0.50`, `alpha = 0.05`, `imbalance_penalty = 0.00`. Compute
+is identical; only the packing rule over already-computed statistics changes.
+
+### Red-line audit
+
+1. Test untouched. OK.
+2. Only `train.py` edited. OK.
+3. Fit-only throughout. OK.
+4. ACT remains `W`. OK.
+5. Estimand untouched. OK.
+6. Selection statistics never enter the reward. OK.
+7. No censored patient dropped. OK.
+8. Selection still uses only the fit-partition DR benefit signal and Reactome
+   membership; the cap is a Reactome-structure constraint. No hard-coded
+   symbols. OK.
+9. Forest geometry unchanged and identical across arms. OK.
+10. All mandatory CSF diagnostics will be recorded. OK.
+11. C-index secondary. OK.
+12. No probes; one full launcher slot. OK.
+13. No metric shopping. OK.
+14. Ledger slot 7 of 20; 30-minute wall; 1000 trees; 26 <= 34 features. OK.
+15. Claims remain observational. OK.
+
+### Prespecified decision rule
+
+- Promote only on an eligible reward improvement.
+- If stability improves without value, stop composing panels: the remaining
+  slots go to documenting the negative result and preparing the honest
+  `NO_ELIGIBLE_CANDIDATE` report, since by then representation, regularization,
+  member ordering, aggregation, and composition will all have been tested
+  against the same invariant positive CATE shift.
+
+### Experiment 6 result (`run_007_20260823T090245Z`, 1250.5 s, ledger slot 7)
+
+`reward = -1000000` (sentinel). `eligible = false`.
+Diagnostic leader score before eligibility `-15.263`
+= robust selection LCB `-14.135` minus repeat increment range `1.129`.
+Mean source increment gap `0.912` months, the smallest so far and the only
+thing that improved. Hypothesis rejected in both of its predictions.
+
+Failed gates (4 of 12), including a *new* one:
+
+- `all_repeat_genomic_increment_positive`
+- `all_repeat_genomic_value_at_least_clinical`
+- `all_repeat_genomic_value_at_least_best_constant`
+- `gene_selection_jaccard_at_least_0_10` (first stability failure of the arena)
+
+```text
+repeat_1  increment=-4.782  selection_lcb=-14.135  ci95=[-11.105, 1.410]  mean=-4.799 sd=3.227
+repeat_2  increment=-3.653  selection_lcb=-11.568  ci95=[ -9.474, 1.767]  mean=-3.669 sd=2.871
+range=1.129  worst_lcb=-14.135
+```
+
+Gene stability: Jaccard `0.0631`, *below* the 0.10 gate and far below the
+predicted >0.136. Fold panels now mix four blocks each and share almost
+nothing:
+
+```text
+ACAD8 HIBCH SMAD4 TGFBR3 MBIP KAT2B PTPN13 PIK3CB
+MCCC1 SLC25A44 EP300 SIRT1 REST AGO2 FOXO1 SMAD2
+SMAD1 SMAD5 SIRT1 CHD9 BMI1 RBBP7 MBIP KAT2B
+PIP5K1B RAB4A PIK3CB RAB14 UBA1 UBE2E3 AUH HIBCH
+HACD3 ACSL4 MCCC1 ACADSB APOL1 IGLV3-25 CDKN1B FOXO1
+PTPN13 PIK3CB HIBCH AUH PIK3R1 MTMR4 MBIP PHF20L1
+TGFBR3 SMAD5 PHKG2 CALM1 CD24 SLPI MEF2C EP300
+AUH HIBCH UBE2G1 UBA1 ARMC8 PDHX SUCLA2 NNT
+```
+
+C-index: repeat_1 clinical `0.6806` vs C+G `0.6753`; repeat_2 clinical
+`0.6869` vs C+G `0.6622`. Within gate.
+
+#### Mandatory CSF diagnostics
+
+```text
+act_mechanism: W supplied separately as treatment; ACT is absent from X
+rsf_act_split/path/terminal: NA by design (undefined for causal survival
+  forests; ACT is W, not an X feature)
+
+development_csf_cg: seed_agreement=0.9937; seed_tau_correlation=0.9990;
+  genomic_vimp_fraction=0.8171; benefit_iqr=3.375; median_abs_benefit=2.057;
+  nontrivial_fraction=0.9434; act_recommended=0.6760
+development_csf_clinical: seed_agreement=0.9971; seed_tau_correlation=0.9999;
+  genomic_vimp_fraction=0.0000; benefit_iqr=4.382; median_abs_benefit=2.124;
+  nontrivial_fraction=0.9371; act_recommended=0.5169
+
+repeat_1_csf_cg: seed_agreement=0.9948; seed_tau_correlation=0.9992;
+  genomic_vimp_fraction=0.8262; benefit_iqr=3.548; median_abs_benefit=2.083;
+  nontrivial_fraction=0.9420; act_recommended=0.6499
+repeat_1_csf_clinical: seed_agreement=0.9971; seed_tau_correlation=0.9999;
+  genomic_vimp_fraction=0.0000; benefit_iqr=4.265; median_abs_benefit=2.067;
+  nontrivial_fraction=0.9420; act_recommended=0.5261
+
+repeat_2_csf_cg: seed_agreement=0.9926; seed_tau_correlation=0.9989;
+  genomic_vimp_fraction=0.8079; benefit_iqr=3.202; median_abs_benefit=2.031;
+  nontrivial_fraction=0.9449; act_recommended=0.7021
+repeat_2_csf_clinical: seed_agreement=0.9971; seed_tau_correlation=0.9999;
+  genomic_vimp_fraction=0.0000; benefit_iqr=4.499; median_abs_benefit=2.181;
+  nontrivial_fraction=0.9323; act_recommended=0.5077
+```
+
+Overlap and constants unchanged by construction.
+
+#### Interpretation: cross-fold overlap comes from depth, not from breadth
+
+The mechanism was backwards. Cross-fold agreement was never coming from folds
+sharing several blocks; it was coming from folds reaching *deep* into the same
+block, where the members are ranked by a statistic that reproduces. Cutting each
+pathway to two members removed exactly those deep shared members and filled the
+free slots with the third- and fourth-ranked pathways, which are the least
+reproducible ones. Stability therefore falls monotonically as the panel is
+spread wider:
+
+```text
+genes per pathway   blocks per panel   Jaccard   increments
+2                          4            0.063    -4.782 / -3.653
+4                          2            0.103    -2.400 / -1.467   (exp 4)
+```
+
+Value moved with stability, not against it, which is the first clean evidence
+in this arena that the two are aligned rather than traded off: the panels that
+reproduce across fitting partitions are also the ones that produce the better
+policy. That reframes the remaining search. Every configuration that made the
+panel *less* concentrated has hurt, and the untested direction is concentration.
+
+The invariant is unchanged for a sixth run: mean predicted genomic benefit
+0.83-1.16 against the clinical 0.47-0.52, ACT recommended 0.65-0.70 against the
+clinical 0.51-0.53, genomic variable importance 0.81-0.83.
