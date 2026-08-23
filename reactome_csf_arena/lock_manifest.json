@@ -1,0 +1,12 @@
+{
+  "files": {
+    "budget.json": "c053587471b793d50947a1d8b815268e56491c27a18e4be16501735f77466c31",
+    "grf_bridge.R": "77d7125417b15a40e26b64a5caf475b5a6604569f44bdf51ebd6a7cca018ae01",
+    "integrity.py": "3390bebf8e33922faadacdec543efaf12ef03074bfaf993393f2e574c70661e9",
+    "prepare.py": "87328fb6dc766b74806f3a3e075aac8f0bc25f6e09643f9a5bc692e285556b60",
+    "red_lines.md": "e59466924a16954631d3c5e4dcf47136a656ab5126035d032493603ba3cba3dd",
+    "run.py": "10a77cb0164b1f8171f0751efb608dee02957187e7b6edcc2a74403a6e8484fd"
+  },
+  "manifest_sha256": "bb4269c9a8f8f7c23cfe8f4b72181717b28c6545c277b0035de139d2d4d037f4",
+  "schema_version": 3
+}
