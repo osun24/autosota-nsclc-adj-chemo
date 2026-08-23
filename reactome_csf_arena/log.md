@@ -405,3 +405,217 @@ policy toward blanket treatment.
 Per the prespecified rule, representation reverts to raw, which scored better
 on every component, and the next experiment attacks causal-forest
 regularization.
+
+---
+
+## Experiment 3 (prespecified before launch; ledger slot 4)
+
+### Hypothesis
+
+The genomic deficit is driven by leaf-level overfitting, not by representation
+and not yet by gene identity. With `min_node_size = 5`, honesty at 0.50 and
+`sample_fraction = 0.50`, each tree splits on roughly 194 of the 775 fitting
+rows and estimates each leaf's 60-month RMST contrast from as few as five
+honest observations under censoring. Continuous gene columns can carve that
+space almost arbitrarily, so the genomic forest manufactures tau variation that
+does not reproduce out of fold. Raising `min_node_size` to 25 should damp that
+manufactured variation and raise both repeat increments toward zero.
+
+Prespecified directional predictions:
+
+- Genomic ACT recommendation moves from 0.72 toward the clinical 0.52, and the
+  genomic policy stops converging on blanket treatment.
+- Both repeat increments rise above experiment 1's -4.008 and -3.195.
+- If increments become positive in both repeats with the other ten gates still
+  passing, the candidate is eligible and is promoted by the launcher.
+- If increments rise but stay negative, the deficit is partly overfitting and
+  partly gene identity, and the remaining gap is attributable to *which* genes
+  the selector picks. Selector logic is then the next target.
+- If increments do not rise at all, overfitting is not the mechanism, the
+  panel carries no usable effect modification as selected, and regularization
+  is retired as a lever.
+
+Note the honest limit of this lever: as `min_node_size` grows, both forests
+shrink toward a constant tau and both alignments go to zero, so regularization
+alone can move the increment toward zero but cannot manufacture a positive one.
+This experiment is therefore diagnostic about *how much* of the 3-4 month
+deficit is noise, and only incidentally a candidate for promotion.
+
+### Rationale
+
+`program.md` orders causal-forest regularization directly after the
+raw-versus-module comparison and before selector complexity, and experiments 1
+and 2 have now settled the representation question in favour of raw. The
+specific failure this addresses is measured, not assumed: in both experiments
+the genomic alignment collapses from the clinical 4.5-5.1 months to about 0
+while seed agreement stays at 0.99, which is the signature of variance that is
+stable across seeds (all seeds see the same overfit fitting partition) but does
+not carry out of fold. Leaf size is the one locked-geometry knob that directly
+controls it, and it applies identically to the clinical and C+G forests, so the
+comparator cannot be weakened.
+
+### Exact change
+
+In `train.py` `CANDIDATE`, revert experiment 2's representation and change one
+forest parameter:
+
+```text
+name:            csf_pathway8_module2_honest_s100 -> csf_pathway8_raw_node25
+representation:  module -> raw
+module_count:    2      -> 8      (raw requires module_count == n_genes)
+min_node_size:   5      -> 25
+```
+
+Unchanged: selector and all its constants, `n_genes = 8`, `num_trees = 1000`,
+`sample_fraction = 0.50`, `honesty_fraction = 0.50`, `alpha = 0.05`,
+`imbalance_penalty = 0.00`, zero-month threshold, seeds, folds, bootstraps.
+`min_node_size = 25` is inside the locked `[3, 40]` range.
+
+### Red-line audit
+
+1. Test untouched. OK.
+2. Only `train.py` edited; four `CANDIDATE` fields, no selector logic. OK.
+3. Fit-only adaptation unchanged. OK.
+4. ACT remains `W`; no ACT feature, no gene-by-ACT product. OK.
+5. Estimand untouched: horizon 60, threshold 0, LCB, range penalty. OK.
+6. Learning and grading separate. OK.
+7. No censored patient dropped. OK.
+8. Selection unchanged; no hard-coded symbols. OK.
+9. `min_node_size` applies identically to the clinical and C+G forests and to
+   the secondary prognostic forest, so the comparator is not weakened; if
+   anything the clinical policy also benefits, which makes a positive increment
+   harder, not easier. OK.
+10. All mandatory CSF diagnostics will be recorded. OK.
+11. C-index secondary, gate only. OK.
+12. No probes; one full launcher slot. OK.
+13. No metric shopping. OK.
+14. Ledger slot 4 of 20; 30-minute wall; 1000 trees; 26 <= 34 features. OK.
+15. Claims remain observational. OK.
+
+### Prespecified decision rule
+
+- Promote only on an eligible reward improvement.
+- Otherwise classify the outcome into one of the three branches above and, if
+  the deficit is attributable to gene identity, move to selector logic: the
+  first target is the member-ordering rule, which currently ranks genes inside
+  a chosen pathway by expression spread and uses the DR co-selection frequency
+  only as a coarse median gate, so the widest-spread rather than the most
+  benefit-associated members enter the panel.
+
+### Experiment 3 result (`run_004_20260823T075139Z`, 1177.0 s, ledger slot 4)
+
+`reward = -1000000` (sentinel). `eligible = false`.
+Diagnostic leader score before eligibility `-4.745`
+= robust selection LCB `-2.885` minus repeat increment range `1.861`.
+Mean source increment gap `1.854` months. This is numerically the best score so
+far, so the launcher moved `diagnostic_leader.txt` to `run_004`; the section
+below argues that this leader is degenerate and must not steer the search.
+
+Failed gates (3 of 12):
+
+- `all_repeat_genomic_increment_positive`
+- `all_repeat_genomic_alignment_positive`
+- `all_repeat_genomic_value_at_least_best_constant`
+
+`all_repeat_genomic_value_at_least_clinical` now passes, but only because the
+clinical policy itself collapsed.
+
+```text
+repeat_1  increment= 0.000  selection_lcb=  0.000  ci95=[0.000, 0.000]  mean= 0.000 sd=0.000
+repeat_2  increment= 1.861  selection_lcb= -2.885  ci95=[-1.608, 5.447] mean= 1.864 sd=1.788
+range=1.861  worst_lcb=-2.885
+```
+
+Repeat 1's exact zero is not a rounding artifact: at `min_node_size = 25` the
+clinical and C+G forests produced *identical recommendation sets* (both 0.7505
+ACT), so every bootstrap draw differenced to exactly zero.
+
+Source-specific OOF increments (diagnostic only):
+
+```text
+repeat_1  former_train= 0.000  former_validation= 0.000  gap=0.000
+repeat_2  former_train= 0.932  former_validation= 4.639  gap=3.707
+```
+
+C-index: repeat_1 clinical `0.6788` vs C+G `0.6777`; repeat_2 clinical
+`0.6831` vs C+G `0.6584`. Within the 0.03 gate.
+
+Gene selection is unchanged from experiments 1 and 2 (Jaccard `0.136`, same
+panel), since only forest geometry moved.
+
+#### Mandatory CSF diagnostics
+
+```text
+act_mechanism: W supplied separately as treatment; ACT is absent from X
+rsf_act_split/path/terminal: NA by design (undefined for causal survival
+  forests; ACT is W, not an X feature)
+
+development_csf_cg: seed_agreement=1.0000; seed_tau_correlation=0.9928;
+  genomic_vimp_fraction=0.8249; benefit_iqr=1.193; median_abs_benefit=2.021;
+  nontrivial_fraction=0.8752; act_recommended=0.8752
+development_csf_clinical: seed_agreement=1.0000; seed_tau_correlation=0.9990;
+  genomic_vimp_fraction=0.0000; benefit_iqr=1.365; median_abs_benefit=1.281;
+  nontrivial_fraction=0.8752; act_recommended=0.7500
+
+repeat_1_csf_cg: seed_agreement=1.0000; seed_tau_correlation=1.0000;
+  genomic_vimp_fraction=0.7968; benefit_iqr=0.923; median_abs_benefit=2.352;
+  nontrivial_fraction=0.7505; act_recommended=0.7505
+repeat_1_csf_clinical: seed_agreement=1.0000; seed_tau_correlation=1.0000;
+  genomic_vimp_fraction=0.0000; benefit_iqr=0.760; median_abs_benefit=1.431;
+  nontrivial_fraction=0.7505; act_recommended=0.7505
+
+repeat_2_csf_cg: seed_agreement=1.0000; seed_tau_correlation=0.9855;
+  genomic_vimp_fraction=0.8530; benefit_iqr=1.462; median_abs_benefit=1.689;
+  nontrivial_fraction=1.0000; act_recommended=1.0000
+repeat_2_csf_clinical: seed_agreement=1.0000; seed_tau_correlation=0.9979;
+  genomic_vimp_fraction=0.0000; benefit_iqr=1.970; median_abs_benefit=1.131;
+  nontrivial_fraction=1.0000; act_recommended=0.7495
+```
+
+Overlap and constants are unchanged by construction: overlap 0.860 / 0.877,
+IPTW ESS 360.1 / 384.5, all-observation 45.88 / 45.90, all-ACT 45.58 / 45.46.
+
+#### Interpretation: the lever works by destroying both policies
+
+The increments did rise, exactly as predicted, and the prediction about ACT
+recommendation was wrong in an informative way: recommendation went *up*, not
+down, to 0.875 pooled and to 1.000 in repeat 2, where the genomic policy
+recommends ACT for every single patient.
+
+```text
+                          exp 1 (node 5)      exp 3 (node 25)
+clinical benefit IQR          4.38                1.36
+clinical alignment       5.091 / 3.948      0.465 / -2.301
+clinical ACT recommended      0.517               0.750
+C+G alignment            1.083 / 0.753      0.465 / -0.440
+increments              -4.008 / -3.195     0.000 / +1.861
+```
+
+At `min_node_size = 25` a tree has roughly eight leaves over ~194 splitting
+rows, so tau collapses toward a nearly constant positive value in both arms.
+Both forests then recommend ACT for three-quarters to all patients, and both
+policy values fall to the all-ACT constant (45.5 months), which is *below* the
+all-observation constant (45.9). The increment improves only because the
+clinical comparator was flattened from a genuinely discriminating policy
+(value 48.3 versus 45.9 for all-observation) to a near-blanket one.
+
+This is why `run_004` is a degenerate diagnostic leader. Red line 13 already
+forbids it from nominating a test candidate; recorded here explicitly, it must
+also not steer the next hypothesis, because its score comes from removing
+information rather than adding it. The scientifically informative leader
+remains `run_001`.
+
+Three conclusions carry forward:
+
+1. Fine leaves are *necessary* for the clinical policy. At `min_node_size = 5`
+   the clinical forest reaches OOF alignment 4.5-5.1 months and value 47.7-48.3
+   against constants near 45.5-45.9, so its CATE is real out-of-fold signal, not
+   an artifact. Regularizing it away is not progress.
+2. Regularization is retired as a lever for this deficit. It cannot manufacture
+   a positive increment; between node 5 and node 25 it only trades clinical
+   discrimination for a smaller gap.
+3. What is left is gene identity. Across three runs the panel has been held
+   fixed while representation and leaf size moved through their useful ranges,
+   and the genomic policy never once ordered patients better than the clinical
+   one. The next experiment therefore changes selector logic, as the experiment
+   3 decision rule prespecified.
