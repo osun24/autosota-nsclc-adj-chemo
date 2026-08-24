@@ -687,3 +687,125 @@ anchors, that quota tuning is exhausted, and that the next axis is the
 expression-variability filter. The range rose. Experiment 6 returns the quota
 to experiment 3's shape (5 anchors, 8 genes each) and changes which genes are
 eligible to be scored at all.
+
+## Experiment 6 (prespecified before running)
+
+**Candidate** `tlearner_dynamic_range_module16`
+
+The experiment 3 configuration in every respect — single sign-coherent
+16-gene module, 5 anchors of 8 genes, both arms at locked clinical geometry,
+threshold 0.0 — with one addition ahead of everything else in the selector:
+
+- **`MIN_DYNAMIC_RANGE_QUANTILE = 0.50`**: genes whose fit-partition
+  interquartile range falls below the median are dropped before any gene is
+  scored and before any pathway is ranked.
+
+Fit-only, computed inside the selector on the fitting partition, no gene
+named. Verified on synthetic data with deliberately floor-compressed genes:
+the filter removed all of them and none reached the panel.
+
+**Hypothesis.** Every candidate since experiment 2 has anchored on olfactory
+receptor and potassium channel families. Olfactory receptors are not
+plausibly expressed in lung tumour tissue, so their measured variation is
+compressed against the array detection floor and is more likely tracking
+background than biology. Experiment 4 supplied the corroborating evidence:
+the positive tail is stable across folds while the negative tail is
+fold-specific noise, which is the signature of a technical axis rather than a
+symmetric biological effect. Requiring above-median dynamic range should move
+selection onto genes carrying real expression signal, and if that signal is
+biological rather than technical it should be at least as reproducible and
+worth more in incremental alignment.
+
+**This is a deliberate gamble on a different signal, not a refinement.** It
+replaces the only panel that has ever cleared all thirteen gates. I am
+spending a slot on it because the quota-tuning axis is exhausted by my own
+prespecified rule, because the remaining reward headroom is in the mean
+increment rather than the repeat range, and because `best_run.txt` advances
+only on a strictly higher eligible reward — experiment 3 cannot be lost.
+
+**Prespecified predictions and what would falsify them.**
+
+- The panel no longer contains `OR*`/`TAAR*`/`HTR*` genes. If it does, the
+  olfactory families survive an above-median dynamic range cut, the
+  detection-floor reading is wrong, and the caveat recorded under experiment
+  2 should be softened rather than acted on.
+- Jaccard stays above 0.10 and both increments stay positive. If Jaccard
+  collapses toward experiment 4's 0.078, then the *stability* of the
+  olfactory anchor was load-bearing and the technical axis, whatever its
+  provenance, is the only reproducible signal this cohort offers at n=1034.
+  That would be a genuine negative result about the data rather than about
+  the model, and it would close the "which signal" axis.
+- Reward above -3.9105. If both increments stay positive but the reward does
+  not beat experiment 3, the filter is neutral and the next axis is forest
+  geometry for the C+G panel, which the search has not yet touched.
+
+**Result.** (to be appended after the run)
+
+**Result — run_006_20260824T002108Z, 232 s wall. NOT ELIGIBLE, reward -1e6.**
+
+| field | repeat 1 | repeat 2 |
+|---|---|---|
+| incremental alignment (months) | **-5.092** | **-2.194** |
+| selection LCB | -12.702 | -8.784 |
+| bootstrap mean / CI95 | -5.073 / [-10.046, -0.663] | -2.212 / [-6.701, +1.945] |
+| alignment C / C+G | 5.098 / **0.006** | 5.361 / 3.167 |
+| value C / C+G / best constant | 48.152 / 45.145 / 45.634 | 48.526 / 47.257 / 45.766 |
+| Harrell C, C / C+G (drop) | 0.6561 / 0.6576 (**-0.0015**) | 0.6641 / 0.6553 (0.0088) |
+| ACT recommended fraction C+G | 0.3327 | 0.3743 |
+| seed agreement / benefit corr | 0.9907 / 0.9990 | 0.9942 / 0.9991 |
+| predicted benefit mean / IQR / nontrivial | -4.444 / 14.765 / 0.9942 | -3.604 / 16.849 / 0.9932 |
+| genomic split fraction obs / ACT | 0.3771 / 0.3100 | 0.3730 / 0.3446 |
+| arm support obs (pt/ev) | 661.5 / 278.25 | 661.5 / 278.25 |
+| arm support ACT (pt/ev) | 114.0 / 70.5 | 114.0 / 70.5 |
+| raw propensity overlap / IPTW ESS | 0.8723 / 358.5 | 0.8694 / 366.3 |
+
+Diagnostic score -15.601 (robust LCB -12.702, repeat range 2.899).
+Jaccard **0.0762**. Gates 9/13.
+
+Full-development panel: `RPLP1, RPS15, CFL1, ERBB2, OASL, MET, RPL36A,
+H2AC14, RPL37, RPS15A, PLXNA3, RHOB, H2AX, RPS23, IRF1, PTPN6`.
+
+**Scorecard: prediction 1 confirmed, prediction 2 falsified, and together
+they settle the question.**
+
+- *No `OR*`/`TAAR*`/`HTR*` genes survive*: **confirmed**, and completely. Not
+  one olfactory or biogenic-amine receptor appears in any of the eight folds.
+  The olfactory families sit below the median fit-partition IQR, exactly as
+  the detection-floor reading predicted. That reading was right.
+- *Jaccard stays above 0.10, increments stay positive*: **falsified on both
+  counts.** Jaccard collapsed to 0.0762 — statistically indistinguishable
+  from experiment 4's 0.0784 — and both increments went sharply negative.
+
+**The negative result this establishes.** Restricted to genes with real
+expression dynamic range, the DR benefit signal in this cohort is **not
+reproducible across folds** at n=1034 with 152 treated patients. Each fold
+lands on a different biologically coherent story: r1f1 ribosomal proteins,
+r1f2 growth-factor/ERBB signalling (`HBEGF, EREG, ERBB2, MET, IL6, CXCL2`),
+r1f3 interferon response (`IRF1, IRF9, STAT1, OASL, BST2, IFI27`), r2f1
+histones. These are plausible-looking panels — which is precisely the danger.
+They are what selection on noise produces when the candidate pool is
+biologically structured, and the Jaccard gate is what exposes them.
+
+Per my prespecified rule, this closes the "which signal" axis: the
+low-dynamic-range axis is the only *reproducible* benefit signal this cohort
+offers, and the caveat recorded under experiment 2 stands as a limitation of
+the winning candidate rather than as a defect to be engineered away.
+
+**A dissociation worth recording.** In repeat 1 the real-expression panel
+*improved* the Harrell C-index (0.6576 against the clinical 0.6561) while
+incremental alignment collapsed to 0.006 — the clinical and C+G policies
+became effectively equivalent in discrimination. Genes that sharpen
+*prognosis* are not the genes that identify *who benefits from treatment*.
+The arena grades the second and the search must not be seduced by the first.
+
+**Axis status after six experiments.**
+
+- Panel size / representation: settled (16 genes, one sign-coherent module).
+- Genomic column count: settled at 1 (experiments 1 and 4 both punished more).
+- Bidirectional selection: closed by experiment 4's rule.
+- Quota shape: closed by experiment 5's rule (optimum at 5 anchors x 8).
+- Which signal is tracked: closed by this run's rule.
+- `benefit_threshold_months`: ruled out arithmetically, twice.
+- **Forest geometry for the C+G panel: never touched.** This is the only
+  substantive axis left, and it is the one the program names as a preferred
+  first axis in the form of ACT-arm regularization.
