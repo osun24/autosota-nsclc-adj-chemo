@@ -2025,3 +2025,59 @@ stand: the panel is dominated by low-expression olfactory and potassium-
 channel genes, the benefit direction is asymmetric in a way consistent with a
 technical axis, and no gene set with real expression dynamic range reproduces
 across folds. Test data remains untouched.
+
+## Correction: the repeat antagonism is local to the frontier, not global
+
+Under experiment 11 I wrote that the two repeats "respond in opposite
+directions" and cited a correlation of -0.535. That figure was computed on
+six runs of the single-positive-module family, and I generalised it further
+than it supports. Across all fifteen runs the relationship is the opposite:
+
+    corr(best repeat LCB, worst repeat LCB) = +0.717
+    corr(best repeat LCB, gates passed)     = +0.673
+
+Globally, better designs are better on *both* repeats and pass *more* gates —
+the bad runs (001, 006) are simply bad everywhere, and they drive the positive
+correlation. The antagonism is real but local: it appears only among the
+strongest designs, where pushing one repeat further costs the other. Both
+statements are true at different points of the distribution, and I should
+have said so rather than presenting the local pattern as a global law.
+
+## The binding quantity, stated directly
+
+The correction does not change the conclusion, and it allows a cleaner
+statement of it that does not depend on my `sqrt(f*n)` derivation at all.
+
+`reward = min(LCB) - range`, so the quantity that must exceed zero is the
+**worst repeat's selection LCB**. Ranked across all fifteen experiments:
+
+| run | best repeat LCB | worst repeat LCB | gates | eligible |
+|---|---|---|---|---|
+| 012 | -0.464 | -7.109 | 11/13 | no |
+| 009 | -0.695 | -5.535 | 12/13 | no |
+| 011 | -1.140 | -6.077 | 11/13 | no |
+| 010 | -1.882 | -6.484 | 11/13 | no |
+| **003** | -2.406 | **-3.275** | **13/13** | **yes** |
+| 008 | -2.518 | -4.401 | 12/13 | no |
+| 013 | -3.650 | -3.889 | 12/13 | no |
+
+The best worst-repeat LCB ever achieved is **-3.275**, by the one eligible
+run. The second best is -3.889. Fifteen designs spanning every mechanism in
+the editable surface — gene selection, pool construction, anchor choice and
+count, stability selection, sign handling, representation, column count,
+forest geometry in both directions, and the decision threshold — produce
+worst-repeat LCBs clustered between **-3.275 and -13.116**. Not one reaches
+half way to zero.
+
+The four runs with a stronger *best* repeat than run_003 all have a *worse*
+worst repeat and all fail eligibility, which is the frontier trade-off in its
+most direct form: the requirement for a positive reward and the requirement
+for eligibility pull against each other precisely in the region where either
+might be achievable.
+
+**Final position.** The search is complete and the answer is negative: one
+eligible candidate, `run_003_20260823T191920Z`, with reward -3.9105, and no
+attainable candidate with a positive score. Five experiments remain unspent
+because every mechanism is closed by a rule written before its run, and
+because closing a 3.3-month gap in the worst-repeat LCB is not something any
+remaining edit to `train.py` can do. Test data remains untouched.
