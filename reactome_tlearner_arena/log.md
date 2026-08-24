@@ -2081,3 +2081,131 @@ attainable candidate with a positive score. Five experiments remain unspent
 because every mechanism is closed by a rule written before its run, and
 because closing a 3.3-month gap in the worst-repeat LCB is not something any
 remaining edit to `train.py` can do. Test data remains untouched.
+
+## Experiment 16 (prespecified before running)
+
+**Decision to spend the remaining budget.** The standing conclusion is that a
+positive reward is unreachable, and nothing below revises that. But the
+conclusion rests on fifteen points, and several of my confident readings this
+session have been wrong — the geometry axis, the nesting diagnosis, the
+Jaccard mechanism, and the global generality of the repeat antagonism. So the
+remaining slots go to the *binding quantity* — the worst repeat's selection
+LCB — rather than to restating the argument. Improving it produces a better
+eligible candidate whether or not it reaches zero.
+
+**Candidate** `tlearner_modal_anchor4_module16`
+
+Experiment 13's frequency-based selector exactly — modal anchors by
+appearance count across 40 subsamples, members ordered by sign-consistency,
+one module, locked clinical geometry, threshold 0.0 — with:
+
+- `POOL_PATHWAYS` 2 -> **4**, `PER_PATHWAY_TOP` 8 -> **4** (four modal
+  anchors of four genes each, still exactly 16)
+
+**Hypothesis.** Experiment 13 holds the record-low repeat range (0.1806) and
+the second-best worst-repeat LCB (-3.889), but its minimum increment is only
++0.568 — it is starved of signal, not of stability. Experiments 3, 5 and 9
+established that anchor *diversity* buys stability while concentration buys
+partition sensitivity. Experiment 5 is the apparent counterexample, but its
+failure came from reaching down to weak **rank-selected** anchors at ranks
+6-8, and modal selection removes exactly that hazard: a pathway becomes an
+anchor only by recurring across subsamples, so a weak one never qualifies no
+matter how far down the list I go. Four modal anchors should therefore raise
+the increment without importing the instability that eight rank-selected
+anchors did, landing between experiment 13 and experiment 3 on the frontier —
+which is where the best worst-repeat LCB should sit.
+
+**Prespecified predictions and what would falsify them.**
+
+- Worst-repeat LCB above **-3.275**, beating experiment 3 and making this the
+  new best eligible candidate if the gates hold.
+- Both increments positive and closer together than experiment 3's
+  +2.574/+1.939, with the repeat range below 0.6355.
+- Eligible, 13/13.
+- Reward above -3.9105, though still negative. I am not predicting a positive
+  reward: the worst-repeat LCB would have to improve by 3.3 months and the
+  entire fifteen-run spread of that quantity is 9.8 months across designs
+  that differ far more than this one does from experiment 13.
+- If the worst-repeat LCB does not improve, then the modal-anchor family is
+  at its own optimum at two anchors, diversity and signal cannot be increased
+  together even with rank removed, and the remaining slots have nothing left
+  to test.
+
+**Result.** (to be appended after the run)
+
+**Result — run_016_20260824T014630Z, 259 s wall. NOT ELIGIBLE, reward -1e6.**
+
+| field | repeat 1 | repeat 2 |
+|---|---|---|
+| incremental alignment (months) | **+1.796** | **+0.412** |
+| selection LCB | -3.015 | **-4.639** |
+| bootstrap mean / CI95 | +1.764 / [-1.430, +4.905] | +0.398 / [-2.864, +3.347] |
+| alignment C / C+G | 5.098 / 6.894 | 5.361 / 5.773 |
+| value C / C+G / best constant | 48.152 / 47.720 / 45.465 | 48.526 / 48.297 / 45.455 |
+| Harrell C, C / C+G (drop) | 0.6561 / 0.6564 (**-0.0003**) | 0.6641 / 0.6470 (0.0170) |
+| ACT recommended fraction C+G | 0.3124 | 0.3559 |
+| seed agreement / benefit corr | 0.9958 / 0.9991 | 0.9932 / 0.9989 |
+| predicted benefit mean / IQR / nontrivial | -5.407 / 15.910 / 0.9961 | -3.628 / 15.951 / 0.9942 |
+| genomic split fraction obs / ACT | 0.3813 / 0.2645 | 0.3833 / 0.2717 |
+| arm support obs (pt/ev) | 661.5 / 278.25 | 661.5 / 278.25 |
+| arm support ACT (pt/ev) | 114.0 / 70.5 | 114.0 / 70.5 |
+| raw propensity overlap / IPTW ESS | 0.8723 / 358.5 | 0.8694 / 366.3 |
+
+Diagnostic score -6.022 (robust LCB -4.639, repeat range 1.3837). Gates 12/13.
+
+**Scorecard: falsified on every count, and the pattern is the same one.**
+Going from two modal anchors to four raised the increments — +0.749/+0.568
+became +1.796/+0.412, so the design was indeed signal-starved as diagnosed —
+but the repeat range went 0.1806 to 1.3837 and the worst-repeat LCB fell from
+-3.889 to -4.639. Net worse, and not eligible.
+
+**This closes the last hypothesis.** The trade-off was the one thing I hoped
+modal selection would escape. Experiment 5 raised anchor count with *rank*
+selection and lost; experiment 16 raised it with *frequency* selection and
+lost the same way, by the same mechanism, in the same direction. Diversity
+and signal cannot be increased together in this cohort regardless of the
+statistic used to choose anchors. Per the rule written before the run, the
+modal-anchor family is at its optimum at two anchors, and there is nothing
+left to test.
+
+## Search closed after 16 of 20 experiments
+
+| run | candidate | elig | score | worst LCB | range | increments |
+|---|---|---|---|---|---|---|
+| 001 | raw4 dr_gene | no | -16.027 | -13.116 | 2.911 | -1.660 / -4.571 |
+| 002 | pathway module16 | no | -7.764 | -6.142 | 1.622 | +1.470 / -0.153 |
+| **003** | **bounded pool module16** | **YES** | **-3.911** | **-3.275** | 0.635 | **+2.574 / +1.939** |
+| 004 | bidirectional | no | -13.214 | -10.342 | 2.871 | -2.003 / +0.868 |
+| 005 | wide anchor (8 rank) | no | -5.446 | -4.568 | 0.878 | +2.023 / +1.145 |
+| 006 | dynamic range filter | no | -15.601 | -12.702 | 2.899 | -5.092 / -2.194 |
+| 007 | regularized ACT | no | -6.448 | -5.914 | 0.534 | +0.452 / -0.082 |
+| 008 | fine geometry | no | -5.686 | -4.401 | 1.285 | +2.686 / +1.401 |
+| 009 | precise anchor | no | -8.856 | -5.535 | 3.322 | +4.224 / +0.902 |
+| 010 | distinct anchor | no | -10.215 | -6.484 | 3.731 | +3.403 / -0.327 |
+| 011 | stability selection | no | -9.768 | -6.077 | 3.691 | +3.587 / -0.104 |
+| 012 | stability + 2 modules | no | -12.509 | -7.109 | 5.400 | +5.132 / -0.268 |
+| 013 | modal anchor (2) | no | -4.069 | -3.889 | **0.181** | +0.749 / +0.568 |
+| 014 | modal anchor + scored | no | -7.663 | -5.816 | 1.846 | +1.202 / -0.644 |
+| 015 | stability + 4 modules | no | -9.005 | -8.000 | 1.005 | -1.065 / -0.060 |
+| 016 | modal anchor (4) | no | -6.022 | -4.639 | 1.384 | +1.796 / +0.412 |
+
+**Eligible: 1. Eligible with positive score: 0.** The worst-repeat LCB — the
+quantity that must exceed zero — never rises above **-3.275**, achieved by
+the single eligible run in experiment 3. Sixteen designs, spanning gene-level
+and pathway-level selection, rank-based and frequency-based statistics,
+one to four genomic columns, module and raw representations, both benefit
+directions, forest geometry finer and coarser than locked, an expression
+filter, an overlap filter, stability selection, and the decision threshold,
+all land between -3.275 and -13.116.
+
+**Four experiments remain unspent.** Every mechanism is closed by a rule
+written before its run, and the last one closed today. Spending the remainder
+would be hypothesis-free.
+
+**Frozen deliverable.** `run_003_20260823T191920Z` — the locked clinical
+T-learner plus one averaged, sign-coherent Reactome module of 16 genes drawn
+from a bounded five-pathway quota. 13/13 gates, reward -3.9105, increments
++2.574 / +1.939, C-index cost under 0.008, Jaccard 0.1417. It holds
+`best_run.txt` and `diagnostic_leader.txt` and is exactly reproducible.
+Limitations from experiments 2, 4 and 6 stand and must travel with it. Test
+data was never opened.
