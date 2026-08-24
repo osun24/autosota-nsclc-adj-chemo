@@ -1298,3 +1298,148 @@ biological axis (experiment 4), and every gene set with real expression
 dynamic range failed to reproduce across folds (experiment 6). The candidate
 clears the arena's thirteen gates; it should not be described as a
 biologically interpretable pathway result. Test data remains untouched.
+
+## Experiment 11 (prespecified before running)
+
+**Goal change.** The directive is now an eligible candidate with a *positive*
+reward, not merely an eligible one. That requires the 0.25% bootstrap
+quantile of the increment to be positive in **both** repeats, and then to
+exceed the repeat range. Concretely: a mean increment near 5 months at
+SD ~1.7 in both repeats, against a best-ever repeat-2 increment of +1.939
+(experiment 3). Experiment 9's repeat 1 is the closest any run has come —
+mean +4.224, LCB -0.695, with an ordinary CI95 of [+0.694, +8.134] that
+already excludes zero — so the target is not obviously unreachable, but it
+needs both repeats to behave like that one.
+
+**Candidate** `tlearner_stability_selected_module16`
+
+Experiment 3's configuration — single sign-coherent 16-gene module,
+5 anchors of 8 genes, `MIN_PATHWAY_MEMBERS` 25, both arms at locked clinical
+geometry, threshold 0.0 — with the single-shot ranking replaced by
+**stability selection**:
+
+- the cross-fitted DR benefit pseudo-outcome is computed once per fitting
+  partition, as before
+- the entire pathway-anchored, sign-coherent pick is then repeated on
+  **40 random 80% subsamples** of that partition
+- the 16 genes chosen most often across those 40 picks form the panel, with
+  mean signed score breaking ties
+
+Fit-only throughout, fixed seed, no gene hard-coded.
+
+**Hypothesis.** Every one of the ten completed experiments points at the same
+binding defect, and none of them has addressed it directly. Experiment 1
+measured Jaccard 0.070 for a top-4 of 8,647 genes. Experiment 6 showed that
+each fold lands on a different plausible biology when the pool is
+biologically structured. Experiment 10 showed that changing 2-5 genes in 3 of
+8 folds swings the repeat range by 3.1 months. The panel is being chosen by a
+statistic whose sampling variability dominates its signal. Selection
+frequency across subsamples is a far lower-variance statistic than any single
+ranking — that is precisely what stability selection is for — so it should
+raise Jaccard well above the 0.14 ceiling this family has never beaten, pull
+the two repeats toward each other, and lift the binding repeat-2 LCB.
+
+**A calibration I obtained before launching, which changes how I read
+Jaccard.** Running the single-draw pathway-anchored pick on synthetic pure
+noise at full scale (8,647 genes, 1,839 pathways) gives a pairwise panel
+Jaccard of **0.0809**. Pathway anchoring manufactures apparent agreement even
+when there is no signal at all, because the pool restriction alone forces
+overlap. So 0.08 is this selector's *noise floor*, not zero, and the 0.10
+gate sits barely above it. That reframes several earlier results: experiment
+4 (0.0784), experiment 6 (0.0762) and experiment 10's perturbed folds were
+not merely unstable, they were **indistinguishable from pure noise
+selection**. It also means experiment 3's 0.1417 is a real but modest signal —
+roughly 1.75x the noise floor — and that a large Jaccard gain here would be
+strong evidence the method is working rather than a cosmetic improvement.
+
+**Timing.** Measured at full scale on synthetic data: 5.0 s per selector
+call, so about 45 s for the nine calls, against a 2,100 s budget with roughly
+150 s of forests. No timeout risk.
+
+**Prespecified predictions and what would falsify them.**
+
+- Jaccard rises above 0.20, comfortably clear of the 0.08 noise floor. If it
+  does not move above 0.14, subsample-to-subsample variation is not what
+  drives fold-to-fold panel disagreement — the folds differ by patients, not
+  by sampling noise within a fixed partition — and stability selection cannot
+  fix it.
+- Both increments positive with the repeat range below 0.6355, and the reward
+  above -3.9105. This is the eligibility-preserving prediction.
+- Reward positive. I state this as the goal rather than as an expectation:
+  it needs roughly a 2.5x improvement in the binding repeat-2 increment, and
+  nothing in ten experiments has moved that quantity by more than about a
+  month. If Jaccard rises sharply and the increments do not follow, the
+  conclusion is that panel instability was never the limiting factor for the
+  *increment* — only for the range — and the positive-reward target is out of
+  reach for this estimand at n=1034 with 152 treated patients.
+
+**Result.** (to be appended after the run)
+
+**Result — run_011_20260824T005914Z, 257 s wall. NOT ELIGIBLE, reward -1e6.**
+
+| field | repeat 1 | repeat 2 |
+|---|---|---|
+| incremental alignment (months) | **+3.587** | **-0.104** |
+| selection LCB | -1.140 | -6.077 |
+| bootstrap mean / CI95 | +3.558 / **[+0.483, +6.664]** | -0.161 / [-4.268, +3.343] |
+| alignment C / C+G | 5.098 / 8.685 | 5.361 / 5.257 |
+| value C / C+G / best constant | 48.152 / 48.298 / 45.506 | 48.526 / 47.934 / 45.430 |
+| Harrell C, C / C+G (drop) | 0.6561 / 0.6569 (**-0.0008**) | 0.6641 / 0.6496 (0.0145) |
+| ACT recommended fraction C+G | 0.3008 | 0.3443 |
+| seed agreement / benefit corr | 0.9939 / 0.9992 | 0.9923 / 0.9989 |
+| predicted benefit mean / IQR / nontrivial | -5.861 / 15.940 / 0.9971 | -3.942 / 15.663 / 0.9942 |
+| genomic split fraction obs / ACT | 0.3810 / 0.2761 | 0.3857 / 0.2785 |
+| arm support obs (pt/ev) | 661.5 / 278.25 | 661.5 / 278.25 |
+| arm support ACT (pt/ev) | 114.0 / 70.5 | 114.0 / 70.5 |
+| raw propensity overlap / IPTW ESS | 0.8723 / 358.5 | 0.8694 / 366.3 |
+
+Diagnostic score -9.768 (robust LCB -6.077, repeat range 3.6910).
+Jaccard **0.1581 — the highest of the search.** Gates 11/13.
+
+**Scorecard.**
+
+- *Jaccard above 0.20*: **falsified**, but it did rise to 0.1581, the best
+  eleven experiments have produced and about 1.95x the 0.0809 noise floor.
+  Stability selection does what it claims; the ceiling on panel
+  reproducibility in this cohort is simply lower than I hoped.
+- *Both increments positive, range below 0.6355, reward above -3.9105*:
+  **falsified.** Repeat 1 rose to +3.587 with a CI95 of [+0.483, +6.664] that
+  excludes zero; repeat 2 fell to -0.104 and the range blew out to 3.691.
+- *Reward positive*: **falsified.**
+
+**The structural finding, which is now the main obstacle.** Within the
+single-positive-module family — experiments 3, 5, 8, 9, 10 and 11, which
+differ only in how the panel is picked — the two repeats respond in
+*opposite* directions:
+
+| | 003 | 005 | 008 | 009 | 010 | 011 |
+|---|---|---|---|---|---|---|
+| repeat 1 | +2.574 | +2.023 | +2.686 | +4.224 | +3.403 | +3.587 |
+| repeat 2 | +1.939 | +1.145 | +1.401 | +0.902 | -0.327 | -0.104 |
+
+Correlation across those six designs is **-0.535**. Every change that
+sharpens the panel raises repeat 1 and lowers repeat 2. The two repeats use
+the same 1,034 patients and differ only in the fold seed, so a genuine
+biological effect modifier should help both partitions roughly equally. A
+signal that improves one partition while degrading the other is
+partition-specific — which is the third independent line of evidence, after
+the detection-floor panel composition and the tail asymmetry of experiment 4,
+that this module tracks a technical rather than biological axis.
+
+The antagonism is also doubly punishing for the objective: pushing repeat 1
+up pushes repeat 2 down, and the reward takes the *minimum* LCB and then
+subtracts a range that the divergence itself inflates.
+
+**Where that leaves the positive-reward target.** A positive reward needs the
+binding repeat's LCB above zero, which at the observed bootstrap SD of about
+1.7 means a mean increment near **+4.83**. The best repeat-2 increment in
+eleven experiments is **+1.939**, and the antagonism means the designs that
+reach +4 in repeat 1 are precisely those that drive repeat 2 negative.
+
+One structural lever remains untried, and it is the only one that acts on the
+LCB rather than on the mean. The increment's signal-to-noise scales roughly
+as `sqrt(k) * E[tau | disagree] / sd(tau | disagree)` over the k patients
+where the two policies disagree, because the mean grows linearly in k while
+the bootstrap SD grows as its square root. Every candidate so far has *shrunk*
+genomic influence, and therefore k. Experiment 12 goes the other way, on a
+panel that is now demonstrably the most reproducible the search has produced.
