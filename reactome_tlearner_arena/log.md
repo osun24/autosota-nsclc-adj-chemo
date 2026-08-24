@@ -2360,3 +2360,144 @@ indicates the reproducible component is small relative to cross-fitting
 noise. The candidate clears the arena's thirteen gates and should not be
 described as a biologically interpretable pathway result. Test data was never
 opened.
+
+## Correction: the "nine confirmations, no exceptions" claim was wrong
+
+I audited the table I published under experiment 17 and it does not hold. The
+correct tally is **7 of 9**, and I mislabelled two rows as "sharpening"
+changes when they were not:
+
+| change | repeat 1 | repeat 2 | pattern |
+|---|---|---|---|
+| 002->003 whole-pathway -> bounded quota | +1.470 -> +2.574 | -0.153 -> +1.939 | **both UP** |
+| 003->005 anchors 5 -> 8 (rank) | +2.574 -> +2.023 | +1.939 -> +1.145 | both DOWN |
+| 003->009 member floor 25 -> 50 | +2.574 -> +4.224 | +1.939 -> +0.902 | antagonism |
+| 003->010 anchor de-duplication | +2.574 -> +3.403 | +1.939 -> -0.327 | antagonism |
+| 003->011 rank -> stability | +2.574 -> +3.587 | +1.939 -> -0.104 | antagonism |
+| 011->012 columns 1 -> 2 | +3.587 -> +5.132 | -0.104 -> -0.268 | antagonism |
+| 013->014 sign-count -> score ordering | +0.749 -> +1.202 | +0.568 -> -0.644 | antagonism |
+| 013->016 modal anchors 2 -> 4 | +0.749 -> +1.796 | +0.568 -> +0.412 | antagonism |
+| 003->017 n_genes 16 -> 10 | +2.574 -> +3.254 | +1.939 -> -0.194 | antagonism |
+
+This is the second time in this search I have taken a strong local pattern and
+stated it as a law without checking every row. The antagonism is real and
+dominant, but it is not exceptionless, and the exception is the important
+cell in the table.
+
+**The exception is an existence proof, and I had been walking past it.**
+Experiment 2 to experiment 3 is the only change that raised *both* repeats —
+and it is the change that produced the arena's only eligible run. Its
+mechanism was not sharpening and not weakening: it **bounded each
+contributor's share**, replacing "pool the whole membership of the top 3
+pathways" with "take at most 8 genes from each of the top 5". That converts a
+pool one pathway can dominate into one that must be drawn from evenly, which
+reduces overfitting to whichever pathway happens to win a partition *without*
+discarding signal. Every other change I have tried either sharpened the fit or
+blunted it; this one changed how concentrated it was allowed to be.
+
+That mechanism has never been applied one level deeper, and it can be.
+
+## Experiment 18 (prespecified before running)
+
+**Candidate** `tlearner_even_quota_module16` — the eligible `run_003`
+configuration exactly, with `PER_PATHWAY_TOP` **8 -> 4**.
+
+`run_003` builds a pool of up to 40 genes (5 anchors x 8) and then takes the
+top 16 by score, so one or two strong anchors can supply most of the panel —
+the pool is bounded but the *draw from it* is not. With 5 anchors x 4 the
+pool is at most 20 and the panel takes 16 of them, which forces roughly three
+to four genes from every anchor. It is the same "bound each contributor"
+mechanism as 002->003, applied to the draw rather than to the pool.
+
+**Prespecified predictions and what would falsify them.**
+
+- **Both** increments rise above `run_003`'s +2.574 / +1.939 — the pattern of
+  the one precedent, not the antagonism of the other seven.
+- Worst-repeat LCB above -3.275 and eligible, making this the new best
+  eligible candidate.
+- Jaccard holds above 0.10; a tighter pool should if anything raise it, since
+  16 of 20 leaves less room for folds to disagree than 16 of 40.
+- If instead repeat 1 rises and repeat 2 falls, then even the one mechanism
+  that ever helped both repeats does not generalise, the antagonism is
+  effectively universal across the editable surface, and `run_003` is final.
+- I am still not predicting a positive reward: the binding quantity needs
+  +3.3 months and the precedent change was worth about +2.1 in repeat 2.
+
+**Result.** (to be appended after the run)
+
+**Result — run_018_20260824T020050Z, 230 s wall. NOT ELIGIBLE, reward -1e6.**
+
+| field | repeat 1 | repeat 2 |
+|---|---|---|
+| incremental alignment (months) | **+3.048** | **-0.253** |
+| selection LCB | -1.885 | **-5.897** |
+| bootstrap mean / CI95 | +3.018 / [-0.169, +6.148] | -0.267 / [-4.110, +3.073] |
+| alignment C / C+G | 5.098 / 8.146 | 5.361 / 5.108 |
+| value C / C+G / best constant | 48.152 / 48.216 / 45.457 | 48.526 / 47.939 / 45.431 |
+| Harrell C, C / C+G (drop) | 0.6561 / 0.6571 (**-0.0010**) | 0.6641 / 0.6477 (0.0164) |
+| ACT recommended fraction C+G | 0.3114 | 0.3491 |
+| seed agreement / benefit corr | 0.9939 / 0.9991 | 0.9932 / 0.9990 |
+| predicted benefit mean / IQR / nontrivial | -5.971 / 16.901 / 0.9942 | -3.558 / 15.772 / 0.9942 |
+| genomic split fraction obs / ACT | 0.3792 / 0.2874 | 0.3830 / 0.2900 |
+| arm support obs (pt/ev) | 661.5 / 278.25 | 661.5 / 278.25 |
+| arm support ACT (pt/ev) | 114.0 / 70.5 | 114.0 / 70.5 |
+| raw propensity overlap / IPTW ESS | 0.8723 / 358.5 | 0.8694 / 366.3 |
+
+Diagnostic score -9.198 (robust LCB -5.897, repeat range 3.3009).
+Jaccard 0.1385. Gates 11/13.
+
+**Falsified, and it settles the exception.** Forcing an even draw across the
+five anchors produced the antagonism, not the precedent: repeat 1 rose from
++2.574 to +3.048 while repeat 2 fell from +1.939 to -0.253. Per the rule
+written before the run, `run_003` is final.
+
+The honest reading of the `002->003` result is now different from the one I
+gave it. I treated it as evidence of a *mechanism* — bounding each
+contributor's share — that raised both repeats. Extending that same mechanism
+one level deeper does not reproduce the effect, which means the original
+improvement is better explained as the single draw where the panel happened
+to suit both partitions than as a lever that can be pulled again. The tally
+across the search is now **8 antagonism, 1 both-down, 1 both-up**, and the
+one both-up case does not generalise.
+
+## Final result
+
+**18 of 20 experiments. 36 repeat-results. Eligible candidates: 1. Eligible
+candidates with a positive score: 0.**
+
+`run_003_20260823T191920Z` — locked clinical T-learner plus one averaged,
+sign-coherent Reactome module of 16 genes from a bounded five-pathway quota.
+13/13 gates, reward **-3.9105**, increments +2.574 / +1.939, repeat range
+0.6355, Jaccard 0.1417, Harrell C cost under 0.008. Holds `best_run.txt` and
+`diagnostic_leader.txt`. Exactly reproducible.
+
+Across all 36 repeat-results, **zero** have a selection LCB above zero, and
+the worst-repeat LCB — the quantity that must exceed zero for a positive
+reward — never rises above **-3.275**, held by that same run. Eighteen
+designs spanning the entire editable surface place it between -3.275 and
+-13.116.
+
+A positive score is not attainable here. The reward is a 0.25% bootstrap
+quantile (alpha/20 over twenty experiments) minus a repeat-range penalty,
+applied to a treatment-benefit contrast measured in a 152-patient treated arm
+with propensities clipped at 0.05. Sample size, clipping, estimand, quantile
+and penalty are all locked outside `train.py`.
+
+**Two slots remain unspent.** Every axis is closed by a rule written before
+its run, including the one exception that looked like a way through. Beyond
+having no hypothesis left, spending them carries a specific cost: `run.py`
+promotes `best_run.txt` automatically on any higher eligible reward, and the
+design sensitivity of the worst-repeat LCB is 0.6-1.4 months among
+near-identical designs, so hypothesis-free sampling near `run_003` could
+install a noise-selected run as the frozen test nominee and degrade the
+deliverable a human takes to the test set.
+
+**Limitations that must travel with the candidate.** The panel is dominated
+by olfactory-receptor and potassium-channel genes whose measured variation
+sits near the array detection floor (experiment 2); the benefit direction is
+asymmetric in a way consistent with a technical rather than biological axis
+(experiment 4); no gene set with real expression dynamic range reproduces
+across folds (experiment 6); and the antagonism table indicates the
+reproducible component of the signal is small relative to cross-fitting
+noise. It clears the arena's thirteen gates and should not be described as a
+biologically interpretable pathway result. Test data was never opened.
