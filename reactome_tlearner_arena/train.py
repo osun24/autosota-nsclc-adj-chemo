@@ -17,7 +17,7 @@ except ImportError:
 
 
 CANDIDATE = {
-    "name": "tlearner_distinct_anchor_module16",
+    "name": "tlearner_bounded_pool_module16",
     # Recorded enum value.  The effective selection is the custom
     # pathway-anchored, sign-coherent selector below, injected through the
     # locked evaluator's own ``selector`` hook.  It is a global gene ranking
@@ -60,14 +60,6 @@ MIN_PATHWAY_MEMBERS = 25
 # while spreading anchor risk across five pathways instead of three.
 POOL_PATHWAYS = 5
 PER_PATHWAY_TOP = 8
-# Reactome is hierarchical: a receptor set, its GPCR parent and that parent's
-# signalling parent all contain largely the same genes and therefore score
-# alike, so a naive "top 5 pathways" quota can buy five nested relatives
-# instead of five distinct gene sets.  An anchor is skipped when its
-# development-present membership overlaps an already-accepted anchor by more
-# than this Jaccard threshold, which turns the quota into genuine
-# diversification - the mechanism experiments 3, 5 and 9 all point at.
-MAX_ANCHOR_OVERLAP = 0.50
 
 
 def _signed_benefit_scores(fit, available: list[str], *, smoke: bool) -> dict[str, float]:
@@ -139,23 +131,9 @@ def select_pathway_benefit_module(
         )
     ranked_pathways.sort(key=lambda item: (-item[0], item[1]))
 
-    anchors: list[list[str]] = []
-    accepted: list[set[str]] = []
-    for _, _, present in ranked_pathways:
-        if len(anchors) >= POOL_PATHWAYS:
-            break
-        members = set(present)
-        if any(
-            len(members & prior) / len(members | prior) > MAX_ANCHOR_OVERLAP
-            for prior in accepted
-        ):
-            continue
-        accepted.append(members)
-        anchors.append(present)
-
     pool: list[str] = []
     seen: set[str] = set()
-    for present in anchors:
+    for _, _, present in ranked_pathways[:POOL_PATHWAYS]:
         best = sorted(present, key=lambda gene: (-scores[gene], gene))[:PER_PATHWAY_TOP]
         for gene in best:
             if gene not in seen:
