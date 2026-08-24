@@ -1,0 +1,853 @@
+{
+  "budget": {
+    "clinical_tlearner": {
+      "act": {
+        "max_depth": 7,
+        "max_features": 1.0,
+        "min_samples_leaf": 12,
+        "min_samples_split": 24,
+        "n_estimators": 1000
+      },
+      "observation": {
+        "max_depth": 9,
+        "max_features": 1.0,
+        "min_samples_leaf": 8,
+        "min_samples_split": 16,
+        "n_estimators": 1000
+      }
+    },
+    "forest_seeds": [
+      42,
+      43,
+      44
+    ],
+    "full_run_forest_accounting": {
+      "maximum_forests": 96,
+      "maximum_total_trees": 96000,
+      "outer_assessments": 8,
+      "policy_panels": 2,
+      "seeds": 3,
+      "treatment_arms": 2
+    },
+    "inner_folds": 3,
+    "max_experiments": 20,
+    "max_selected_genes": 16,
+    "max_total_features": 34,
+    "max_trees_per_forest": 1000,
+    "multiplicity_alpha": 0.05,
+    "outer_folds": 4,
+    "outer_repeats": 2,
+    "patient_bootstraps": 4000,
+    "schema_version": 1,
+    "smoke_reductions_applied": false,
+    "smoke_train_sha256": "84f1877ab1ea4b04a8ca9d0e971a7157c6bfa4ce24b7c090e433e88e6db8f21b",
+    "smoke_trees": 40,
+    "tau_months": 60.0,
+    "wall_time_seconds": 2100
+  },
+  "candidate": {
+    "benefit_threshold_months": 0.0,
+    "module_count": 2,
+    "n_genes": 16,
+    "name": "tlearner_stability_two_module16",
+    "representation": "module",
+    "selector": "dr_gene",
+    "tlearner": {
+      "act": {
+        "max_depth": 7,
+        "max_features": 1.0,
+        "min_samples_leaf": 12,
+        "min_samples_split": 24,
+        "n_estimators": 1000
+      },
+      "observation": {
+        "max_depth": 9,
+        "max_features": 1.0,
+        "min_samples_leaf": 8,
+        "min_samples_split": 16,
+        "n_estimators": 1000
+      }
+    }
+  },
+  "data": {
+    "confirmatory_validation_used": false,
+    "development_act": 152,
+    "development_events": 465,
+    "development_n": 1034,
+    "forest_seeds": [
+      42,
+      43,
+      44
+    ],
+    "former_validation_used_as_development": true,
+    "outer_folds": 4,
+    "outer_repeats": 2,
+    "reactome_collection_sha256": "5d61f289a2400cddfbb3a3353829fd2284a360bbe50f2093b566c4b7bea93341",
+    "test_used": false,
+    "train_sha256": "b93f3cee3858716bca8add447bc837c734e203f6cb37962b1081e3c118d2c65d",
+    "validation_sha256": "824689aeaa34984727f2551bd512214164d0559d05cbec5817b0f88c9adb15a9"
+  },
+  "development_oof": {
+    "constant_policy_values": {
+      "all_act_months": 43.47200021571827,
+      "all_observation_months": 45.48476359176679
+    },
+    "incremental_alignment_months": 2.4317778441029283,
+    "models": {
+      "clinical": {
+        "act_mechanism": {
+          "role": "arm assignment only; ACT absent from X",
+          "treatment_absent_from_features": true
+        },
+        "act_recommended_fraction": 0.3771760154738878,
+        "alignment_months": 5.229607116051767,
+        "anti_policy_value_months": 43.10958784440549,
+        "arm_support": {
+          "act": {
+            "events": 70.5,
+            "patients": 114.0
+          },
+          "observation": {
+            "events": 278.25,
+            "patients": 661.5
+          }
+        },
+        "genomic_split_fraction": {
+          "act": 0.0,
+          "observation": 0.0
+        },
+        "harrell_cindex": 0.660104147917352,
+        "mean_predicted_benefit_months": -3.2652973922233235,
+        "median_absolute_predicted_benefit_months": 7.484234801027386,
+        "nontrivial_benefit_fraction": 0.9932301740812379,
+        "predicted_benefit_iqr_months": 14.61407624997273,
+        "seed_agreement": 0.9950053874472479,
+        "seed_benefit_correlation": 0.9991210240186674,
+        "value_months": 48.339194960457256
+      },
+      "clinical_plus_genomic": {
+        "act_mechanism": {
+          "role": "arm assignment only; ACT absent from X",
+          "treatment_absent_from_features": true
+        },
+        "act_recommended_fraction": 0.31382978723404253,
+        "alignment_months": 7.661384960154695,
+        "anti_policy_value_months": 40.647689423665184,
+        "arm_support": {
+          "act": {
+            "events": 70.5,
+            "patients": 114.0
+          },
+          "observation": {
+            "events": 278.25,
+            "patients": 661.5
+          }
+        },
+        "genomic_split_fraction": {
+          "act": 0.36090143238047145,
+          "observation": 0.5008434896569325
+        },
+        "harrell_cindex": 0.6536771414562088,
+        "mean_predicted_benefit_months": -5.2353809472487,
+        "median_absolute_predicted_benefit_months": 9.255010470303016,
+        "nontrivial_benefit_fraction": 0.9956479690522244,
+        "predicted_benefit_iqr_months": 15.476183009043291,
+        "seed_agreement": 0.9930723913282054,
+        "seed_benefit_correlation": 0.9989323510683639,
+        "value_months": 48.309074383819876
+      }
+    },
+    "overlap": {
+      "iptw_effective_sample_size": 362.4041456031669,
+      "raw_propensity_in_0_05_0_95_fraction": 0.870889748549323
+    },
+    "repeat_increment_max_months": 5.1319933079927935,
+    "repeat_increment_min_months": -0.2684376197869369
+  },
+  "eligible": false,
+  "estimator": "RSF T-learner policies graded by outer-cross-fitted IPCW-AIPW restricted-time value",
+  "gates": {
+    "all_repeat_cindex_drop_no_more_than_0_03": true,
+    "all_repeat_genomic_alignment_positive": true,
+    "all_repeat_genomic_increment_positive": false,
+    "all_repeat_genomic_seed_agreement_at_least_0_85": true,
+    "all_repeat_genomic_seed_benefit_correlation_at_least_0_50": true,
+    "all_repeat_genomic_value_at_least_best_constant": true,
+    "all_repeat_genomic_value_at_least_clinical": false,
+    "all_repeat_iptw_effective_sample_size_at_least_0_30n": true,
+    "all_repeat_mean_genomic_split_fraction_at_least_0_01": true,
+    "all_repeat_nontrivial_benefit_fraction_at_least_0_10": true,
+    "all_repeat_raw_propensity_overlap_at_least_0_80": true,
+    "all_repeat_treatment_absent_from_features": true,
+    "gene_selection_jaccard_at_least_0_10": true
+  },
+  "gene_selection": {
+    "frequency": [
+      {
+        "count": 7,
+        "gene": "KCNC3"
+      },
+      {
+        "count": 6,
+        "gene": "IFNA8"
+      },
+      {
+        "count": 5,
+        "gene": "HTR6"
+      },
+      {
+        "count": 5,
+        "gene": "OR2S2"
+      },
+      {
+        "count": 5,
+        "gene": "OR3A2"
+      },
+      {
+        "count": 4,
+        "gene": "H2BC15"
+      },
+      {
+        "count": 4,
+        "gene": "OR10H2"
+      },
+      {
+        "count": 4,
+        "gene": "OR2H2"
+      },
+      {
+        "count": 3,
+        "gene": "KCNQ3"
+      },
+      {
+        "count": 3,
+        "gene": "KCNV1"
+      },
+      {
+        "count": 3,
+        "gene": "OR1D2"
+      },
+      {
+        "count": 3,
+        "gene": "OR3A1"
+      },
+      {
+        "count": 3,
+        "gene": "TAAR5"
+      },
+      {
+        "count": 2,
+        "gene": "ADRA2B"
+      },
+      {
+        "count": 2,
+        "gene": "ANO2"
+      },
+      {
+        "count": 2,
+        "gene": "H2AZ2"
+      },
+      {
+        "count": 2,
+        "gene": "H2BC3"
+      },
+      {
+        "count": 2,
+        "gene": "HRH4"
+      },
+      {
+        "count": 2,
+        "gene": "KCNA6"
+      },
+      {
+        "count": 2,
+        "gene": "KCNV2"
+      },
+      {
+        "count": 2,
+        "gene": "OR10C1"
+      },
+      {
+        "count": 2,
+        "gene": "OR1E1"
+      },
+      {
+        "count": 2,
+        "gene": "OR2F1"
+      },
+      {
+        "count": 2,
+        "gene": "OR2J2"
+      },
+      {
+        "count": 2,
+        "gene": "OR52A1"
+      },
+      {
+        "count": 2,
+        "gene": "OR7A17"
+      },
+      {
+        "count": 2,
+        "gene": "PTPN1"
+      },
+      {
+        "count": 2,
+        "gene": "SCN10A"
+      },
+      {
+        "count": 1,
+        "gene": "ADRA1D"
+      },
+      {
+        "count": 1,
+        "gene": "AQP8"
+      },
+      {
+        "count": 1,
+        "gene": "CELA3B"
+      },
+      {
+        "count": 1,
+        "gene": "DNMT1"
+      },
+      {
+        "count": 1,
+        "gene": "DRD2"
+      },
+      {
+        "count": 1,
+        "gene": "DRD4"
+      },
+      {
+        "count": 1,
+        "gene": "ENAH"
+      },
+      {
+        "count": 1,
+        "gene": "GNG11"
+      },
+      {
+        "count": 1,
+        "gene": "GSDMD"
+      },
+      {
+        "count": 1,
+        "gene": "H2AC14"
+      },
+      {
+        "count": 1,
+        "gene": "H2BC21"
+      },
+      {
+        "count": 1,
+        "gene": "H2BC4"
+      },
+      {
+        "count": 1,
+        "gene": "H3C10"
+      },
+      {
+        "count": 1,
+        "gene": "H4C13"
+      },
+      {
+        "count": 1,
+        "gene": "HIRA"
+      },
+      {
+        "count": 1,
+        "gene": "HLA-DPB1"
+      },
+      {
+        "count": 1,
+        "gene": "HLA-DQB1"
+      },
+      {
+        "count": 1,
+        "gene": "HLA-DRB1"
+      },
+      {
+        "count": 1,
+        "gene": "HLA-DRB5"
+      },
+      {
+        "count": 1,
+        "gene": "HTR1B"
+      },
+      {
+        "count": 1,
+        "gene": "IFNA14"
+      },
+      {
+        "count": 1,
+        "gene": "IFNA21"
+      },
+      {
+        "count": 1,
+        "gene": "IFNB1"
+      },
+      {
+        "count": 1,
+        "gene": "KCNH1"
+      },
+      {
+        "count": 1,
+        "gene": "KCNJ15"
+      },
+      {
+        "count": 1,
+        "gene": "KLK1"
+      },
+      {
+        "count": 1,
+        "gene": "LYN"
+      },
+      {
+        "count": 1,
+        "gene": "MORC2"
+      },
+      {
+        "count": 1,
+        "gene": "NLRP3"
+      },
+      {
+        "count": 1,
+        "gene": "NRCAM"
+      },
+      {
+        "count": 1,
+        "gene": "OR10H1"
+      },
+      {
+        "count": 1,
+        "gene": "OR1A1"
+      },
+      {
+        "count": 1,
+        "gene": "OR1D4"
+      },
+      {
+        "count": 1,
+        "gene": "OR2W1"
+      },
+      {
+        "count": 1,
+        "gene": "OR3A3"
+      },
+      {
+        "count": 1,
+        "gene": "OR7C1"
+      },
+      {
+        "count": 1,
+        "gene": "PIK3R1"
+      },
+      {
+        "count": 1,
+        "gene": "PNLIP"
+      },
+      {
+        "count": 1,
+        "gene": "PYCARD"
+      },
+      {
+        "count": 1,
+        "gene": "REG1A"
+      },
+      {
+        "count": 1,
+        "gene": "SH2B2"
+      },
+      {
+        "count": 1,
+        "gene": "SPTB"
+      },
+      {
+        "count": 1,
+        "gene": "TYK2"
+      }
+    ],
+    "full_development_modules": [
+      [
+        "KCNC3",
+        "OR2S2",
+        "IFNA8",
+        "TAAR5",
+        "OR10H2",
+        "KCNV1",
+        "HTR6",
+        "ANO2"
+      ],
+      [
+        "PTPN1",
+        "OR10C1",
+        "OR2J2",
+        "OR2F1",
+        "OR3A2",
+        "OR52A1",
+        "KCNA6",
+        "IFNA21"
+      ]
+    ],
+    "full_development_selection": [
+      "KCNC3",
+      "OR2S2",
+      "IFNA8",
+      "TAAR5",
+      "OR10H2",
+      "KCNV1",
+      "HTR6",
+      "ANO2",
+      "PTPN1",
+      "OR10C1",
+      "OR2J2",
+      "OR2F1",
+      "OR3A2",
+      "OR52A1",
+      "KCNA6",
+      "IFNA21"
+    ],
+    "mean_pairwise_jaccard": 0.15808823708975014,
+    "per_repeat_outer_fold": [
+      [
+        [
+          "KCNC3",
+          "KCNV1",
+          "OR2S2",
+          "HTR6",
+          "TAAR5",
+          "PTPN1",
+          "IFNA8",
+          "KCNQ3",
+          "KCNA6",
+          "OR10H2",
+          "ANO2",
+          "OR2J2",
+          "OR7A17",
+          "OR3A3",
+          "H2BC15",
+          "OR3A1"
+        ],
+        [
+          "CELA3B",
+          "OR1A1",
+          "KLK1",
+          "OR1D2",
+          "TAAR5",
+          "OR2S2",
+          "KCNC3",
+          "SPTB",
+          "OR3A2",
+          "SCN10A",
+          "KCNQ3",
+          "HTR6",
+          "IFNA8",
+          "REG1A",
+          "PNLIP",
+          "NRCAM"
+        ],
+        [
+          "HLA-DPB1",
+          "H2BC3",
+          "DNMT1",
+          "H2AZ2",
+          "OR3A2",
+          "IFNA8",
+          "H2BC15",
+          "HLA-DRB5",
+          "HLA-DRB1",
+          "HIRA",
+          "OR52A1",
+          "TYK2",
+          "KCNC3",
+          "HLA-DQB1",
+          "OR2H2",
+          "NLRP3"
+        ],
+        [
+          "KCNC3",
+          "OR10H2",
+          "OR3A2",
+          "IFNB1",
+          "OR2S2",
+          "OR10C1",
+          "KCNV2",
+          "OR2H2",
+          "IFNA8",
+          "OR2F1",
+          "SCN10A",
+          "HTR1B",
+          "OR52A1",
+          "OR2W1",
+          "HTR6",
+          "HRH4"
+        ]
+      ],
+      [
+        [
+          "ADRA2B",
+          "TAAR5",
+          "OR10H1",
+          "OR2H2",
+          "KCNH1",
+          "KCNC3",
+          "HTR6",
+          "DRD4",
+          "OR1D4",
+          "OR10C1",
+          "OR10H2",
+          "DRD2",
+          "OR7C1",
+          "AQP8",
+          "H4C13",
+          "ADRA1D"
+        ],
+        [
+          "H2BC21",
+          "H2BC4",
+          "ENAH",
+          "H2AZ2",
+          "LYN",
+          "MORC2",
+          "H3C10",
+          "H2BC15",
+          "KCNJ15",
+          "H2AC14",
+          "SH2B2",
+          "PYCARD",
+          "GSDMD",
+          "IFNA14",
+          "GNG11",
+          "PIK3R1"
+        ],
+        [
+          "IFNA8",
+          "OR10H2",
+          "KCNV1",
+          "OR2F1",
+          "OR3A2",
+          "KCNC3",
+          "OR2S2",
+          "ANO2",
+          "OR1D2",
+          "PTPN1",
+          "OR3A1",
+          "OR1E1",
+          "KCNV2",
+          "IFNA21",
+          "HTR6",
+          "HRH4"
+        ],
+        [
+          "OR3A2",
+          "IFNA8",
+          "OR2H2",
+          "KCNA6",
+          "KCNV1",
+          "OR3A1",
+          "KCNC3",
+          "OR1D2",
+          "KCNQ3",
+          "H2BC15",
+          "OR1E1",
+          "H2BC3",
+          "ADRA2B",
+          "OR7A17",
+          "OR2J2",
+          "OR2S2"
+        ]
+      ]
+    ]
+  },
+  "generalization": {
+    "repeat_increment_range_months": 5.40043092777973,
+    "robust_selection_lcb": -7.108695732450036,
+    "score_before_eligibility": -12.509126660229766
+  },
+  "limitations": [
+    "The ACT-arm learners have substantially less training support than the observation-arm learners.",
+    "Search uncertainty bootstraps fixed OOF predictions and does not refit the full pipeline in each draw.",
+    "Repeated cross-fits reuse patients and are stability views, not independent validation cohorts.",
+    "IPCW-AIPW validity requires adequate measured-confounder adjustment, positivity, and conditionally independent censoring.",
+    "Random row-level cross-validation does not establish transportability across studies or expression platforms."
+  ],
+  "objective": "worst repeated-development OOF selection LCB minus repeat range for A60(C+G)-A60(C)",
+  "phase": "pooled_development_repeated_crossfit",
+  "repeat_results": [
+    {
+      "constant_policy_values": {
+        "all_act_months": 42.16741333668156,
+        "all_observation_months": 45.4678387502108
+      },
+      "fold_seed": 20270821,
+      "incremental_alignment_months": 5.1319933079927935,
+      "models": {
+        "clinical": {
+          "act_mechanism": {
+            "role": "arm assignment only; ACT absent from X",
+            "treatment_absent_from_features": true
+          },
+          "act_recommended_fraction": 0.3723404255319149,
+          "alignment_months": 5.098161397489825,
+          "anti_policy_value_months": 43.05424478408956,
+          "arm_support": {
+            "act": {
+              "events": 70.5,
+              "patients": 114.0
+            },
+            "observation": {
+              "events": 278.25,
+              "patients": 661.5
+            }
+          },
+          "genomic_split_fraction": {
+            "act": 0.0,
+            "observation": 0.0
+          },
+          "harrell_cindex": 0.6561117076410311,
+          "mean_predicted_benefit_months": -3.4104793121815344,
+          "median_absolute_predicted_benefit_months": 7.492405334701932,
+          "nontrivial_benefit_fraction": 0.9941972920696325,
+          "predicted_benefit_iqr_months": 14.723285303659713,
+          "seed_agreement": 0.9945202677760817,
+          "seed_benefit_correlation": 0.9991909410421402,
+          "value_months": 48.15240618157939
+        },
+        "clinical_plus_genomic": {
+          "act_mechanism": {
+            "role": "arm assignment only; ACT absent from X",
+            "treatment_absent_from_features": true
+          },
+          "act_recommended_fraction": 0.2911025145067698,
+          "alignment_months": 10.230154705482619,
+          "anti_policy_value_months": 38.70254869070487,
+          "arm_support": {
+            "act": {
+              "events": 70.5,
+              "patients": 114.0
+            },
+            "observation": {
+              "events": 278.25,
+              "patients": 661.5
+            }
+          },
+          "genomic_split_fraction": {
+            "act": 0.3584807403480606,
+            "observation": 0.4926472546795726
+          },
+          "harrell_cindex": 0.6587635072649068,
+          "mean_predicted_benefit_months": -6.157568324855663,
+          "median_absolute_predicted_benefit_months": 9.971784564352092,
+          "nontrivial_benefit_fraction": 0.9922630560928434,
+          "predicted_benefit_iqr_months": 15.581435863424165,
+          "seed_agreement": 0.9916182794089771,
+          "seed_benefit_correlation": 0.9990261569352926,
+          "value_months": 48.93270339618749
+        }
+      },
+      "overlap": {
+        "iptw_effective_sample_size": 358.52908025250036,
+        "raw_propensity_in_0_05_0_95_fraction": 0.8723404255319149
+      },
+      "paired_bootstrap": {
+        "ci95_high": 8.93635675701253,
+        "ci95_low": 1.4883346503235504,
+        "draws": 4000,
+        "mean": 5.109182878842795,
+        "sd": 1.908438614138171,
+        "selection_lcb": -0.46399071600864616,
+        "selection_lcb_quantile_percent": 0.25
+      },
+      "repeat": 1
+    },
+    {
+      "constant_policy_values": {
+        "all_act_months": 44.77658709475497,
+        "all_observation_months": 45.50168843332279
+      },
+      "fold_seed": 20280821,
+      "incremental_alignment_months": -0.2684376197869369,
+      "models": {
+        "clinical": {
+          "act_mechanism": {
+            "role": "arm assignment only; ACT absent from X",
+            "treatment_absent_from_features": true
+          },
+          "act_recommended_fraction": 0.3820116054158607,
+          "alignment_months": 5.361052834613709,
+          "anti_policy_value_months": 43.164930904721416,
+          "arm_support": {
+            "act": {
+              "events": 70.5,
+              "patients": 114.0
+            },
+            "observation": {
+              "events": 278.25,
+              "patients": 661.5
+            }
+          },
+          "genomic_split_fraction": {
+            "act": 0.0,
+            "observation": 0.0
+          },
+          "harrell_cindex": 0.6640965881936729,
+          "mean_predicted_benefit_months": -3.120115472265113,
+          "median_absolute_predicted_benefit_months": 7.4760642673528395,
+          "nontrivial_benefit_fraction": 0.9922630560928434,
+          "predicted_benefit_iqr_months": 14.504867196285744,
+          "seed_agreement": 0.995490507118414,
+          "seed_benefit_correlation": 0.9990511069951945,
+          "value_months": 48.525983739335125
+        },
+        "clinical_plus_genomic": {
+          "act_mechanism": {
+            "role": "arm assignment only; ACT absent from X",
+            "treatment_absent_from_features": true
+          },
+          "act_recommended_fraction": 0.3365570599613153,
+          "alignment_months": 5.092615214826772,
+          "anti_policy_value_months": 42.592830156625496,
+          "arm_support": {
+            "act": {
+              "events": 70.5,
+              "patients": 114.0
+            },
+            "observation": {
+              "events": 278.25,
+              "patients": 661.5
+            }
+          },
+          "genomic_split_fraction": {
+            "act": 0.36332212441288236,
+            "observation": 0.5090397246342923
+          },
+          "harrell_cindex": 0.6485907756475108,
+          "mean_predicted_benefit_months": -4.3131935696417365,
+          "median_absolute_predicted_benefit_months": 8.538236376253941,
+          "nontrivial_benefit_fraction": 0.9990328820116054,
+          "predicted_benefit_iqr_months": 15.370930154662418,
+          "seed_agreement": 0.9945265032474335,
+          "seed_benefit_correlation": 0.998838545201435,
+          "value_months": 47.68544537145227
+        }
+      },
+      "overlap": {
+        "iptw_effective_sample_size": 366.27921095383346,
+        "raw_propensity_in_0_05_0_95_fraction": 0.8694390715667312
+      },
+      "paired_bootstrap": {
+        "ci95_high": 3.5483937721622136,
+        "ci95_low": -4.645543057170103,
+        "draws": 4000,
+        "mean": -0.31348226868516,
+        "sd": 2.1084032329435853,
+        "selection_lcb": -7.108695732450036,
+        "selection_lcb_quantile_percent": 0.25
+      },
+      "repeat": 2
+    }
+  ],
+  "reward": -1000000.0,
+  "schema_version": 1
+}

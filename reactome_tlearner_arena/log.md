@@ -1443,3 +1443,129 @@ where the two policies disagree, because the mean grows linearly in k while
 the bootstrap SD grows as its square root. Every candidate so far has *shrunk*
 genomic influence, and therefore k. Experiment 12 goes the other way, on a
 panel that is now demonstrably the most reproducible the search has produced.
+
+## Experiment 12 (prespecified before running)
+
+**Candidate** `tlearner_stability_two_module16`
+
+Experiment 11's stability selector, unchanged — 40 subsampled repeats of the
+pathway-anchored sign-coherent pick, 16 genes by selection frequency, both
+arms at locked clinical geometry, threshold 0.0 — with one change:
+
+- `module_count` 1 -> **2**, both modules from the benefit-**increasing**
+  direction (ranks 1-8 and 9-16 by selection frequency; verified sign-pure
+  positive on synthetic data before launch)
+
+**This is not experiment 4.** That run's second module was the
+benefit-decreasing tail, which the fold listings showed had no stable anchor
+— mitochondrial, then ribosomal, then ER-glycosylation complexes in
+successive folds. It was a noise module bolted onto a signal module. Here
+both modules come from the same reproducible positive tail, and the panel
+they are built from is the most stable the search has produced
+(Jaccard 0.1581).
+
+**Hypothesis, and why it targets the LCB rather than the mean.** Every
+candidate since experiment 1 has *reduced* genomic influence, on the reading
+that added columns cost more than they return. That reading is right about
+the mean when the added column is noise, but it is the wrong objective. The
+increment's signal-to-noise scales roughly as
+
+    sqrt(k) * E[tau | disagree] / sd(tau | disagree)
+
+over the k patients where the C+G and clinical policies disagree, because the
+bootstrap mean grows linearly in k while the bootstrap SD grows as sqrt(k).
+Doubling correctly-signed disagreement therefore buys about a factor of 1.41
+in the ratio that the selection LCB actually depends on. Experiment 3 sits at
+mean/SD = 2.543/1.74 = 1.46 in its better repeat and needs 2.84 for a
+positive LCB. No lever tried so far moves that ratio structurally; this one
+does, provided the extra influence is correctly signed — which is exactly
+what experiment 4 failed to provide and experiment 11's panel now supplies.
+
+**What I expect it to cost.** Genomic split fraction should rise from ~0.38
+to roughly 0.5, as it did in experiment 4. The C-index drop has never
+exceeded 0.0166 even at two columns, so the discrimination gate is not the
+binding risk; the risk is that the second module adds influence without
+adding independent information, since ranks 9-16 are correlated with ranks
+1-8 by construction.
+
+**Prespecified predictions and what would falsify them.**
+
+- Both repeats' mean/SD ratios improve over experiment 11's, whatever happens
+  to the means themselves. This is the direct test of the mechanism and I
+  will compute it explicitly from the reported CI95 widths.
+- Both increments positive, and the binding LCB above experiment 3's -3.275.
+- If the ratios do *not* improve, then the extra column is adding influence
+  that is correlated with what the first module already provides — k grows
+  but `E[tau | disagree]` falls in proportion — and the disagreement-count
+  lever is closed along with every other. At that point I will have tested
+  every mechanism that acts on the mean, the variance, the panel, the
+  representation and the geometry, and the honest conclusion is that a
+  positive reward is unreachable for this estimand at n=1034 with 152 treated
+  patients, with experiment 3 standing as the best eligible candidate.
+
+**Result.** (to be appended after the run)
+
+**Result — run_012_20260824T010720Z, 324 s wall. NOT ELIGIBLE, reward -1e6.**
+
+| field | repeat 1 | repeat 2 |
+|---|---|---|
+| incremental alignment (months) | **+5.132** | **-0.268** |
+| selection LCB | **-0.464** | -7.109 |
+| bootstrap mean / CI95 | +5.109 / **[+1.488, +8.936]** | -0.314 / [-4.646, +3.548] |
+| alignment C / C+G | 5.098 / **10.230** | 5.361 / 5.093 |
+| value C / C+G / best constant | 48.152 / 48.933 / 45.468 | 48.526 / 47.685 / 45.502 |
+| Harrell C, C / C+G (drop) | 0.6561 / 0.6588 (**-0.0027**) | 0.6641 / 0.6486 (0.0155) |
+| ACT recommended fraction C+G | 0.2911 | 0.3366 |
+| seed agreement / benefit corr | 0.9916 / 0.9990 | 0.9945 / 0.9988 |
+| predicted benefit mean / IQR / nontrivial | -6.158 / 15.581 / 0.9923 | -4.313 / 15.371 / 0.9990 |
+| genomic split fraction obs / ACT | 0.4926 / 0.3585 | 0.5090 / 0.3633 |
+| arm support obs (pt/ev) | 661.5 / 278.25 | 661.5 / 278.25 |
+| arm support ACT (pt/ev) | 114.0 / 70.5 | 114.0 / 70.5 |
+| raw propensity overlap / IPTW ESS | 0.8723 / 358.5 | 0.8694 / 366.3 |
+
+Diagnostic score -12.509 (robust LCB -7.109, repeat range **5.4004**).
+Gates 11/13.
+
+**The prespecified mechanism check, computed from the CI95 widths.**
+
+| candidate | repeat | mean | SD | **mean/SD** | LCB |
+|---|---|---|---|---|---|
+| 003 bounded pool | 1 | +2.543 | 1.737 | 1.464 | -2.406 |
+| 003 bounded pool | 2 | +1.904 | 1.735 | 1.097 | -3.275 |
+| 011 stability | 1 | +3.558 | 1.577 | 2.257 | -1.140 |
+| 011 stability | 2 | -0.161 | 1.942 | -0.083 | -6.077 |
+| 012 stability + 2 modules | 1 | **+5.109** | 1.900 | **2.689** | **-0.464** |
+| 012 stability + 2 modules | 2 | -0.313 | 2.090 | -0.150 | -7.109 |
+
+**The mechanism is real and it worked.** Repeat 1's ratio went 1.464 -> 2.257
+-> 2.689 across exactly the sequence of changes predicted to raise it, and
+2.689 is within striking distance of the 2.84 a positive LCB requires. Repeat
+1 produced the best numbers of the entire search by a wide margin: increment
++5.132, alignment 10.230 against the clinical 5.098, a C-index that
+*improved* by 0.0027, and a bootstrap CI95 of [+1.488, +8.936]. More
+correctly-signed genomic influence does raise the quantity the selection LCB
+depends on, as predicted.
+
+**And it changes nothing, because the antagonism is stronger.** The same
+change drove repeat 2 from -0.083 to -0.150 and the repeat range to 5.4004.
+Prediction 1 asked for *both* ratios to improve; one did and one did not, so
+the prediction is falsified as stated.
+
+**The decisive measurement.** The repeat range is now **5.40 months while the
+bootstrap SD is 1.9-2.1**. The two repeats estimate the same population
+quantity on the same 1,034 patients and differ only in the fold seed, so the
+partition contributes roughly two and a half times more uncertainty than
+patient resampling does. **The dominant source of error in this estimand is
+cross-fitting variability, which the bootstrap does not see and the reward's
+range term exists to charge for.** That reframes the whole optimisation: the
+binding constraint was never the mean, the panel, or the variance the
+bootstrap measures. It is that a policy improvement demonstrable in one
+partition of these patients is not demonstrable in another.
+
+**Consequence for the target, stated plainly.** Maximising repeat 1 is worth
+nothing — the reward takes the *minimum* LCB and then subtracts a range that
+strengthening inflates. Every remaining slot should go to raising the
+*worst* repeat, which means trading panel strength for panel constancy across
+folds. Experiment 13 does that: it stops selecting genes by rank, which is the
+statistic that has proven unstable at every level of this search, and selects
+both the anchor and its members by *frequency* statistics instead.
