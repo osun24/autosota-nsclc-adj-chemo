@@ -1030,3 +1030,118 @@ half a month of the line either way. Experiment 3's eligibility is real and
 exactly reproducible, but it is not a comfortable margin, and further tuning
 of arbitrary knobs would be selection on that margin rather than improvement
 of it.
+
+## Experiment 9 (prespecified before running)
+
+**Candidate** `tlearner_precise_anchor_module16`
+
+The eligible experiment 3 configuration in every respect — single
+sign-coherent 16-gene module, 5 anchors of 8 genes, both arms at locked
+clinical geometry, threshold 0.0 — with one change:
+
+- `MIN_PATHWAY_MEMBERS` 25 -> **50**
+
+**This is a different knob from the one experiment 5 closed.** Experiment 5's
+rule retired *quota shape* — how many anchors contribute and how many genes
+each contributes. This changes *which pathways are eligible to be anchors at
+all*, leaving the 5x8 quota exactly as experiment 3 had it. I want that
+distinction on the record rather than glossed, because it is the difference
+between honouring a prespecified closure and quietly reopening it.
+
+**Hypothesis.** A pathway's mean signed score has standard error falling as
+1/sqrt(members), so a floor of 50 makes every eligible anchor's score about
+1.4 times more precise and the ranking among anchors correspondingly more
+reliable. Experiment 3 works because its anchors are consistent across folds;
+experiment 5 failed because adding anchors reached down into the noise floor.
+Raising the precision bar attacks the same mechanism from the opposite side —
+better anchors rather than more of them — and should widen the value-gate
+margin, which is the gate the design family keeps failing by half a month or
+less.
+
+**What I am no longer expecting.** After eight runs the increment for this
+selector family sits between +1.1 and +2.7 regardless of what I change, and
+the value margin sits within about half a month of the line either way. I do
+not expect this run to transform either. It is worth a slot because it is the
+last untested knob with a real statistical argument behind it, and because
+the value margin is the only thing standing between this family and a
+comfortable rather than a marginal win.
+
+**Prespecified predictions and what would falsify them.**
+
+- Both value margins are positive and larger than experiment 3's +0.44 /
+  +0.35, and the run is eligible.
+- Jaccard holds near or above 0.14, since restricting to large pathways
+  should if anything concentrate selection further.
+- If the value margins do not improve, then anchor precision is not what
+  limits this design, the selector axis is exhausted along with every other,
+  and experiment 3 stands as the search's answer. In that case the remaining
+  slots should not be spent on further knob-turning, which would be selection
+  on a half-month margin rather than improvement of it. I would stop and
+  report, rather than consume the budget for its own sake.
+
+**Result.** (to be appended after the run)
+
+**Result — run_009_20260824T003957Z, 233 s wall. NOT ELIGIBLE, reward -1e6.**
+
+| field | repeat 1 | repeat 2 |
+|---|---|---|
+| incremental alignment (months) | **+4.224** | **+0.902** |
+| selection LCB | **-0.695** | -5.535 |
+| bootstrap mean / CI95 | +4.231 / **[+0.694, +8.134]** | +0.875 / [-3.504, +4.667] |
+| alignment C / C+G | 5.098 / **9.322** | 5.361 / 6.263 |
+| value C / C+G / best constant | 48.152 / 48.934 / 45.380 | 48.526 / **48.011** / 45.430 |
+| value margin vs clinical | **+0.781** | **-0.515** |
+| Harrell C, C / C+G (drop) | 0.6561 / 0.6534 (0.0027) | 0.6641 / 0.6547 (0.0094) |
+| ACT recommended fraction C+G | 0.3056 | 0.3656 |
+| seed agreement / benefit corr | 0.9939 / 0.9992 | 0.9945 / 0.9991 |
+| predicted benefit mean / IQR / nontrivial | -5.293 / 15.581 / 0.9932 | -4.276 / 16.086 / 0.9952 |
+| genomic split fraction obs / ACT | 0.3814 / 0.2750 | 0.3882 / 0.3130 |
+| arm support obs (pt/ev) | 661.5 / 278.25 | 661.5 / 278.25 |
+| arm support ACT (pt/ev) | 114.0 / 70.5 | 114.0 / 70.5 |
+| raw propensity overlap / IPTW ESS | 0.8723 / 358.5 | 0.8694 / 366.3 |
+
+Diagnostic score -8.856 (robust LCB -5.535, repeat range **3.3216**).
+Jaccard 0.1378. Gates 12/13 — `genomic_value_at_least_clinical`, repeat 2.
+
+**Scorecard: falsified, but not in the way the rule anticipated.**
+
+- *Both value margins positive and above +0.44/+0.35*: **falsified.** Repeat 1
+  improved markedly (+0.781 against +0.44) while repeat 2 went negative
+  (-0.515). The margins did not fail to move — they moved *apart*.
+- *Jaccard near 0.14*: confirmed, 0.1378.
+
+Repeat 1 produced the best single-repeat result of the entire search:
+increment +4.224, alignment 9.322 against the clinical 5.098, and a bootstrap
+CI95 of **[+0.694, +8.134]** that excludes zero — the only repeat in nine
+experiments whose ordinary 95% interval is entirely positive. Repeat 2 gave
++0.902. The repeat range tripled to 3.3216.
+
+**The mechanism is the opposite of the one I proposed, and it matters.** I
+argued that more precise anchor scores would stabilize the panel. Instead,
+raising the membership floor to 50 *shrank the eligible anchor set*, leaving
+only the largest gene families to compete. Selection concentrated rather than
+sharpened, and a concentrated panel tracks whatever its single family happens
+to be worth in a given partition — spectacular in repeat 1, mediocre in
+repeat 2. **Anchor diversity buys stability; anchor precision buys
+sensitivity.** That is now the third independent confirmation of the same
+mechanism, from a third direction: experiment 3 gained by spreading across
+anchors, experiment 5 lost by spreading into anchors too weak to help, and
+experiment 9 lost by removing the spread altogether.
+
+**Why this does not trigger my stop rule, and what it points at instead.**
+The rule was to stop if the value margins "do not improve". Repeat 1's
+improved substantially; the failure was divergence, not inertia. And the
+diagnosis raises a specific, previously unexamined question: *are experiment
+3's five anchors actually five distinct gene sets?* Reactome is hierarchical,
+and a family such as olfactory signalling appears as a chain of nested
+pathways — the receptor set, its GPCR parent, that parent's signalling
+parent, and so on — every one of which is large enough to pass a member
+floor and all of which score alike because they contain largely the same
+genes. If the top five anchors are nested relatives, then the quota has been
+buying redundancy rather than diversity all along, and every result in this
+family has been produced by an effective anchor count closer to one than to
+five. That would explain why raising the floor to 50 concentrated things so
+sharply: it retains exactly the large nested parents.
+
+Experiment 10 tests it directly by de-duplicating overlapping anchors, which
+is selector logic rather than another knob.
