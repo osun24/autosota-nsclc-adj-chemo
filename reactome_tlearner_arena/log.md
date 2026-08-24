@@ -1569,3 +1569,135 @@ strengthening inflates. Every remaining slot should go to raising the
 folds. Experiment 13 does that: it stops selecting genes by rank, which is the
 statistic that has proven unstable at every level of this search, and selects
 both the anchor and its members by *frequency* statistics instead.
+
+## Experiment 13 (prespecified before running)
+
+**Candidate** `tlearner_modal_anchor_module16`
+
+- `module_count` back to **1** (experiment 12 showed a second column inflates
+  the repeat range, 3.69 -> 5.40, and the reward takes the *minimum* LCB)
+- `POOL_PATHWAYS` **2**, `PER_PATHWAY_TOP` 8, `MIN_PATHWAY_MEMBERS` 25
+- both arms at locked clinical geometry, threshold 0.0
+- **rank is removed from both selection decisions:**
+  1. anchors are the pathways appearing most *often* in the top 2 across the
+     40 subsamples, not the ones ranking highest in any single fit
+  2. within an anchor, members are ordered by how often their signed score is
+     *positive* across those subsamples — sign consistency is bounded in
+     [0, 1] and far more stable than score magnitude, while remaining a
+     benefit-relevant criterion rather than an arbitrary one
+
+**Hypothesis.** Experiment 12 identified the real binding constraint: the
+repeat range is 5.40 months against a bootstrap SD of 1.9-2.1, so the fold
+partition contributes about two and a half times more uncertainty than
+patient resampling. The reward takes the minimum repeat LCB and subtracts
+that range, so the only move with any value left is raising the *worst*
+repeat by making the panel more nearly constant across folds. Rank is the
+statistic that has been unstable at every level of this search — across folds
+(experiment 1, Jaccard 0.070), across biologically structured pools
+(experiment 6), and under 2-5 gene perturbations (experiment 10, range swing
+of 3.1 months). Replacing it with bounded frequency counts at both decision
+points should raise cross-fold panel constancy and pull the two repeats
+together.
+
+**A calibration that makes this a harder test than it looks.** Measured on
+synthetic pure noise at full scale, cross-fold panel Jaccard over four
+overlapping 3/4 partitions is **0.0330** for experiment 11's selector and
+**0.0111** for this one. Pooling five anchors manufactures agreement through
+the pool restriction alone; two modal anchors drawn from 1,839 candidates
+almost never coincide by chance. So this design starts from a noise floor
+three times lower and must clear the same 0.10 gate on real signal. If it
+does clear it, the Jaccard is far more attributable to genuine pathway
+reproducibility than any previous run's — and if it fails the gate, that is
+itself the cleanest evidence yet about how little reproducible pathway-level
+benefit signal this cohort contains.
+
+**Prespecified predictions and what would falsify them.**
+
+- Repeat range below experiment 3's 0.6355, and the *minimum* repeat
+  increment above +1.939, which is the best any repeat-2 has achieved.
+- Jaccard clears 0.10 despite the threefold lower noise floor.
+- Reward above -3.9105, and eligible.
+- If the range does not fall, then cross-fold panel constancy is not what
+  drives the partition sensitivity either — the two partitions would be
+  disagreeing about the *effect* of a stable panel rather than about which
+  panel to use. That would mean the reproducible component of this signal is
+  smaller than the cross-fitting noise at n=1034 with 152 treated patients,
+  the positive-reward target is unreachable on this estimand, and I will
+  report that conclusion with experiment 3 as the standing eligible
+  candidate rather than spend the remaining slots re-testing it.
+
+**Result.** (to be appended after the run)
+
+**Result — run_013_20260824T011659Z, 260 s wall. NOT ELIGIBLE, reward -1e6.**
+
+| field | repeat 1 | repeat 2 |
+|---|---|---|
+| incremental alignment (months) | **+0.749** | **+0.568** |
+| selection LCB | -3.889 | -3.650 |
+| bootstrap mean / CI95 | +0.746 / [-2.166, +3.479] | +0.573 / [-2.468, +3.205] |
+| alignment C / C+G | 5.098 / 5.847 | 5.361 / 5.929 |
+| value C / C+G / best constant | 48.152 / 47.496 / 45.392 | 48.526 / 48.096 / 45.477 |
+| Harrell C, C / C+G (drop) | 0.6561 / 0.6503 (0.0058) | 0.6641 / 0.6547 (0.0094) |
+| ACT recommended fraction C+G | 0.3008 | 0.3598 |
+| seed agreement / benefit corr | 0.9968 / 0.9991 | 0.9952 / 0.9991 |
+| predicted benefit mean / IQR / nontrivial | -4.856 / 15.498 / 0.9990 | -3.864 / 16.176 / 0.9952 |
+| genomic split fraction obs / ACT | 0.3774 / 0.2296 | 0.3702 / 0.2878 |
+| arm support obs (pt/ev) | 661.5 / 278.25 | 661.5 / 278.25 |
+| arm support ACT (pt/ev) | 114.0 / 70.5 | 114.0 / 70.5 |
+| raw propensity overlap / IPTW ESS | 0.8723 / 358.5 | 0.8694 / 366.3 |
+
+Diagnostic score -4.070 (robust LCB -3.889, repeat range **0.1806**).
+Jaccard **0.1089**. Gates 12/13 — `genomic_value_at_least_clinical`, and this
+time in *both* repeats (-0.657 and -0.430).
+
+**Scorecard.**
+
+- *Repeat range below 0.6355*: **confirmed, decisively.** 0.1806, less than a
+  third of the previous best (experiment 7's 0.5341) and thirty times smaller
+  than experiment 12's. The two increments came in at +0.749 and +0.568 —
+  the two repeats finally agree with each other.
+- *Jaccard clears 0.10 from a threefold lower noise floor*: **confirmed**,
+  0.1089 against a measured pure-noise floor of 0.0111. This is the most
+  honestly-earned Jaccard of the search: roughly ten times its noise floor,
+  where experiment 3's 0.1417 was 1.75x its own.
+- *Minimum repeat increment above +1.939*: **falsified**, +0.568.
+- *Reward above -3.9105 and eligible*: **falsified**, -4.070 and not eligible.
+
+**The frontier is now mapped, and it is the answer.** Three designs bracket
+it:
+
+| | repeat range | increments | min mean | diagnostic |
+|---|---|---|---|---|
+| 012 max strength | 5.4004 | +5.132 / -0.268 | -0.313 | -12.509 |
+| **003 balanced** | 0.6355 | +2.574 / +1.939 | +1.904 | **-3.911** |
+| 013 max constancy | **0.1806** | +0.749 / +0.568 | +0.573 | -4.070 |
+
+Panel constancy controls the repeat range almost perfectly, and it costs
+increment magnitude almost exactly in proportion. Experiment 3 sits near the
+interior optimum of that trade-off by accident rather than design.
+
+**Why the trade-off is itself the diagnosis, and what it implies for the
+positive-reward target.** If a large, genuinely reproducible benefit signal
+existed in this cohort, strength and constancy would *not* trade off: every
+fold would find the same strong genes, and an adaptive selector would be both
+powerful and stable. Observing a clean inverse relationship between them
+means the strength on display in experiment 12's repeat 1 — increment +5.132,
+alignment 10.230, a CI95 excluding zero — is fitted to that partition's
+particular patients. It is not a discovery that failed to replicate; it is
+the thing that replication is designed to catch.
+
+A positive reward requires a minimum-repeat mean near **+4.83** at the
+observed SDs. The frontier says the best achievable minimum mean is about
+**+1.9**, and that pushing toward +4.8 in one repeat drives the other to zero
+or below while inflating the range that gets subtracted. The two requirements
+are in direct opposition on this estimand.
+
+One point on the frontier remains untested and is worth a slot: experiment 13
+achieved its constancy by removing rank from *both* the anchor choice and the
+within-anchor ordering. The anchor choice is what produces the large
+fold-level jumps; the within-anchor ordering is a much smaller perturbation.
+Restoring signal strength to the ordering while keeping the anchor modal
+should land between experiments 3 and 13 — and experiment 13's bootstrap SD
+was also the lowest seen (about 1.45 against experiment 3's 1.74), so a
+design with experiment 3's mean and experiment 13's SD and range would score
+near -1.8 rather than -3.9.
