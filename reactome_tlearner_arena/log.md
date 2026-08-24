@@ -809,3 +809,112 @@ The arena grades the second and the search must not be seduced by the first.
 - **Forest geometry for the C+G panel: never touched.** This is the only
   substantive axis left, and it is the one the program names as a preferred
   first axis in the form of ACT-arm regularization.
+
+## Experiment 7 (prespecified before running)
+
+**Candidate** `tlearner_regularized_act_module16`
+
+The eligible experiment 3 configuration — single sign-coherent 16-gene
+module, 5 anchors of 8 genes, threshold 0.0, observation arm at locked
+clinical geometry — with one change, on the only substantive axis the search
+has not touched:
+
+- ACT arm depth 7 -> **6**, leaf 12 -> **20**, split 24 -> **40**
+  (`max_features` held at 1.0)
+
+**Hypothesis.** The ACT arm carries ~114 patients and ~70 events per fitting
+partition against the observation arm's ~662 and ~278. Since
+`benefit = RMST1 - RMST0`, ACT-arm variance dominates the benefit estimate,
+and it is the most plausible source of the repeat-to-repeat spread that the
+reward penalises directly. Regularizing the small arm harder while leaving
+the well-supported observation arm at locked geometry should cut the repeat
+range below 0.6355 and lift the binding LCB above -3.2751, beating
+experiment 3's reward of -3.9105.
+
+**Why this axis now.** Every other axis is closed by a prespecified rule:
+panel size and representation are settled, column count is settled at one,
+the bidirectional axis fell to experiment 4, quota shape to experiment 5,
+which-signal to experiment 6, and `benefit_threshold_months` to arithmetic.
+ACT-arm regularization is also the axis `program.md` names as preferred, and
+experiment 1's confirmation that seed stability is a non-issue means the
+regularization budget can be spent entirely on bias/variance.
+
+**Why this is a variance move and not a capacity cut.** The genomic signal is
+not being removed, it is being relocated. The observation arm keeps full
+locked geometry and its ~0.38 genomic split fraction, so the module still
+drives RMST0 and therefore still drives benefit. What changes is that the
+114-patient arm stops trying to resolve genomic structure it does not have
+the support to estimate.
+
+**A calibration note on what a "better" result now means.** Experiments 3 and
+5 are close relatives — one module, pathway-anchored, differing only in quota
+shape — and their increments were +2.574/+1.939 and +2.023/+1.146. That
+spread of roughly 0.8 months between near-identical designs is the search's
+own noise floor. Any reward improvement here smaller than that should be read
+as partition noise, not as evidence the change worked, and I will say so
+rather than bank it.
+
+**Prespecified predictions and what would falsify them.**
+
+- Repeat range falls below 0.6355 and the run stays eligible, with a reward
+  above -3.9105 by more than the ~0.8-month noise floor.
+- Both increments stay positive. If they fall materially, the ACT arm's
+  genomic resolution was load-bearing after all, coarse RMST1 collapses
+  benefit toward a purely prognostic `-RMST0` rule, and ACT geometry should
+  return to locked clinical.
+- Seed agreement and benefit correlation stay far above their gates; if
+  either moves at all, something other than variance reduction happened.
+
+**Result.** (to be appended after the run)
+
+**Result — run_007_20260824T002722Z, 229 s wall. NOT ELIGIBLE, reward -1e6.**
+
+| field | repeat 1 | repeat 2 |
+|---|---|---|
+| incremental alignment (months) | **+0.452** | **-0.082** |
+| selection LCB | -4.904 | -5.914 |
+| bootstrap mean / CI95 | +0.423 / [-3.111, +3.888] | -0.096 / [-3.924, +3.282] |
+| alignment C / C+G | 5.098 / 5.550 | 5.361 / 5.279 |
+| value C / C+G / best constant | 48.152 / 47.771 / 45.514 | 48.526 / 48.188 / 45.615 |
+| Harrell C, C / C+G (drop) | 0.6561 / 0.6495 (0.0066) | 0.6641 / 0.6534 (0.0107) |
+| ACT recommended fraction C+G | 0.2930 | 0.3240 |
+| seed agreement / benefit corr | 0.9929 / 0.9991 | 0.9955 / 0.9991 |
+| predicted benefit mean / IQR / nontrivial | -5.133 / 15.050 / 0.9971 | -4.197 / 14.415 / 0.9971 |
+| genomic split fraction obs / ACT | 0.3794 / 0.3622 | 0.3852 / 0.3314 |
+| arm support obs (pt/ev) | 661.5 / 278.25 | 661.5 / 278.25 |
+| arm support ACT (pt/ev) | 114.0 / 70.5 | 114.0 / 70.5 |
+| raw propensity overlap / IPTW ESS | 0.8723 / 358.5 | 0.8694 / 366.3 |
+
+Diagnostic score -6.448 (robust LCB -5.914, repeat range **0.5341**).
+Gates 11/13 — `genomic_increment_positive`, `genomic_value_at_least_clinical`.
+
+**Scorecard: the variance prediction came true and bought nothing.**
+
+- *Repeat range below 0.6355*: **confirmed**, 0.5341 — the lowest of the whole
+  search. The variance mechanism was real.
+- *Both increments stay positive*: **falsified.** They collapsed from
+  +2.574/+1.939 to +0.452/-0.082. That is a drop of roughly 2.1 and 2.0
+  months, far outside the ~0.8-month noise floor I set in advance, so this is
+  a real effect and not partition noise.
+- *Seed diagnostics unmoved*: confirmed (0.9991 both repeats).
+
+**What this establishes.** The ACT arm's genomic resolution is load-bearing,
+despite that arm having only ~114 patients and ~70 events. Coarsening it
+traded almost exactly two months of incremental alignment for one tenth of a
+month of repeat range — a catastrophic exchange rate given the reward is
+`LCB - range`. Note that the ACT genomic split *fraction* actually rose
+(0.285 -> 0.362) while its contribution collapsed: with coarser trees there
+are fewer splits overall and the one continuous column takes a larger share
+of them. Split fraction measures how often the module is used, not how much
+it resolves, and the two came apart here for the first time.
+
+Per my prespecified rule, ACT geometry returns to locked clinical.
+
+**The more useful reading is the inverse.** Reducing resolution cost two
+months of increment. Nothing in this search has ever tested the other
+direction: every candidate has used the locked clinical geometry or something
+coarser. If benefit discrimination is resolution-limited rather than
+noise-limited, a *finer* C+G forest should move the increment the other way.
+That is the hypothesis for experiment 8, and it is the first one in several
+runs that is derived from a measured effect rather than from a diagnosis of
+what went wrong.
