@@ -579,3 +579,111 @@ said that if both increments fell below experiment 3, the bidirectional axis
 is closed, the panel returns to a single 16-gene module, and the next axis
 becomes *which* signal is tracked rather than how much of it. Both fell. The
 axis is closed; experiment 5 reverts to the experiment 3 selector.
+
+## Experiment 5 (prespecified before running)
+
+**Candidate** `tlearner_wide_anchor_module16`
+
+Reverts to the eligible experiment 3 selector exactly — single sign-coherent
+16-gene module, positive direction only, both arms at locked clinical
+geometry, threshold 0.0 — and changes only the quota shape:
+
+- `POOL_PATHWAYS` 5 -> **8**
+- `PER_PATHWAY_TOP` 8 -> **3** (pool bounded at 24 genes, 16 selected)
+
+**Hypothesis.** Experiment 3's gain came from anchor spreading, not from gene
+identity: Jaccard stayed flat at 0.14 while the repeat range fell 61%,
+because a fold that switches its top anchor still shares the remaining
+anchors with the other folds. Pushing the same mechanism further — eight
+anchors contributing three slots each, so one anchor flip perturbs 3 of 16
+panel slots instead of 8 of 16 — should cut the repeat range below 0.6355
+and hold or raise the increments.
+
+**Why this rather than the alternatives.**
+
+- *Not the bidirectional axis.* Closed by experiment 4's prespecified rule.
+- *Not more genomic columns.* Experiments 1 and 4 both show that added
+  columns cost more than they return in this feature geometry.
+- *Not `benefit_threshold_months`.* The arithmetic ruled it out before
+  experiment 3 and nothing since has changed it.
+- *Not yet the expression-variability filter.* That axis is now more
+  interesting than it was — experiment 4's tail asymmetry is real evidence
+  that the module tracks a technical low-expression axis — but it replaces
+  the one signal that has ever cleared all thirteen gates. It is worth a slot
+  only after the cheap, low-risk follow-through on the known mechanism is
+  spent, because that follow-through is the likeliest source of a better
+  reward and cannot plausibly lose eligibility.
+
+**Prespecified predictions and what would falsify them.**
+
+- Repeat range falls below 0.6355 and both increments stay positive, giving a
+  reward above -3.9105.
+- Jaccard is again roughly flat, near 0.14. If instead Jaccard moves sharply
+  with the range, my reading of experiment 3's mechanism is wrong and the two
+  quantities are coupled after all.
+- If the repeat range *rises*, then eight anchors reaches far enough down the
+  pathway ranking to admit unstable low-ranked pathways, the spreading
+  mechanism has an optimum between 5 and 8 anchors, and the remaining quota
+  tuning is exhausted — the next axis becomes the expression-variability
+  filter.
+
+**Result.** (to be appended after the run)
+
+**Result — run_005_20260824T001447Z, 226 s wall. NOT ELIGIBLE, reward -1e6.**
+
+| field | repeat 1 | repeat 2 |
+|---|---|---|
+| incremental alignment (months) | **+2.023** | **+1.146** |
+| selection LCB | -3.895 | -4.568 |
+| bootstrap mean / CI95 | +1.983 / [-2.227, +6.089] | +1.105 / [-2.882, +4.657] |
+| alignment C / C+G | 5.098 / 7.121 | 5.361 / 6.507 |
+| value C / C+G / best constant | 48.152 / **47.672** / 45.515 | 48.526 / 48.311 / 45.471 |
+| Harrell C, C / C+G (drop) | 0.6561 / 0.6554 (0.0007) | 0.6641 / 0.6519 (0.0122) |
+| ACT recommended fraction C+G | 0.2950 | 0.3385 |
+| seed agreement / benefit corr | 0.9932 / 0.9991 | 0.9961 / 0.9991 |
+| predicted benefit mean / IQR / nontrivial | -6.212 / 16.164 / 0.9942 | -4.062 / 15.760 / 0.9990 |
+| genomic split fraction obs / ACT | 0.3890 / 0.2883 | 0.3725 / 0.2988 |
+| arm support obs (pt/ev) | 661.5 / 278.25 | 661.5 / 278.25 |
+| arm support ACT (pt/ev) | 114.0 / 70.5 | 114.0 / 70.5 |
+| raw propensity overlap / IPTW ESS | 0.8723 / 358.5 | 0.8694 / 366.3 |
+
+Diagnostic score -5.446 (robust LCB -4.568, repeat range **0.8775**).
+Jaccard 0.1270. Gates **12/13** — the only failure is
+`genomic_value_at_least_clinical`, in repeat 1 (47.672 against 48.152).
+
+**Scorecard.**
+
+- *Repeat range below 0.6355, reward above -3.9105*: **falsified.** The range
+  rose to 0.8775 and the run is not eligible.
+- *Jaccard roughly flat near 0.14*: **confirmed**, 0.1270. Jaccard and the
+  repeat range again moved independently, which supports the experiment 3
+  reading even though the prediction built on it failed.
+
+**Why widening the anchor set backfired.** Eight anchors reach further down
+the pathway ranking than five, and the pathways at ranks 6-8 are exactly the
+ones whose mean signed score is closest to the noise floor. The frequency
+table shows the contamination directly: `H2BC15` now appears in 5 of 8 folds,
+the histone family that experiments 2 and 3 saw only as an occasional whole-
+fold defection has become a permanent low-rank tenant of the pool. Spreading
+risk across more anchors only helps while the added anchors are themselves
+stable; past that it imports instability rather than diluting it. The
+mechanism has an optimum, and five anchors of eight genes is nearer to it
+than eight anchors of three.
+
+**A new failure mode worth naming.** This run is the first where alignment
+and value came apart: repeat 1 has C+G alignment 7.121 against clinical
+5.098 — the largest alignment gap of the whole search — while its C+G *value*
+falls 0.48 below clinical. The policy separates who benefits from who does
+not better than the clinical rule does, yet the patients it actually selects
+are not worth more. Alignment rewards discrimination, value rewards the
+chosen set; a policy that recommends ACT to only 29.5% of patients against
+the clinical rule's 37% can win the first and lose the second. Any future
+candidate that buys alignment by shrinking the recommended set has to be
+checked against the value gate, which does not move with it.
+
+**Prespecified consequence, applied.** My rule for this run was that a rising
+repeat range means the spreading mechanism has an optimum between 5 and 8
+anchors, that quota tuning is exhausted, and that the next axis is the
+expression-variability filter. The range rose. Experiment 6 returns the quota
+to experiment 3's shape (5 anchors, 8 genes each) and changes which genes are
+eligible to be scored at all.
