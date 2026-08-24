@@ -17,33 +17,19 @@ except ImportError:
 
 
 CANDIDATE = {
-    "name": "tlearner_stability_four_module16",
+    "name": "tlearner_bounded_pool_module16",
     # Recorded enum value.  The effective selection is the custom
-    # pathway-anchored stability selector below, injected through the locked
-    # evaluator's own ``selector`` hook.  It is a global gene ranking
-    # restricted to a Reactome-pathway pool, so ``dr_gene`` is the closest of
-    # the three allowed labels.
+    # pathway-anchored, sign-coherent selector below, injected through the
+    # locked evaluator's own ``selector`` hook.  It is a global gene ranking
+    # restricted to a Reactome-pathway pool, so ``dr_gene`` is the closest
+    # of the three allowed labels.
     "selector": "dr_gene",
     "n_genes": 16,
     "representation": "module",
-    # Two modules, BOTH from the benefit-increasing direction: the locked
-    # array_split groups by rank, so ranks 1-8 by selection frequency form
-    # module 1 and ranks 9-16 form module 2, and both are sign-pure positive.
-    # This is not experiment 4, whose second module was the benefit-DECREASING
-    # tail and had no stable anchor.  The point is to raise the number of
-    # patients where the two policies disagree: the increment's mean grows
-    # linearly in that count while its bootstrap SD grows as the square root,
-    # so the selection LCB improves with more correctly-signed genomic
-    # influence, not less.
-    # Four sign-pure positive modules of four genes each.  Probe of the
-    # sqrt(f) scaling: repeat 1's mean/SD needs to rise 5.6% to clear the
-    # 2.84 a positive selection LCB requires.
-    "module_count": 4,
+    "module_count": 1,
     "benefit_threshold_months": 0.0,
     # Both arms match the locked clinical T-learner exactly, so the single
     # genomic module column is the only difference between the two panels.
-    # Experiments 7 and 8 established that locked geometry is at or near the
-    # optimum for the C+G panel in both directions.
     "tlearner": {
         "observation": {
             "n_estimators": 1000,
@@ -62,90 +48,55 @@ CANDIDATE = {
     },
 }
 
+# Minimum number of development-present members a Reactome pathway must have
+# before its aggregate benefit score is trusted.  Small sets win the ranking
+# on noise; averaging over >= 25 members shrinks the aggregate's variance.
 MIN_PATHWAY_MEMBERS = 25
+# The candidate pool is the union of the top ``PER_PATHWAY_TOP`` members of
+# each of the top ``POOL_PATHWAYS`` pathways.  Experiment 2 pooled whole
+# pathways, so one pathway flip replaced the entire pool and two of eight
+# folds jumped to an unrelated family.  Bounding each pathway's contribution
+# keeps the pool small (<= 40 genes, which is what the Jaccard gate rewards)
+# while spreading anchor risk across five pathways instead of three.
 POOL_PATHWAYS = 5
 PER_PATHWAY_TOP = 8
-# Stability selection.  Ten experiments agree that the binding defect is that
-# the top of a noisy 8,647-gene ranking does not reproduce: experiment 1
-# measured Jaccard 0.070 at n_genes=4, and experiment 10 showed that changing
-# 2-5 genes in 3 of 8 folds swings the repeat range by 3.1 months.  Rather
-# than re-rank once on the whole fitting partition, re-run the entire
-# pathway-anchored pick on many subsamples of it and keep the genes chosen
-# most often.  Selection frequency is a far lower-variance statistic than any
-# single ranking, which is the point of the method.
-STABILITY_DRAWS = 40
-STABILITY_SUBSAMPLE = 0.80
-STABILITY_SEED = 20260824
 
 
-def _prepare_scoring_inputs(fit, available: list[str], *, smoke: bool):
-    """Fit-only matrices reused across every stability subsample."""
-    inner_folds = 2 if smoke else int(prepare.BUDGET["inner_folds"])
-    gamma = prepare.cross_fitted_benefit_pseudo_outcome(fit, inner_folds)
-    clinical = fit[prepare.NUISANCE_COLUMNS].to_numpy(float)
-    values = fit[available].to_numpy(dtype=float)
-    medians = np.nanmedian(values, axis=0)
-    medians = np.where(np.isfinite(medians), medians, 0.0)
-    bad = ~np.isfinite(values)
-    if bad.any():
-        values[bad] = np.take(medians, np.where(bad)[1])
-    return gamma, clinical, values
+def _signed_benefit_scores(fit, available: list[str], *, smoke: bool) -> dict[str, float]:
+    """Fit-only signed partial correlation of each gene with DR benefit.
 
-
-def _signed_scores_on(gamma, clinical, values) -> np.ndarray:
-    """Signed partial correlation of each gene column with DR benefit.
-
-    Mirrors the locked ``_gene_effect_scores`` residualization exactly but
+    Mirrors the locked ``_gene_effect_scores`` residualization exactly, but
     keeps the sign that the locked version discards with ``np.abs``.
     """
-    clinical = StandardScaler().fit_transform(clinical)
-    design = np.column_stack([np.ones(len(clinical)), clinical])
+    inner_folds = 2 if smoke else int(prepare.BUDGET["inner_folds"])
+    gamma = prepare.cross_fitted_benefit_pseudo_outcome(fit, inner_folds)
+    clinical = StandardScaler().fit_transform(fit[prepare.NUISANCE_COLUMNS].to_numpy(float))
+    design = np.column_stack([np.ones(len(fit)), clinical])
     gamma_residual = gamma - Ridge(alpha=1.0).fit(clinical, gamma).predict(clinical)
     gamma_norm = max(float(np.linalg.norm(gamma_residual)), 1e-12)
-    coefficients, *_ = np.linalg.lstsq(design, values, rcond=None)
-    residual = values - design @ coefficients
-    denominators = np.linalg.norm(residual, axis=0) * gamma_norm
-    numerators = gamma_residual @ residual
-    return np.divide(
-        numerators, denominators,
-        out=np.zeros_like(numerators), where=denominators > 0,
-    )
+    scores: dict[str, float] = {}
+    chunk_size = 512
+    for start in range(0, len(available), chunk_size):
+        chunk = available[start:start + chunk_size]
+        values = fit[chunk].to_numpy(dtype=float)
+        medians = np.nanmedian(values, axis=0)
+        medians = np.where(np.isfinite(medians), medians, 0.0)
+        bad = ~np.isfinite(values)
+        if bad.any():
+            values[bad] = np.take(medians, np.where(bad)[1])
+        coefficients, *_ = np.linalg.lstsq(design, values, rcond=None)
+        residual = values - design @ coefficients
+        denominators = np.linalg.norm(residual, axis=0) * gamma_norm
+        numerators = gamma_residual @ residual
+        signed = np.divide(
+            numerators, denominators,
+            out=np.zeros_like(numerators), where=denominators > 0,
+        )
+        scores.update({gene: float(value) for gene, value in zip(chunk, signed)})
+    return scores
 
 
-def _pathway_anchored_pick(
-    scores: np.ndarray,
-    index_of: dict[str, int],
-    pathway_members: list[tuple[str, np.ndarray]],
-    available: list[str],
-    n_genes: int,
-) -> list[str]:
-    """One pathway-anchored, sign-coherent panel for a single score vector."""
-    ranked = sorted(
-        ((float(scores[members].mean()), name, members) for name, members in pathway_members),
-        key=lambda item: (-item[0], item[1]),
-    )
-    pool: list[int] = []
-    seen: set[int] = set()
-    for _, _, members in ranked[:POOL_PATHWAYS]:
-        order = members[np.argsort(-scores[members], kind="stable")][:PER_PATHWAY_TOP]
-        for position in order:
-            if int(position) not in seen:
-                seen.add(int(position))
-                pool.append(int(position))
-    pool.sort(key=lambda position: (-scores[position], available[position]))
-    picked = [position for position in pool if scores[position] > 0][:n_genes]
-    if len(picked) < n_genes:
-        chosen = set(picked)
-        for position in np.argsort(-scores, kind="stable"):
-            if len(picked) >= n_genes:
-                break
-            if int(position) not in chosen:
-                chosen.add(int(position))
-                picked.append(int(position))
-    return [available[position] for position in picked[:n_genes]]
-
-
-def select_stability_benefit_module(
+def select_pathway_benefit_module(
     fit,
     pathways: dict[str, tuple[str, ...]],
     genes: list[str],
@@ -153,51 +104,61 @@ def select_stability_benefit_module(
     *,
     smoke: bool = False,
 ) -> list[str]:
-    """Pathway-anchored stability selector, fit-only.
+    """Pathway-anchored, sign-coherent fit-only gene selector.
 
-    The cross-fitted DR benefit pseudo-outcome is computed once on the
-    fitting partition.  The whole pathway-anchored, sign-coherent pick is
-    then repeated on ``STABILITY_DRAWS`` random subsamples of that partition,
-    and the genes chosen most often are returned.  Nothing outside the
-    fitting partition is touched and no gene is hard-coded.
+    1. Score every available gene by its signed partial correlation with the
+       cross-fitted DR benefit pseudo-outcome (fitting partition only).
+    2. Score every sufficiently large Reactome pathway by the *mean signed*
+       score of its members.  A directionally coherent pathway is a real
+       aggregate signal, and a mean over >= 25 members is far lower variance
+       than any individual gene score.
+    3. Pool the top ``PER_PATHWAY_TOP`` members of each of the top
+       ``POOL_PATHWAYS`` pathways, bounding the pool at 40 genes.
+    4. Return the ``n_genes`` pool members with the most positive scores, so
+       the single averaged module is sign-coherent rather than self-cancelling.
     """
     available = genes[:160] if smoke else list(genes)
-    index_of = {gene: position for position, gene in enumerate(available)}
     available_set = set(available)
-    gamma, clinical, values = _prepare_scoring_inputs(fit, available, smoke=smoke)
+    scores = _signed_benefit_scores(fit, available, smoke=smoke)
 
-    pathway_members: list[tuple[str, np.ndarray]] = []
+    ranked_pathways: list[tuple[float, str, list[str]]] = []
     for name, members in pathways.items():
-        present = [index_of[gene] for gene in members if gene in available_set]
-        if len(present) >= MIN_PATHWAY_MEMBERS:
-            pathway_members.append((name, np.asarray(sorted(present), dtype=int)))
+        present = [gene for gene in members if gene in available_set]
+        if len(present) < MIN_PATHWAY_MEMBERS:
+            continue
+        ranked_pathways.append(
+            (float(np.mean([scores[gene] for gene in present])), name, present)
+        )
+    ranked_pathways.sort(key=lambda item: (-item[0], item[1]))
 
-    n = len(fit)
-    size = max(int(round(STABILITY_SUBSAMPLE * n)), 50)
-    draws = 5 if smoke else STABILITY_DRAWS
-    rng = np.random.default_rng(STABILITY_SEED)
-    counts = np.zeros(len(available), dtype=float)
-    score_total = np.zeros(len(available), dtype=float)
-    for _ in range(draws):
-        rows = rng.choice(n, size=size, replace=False)
-        scores = _signed_scores_on(gamma[rows], clinical[rows], values[rows])
-        score_total += scores
-        for gene in _pathway_anchored_pick(
-            scores, index_of, pathway_members, available, spec.n_genes
-        ):
-            counts[index_of[gene]] += 1.0
+    pool: list[str] = []
+    seen: set[str] = set()
+    for _, _, present in ranked_pathways[:POOL_PATHWAYS]:
+        best = sorted(present, key=lambda gene: (-scores[gene], gene))[:PER_PATHWAY_TOP]
+        for gene in best:
+            if gene not in seen:
+                seen.add(gene)
+                pool.append(gene)
 
-    mean_scores = score_total / float(draws)
-    order = sorted(
-        range(len(available)),
-        key=lambda position: (-counts[position], -mean_scores[position], available[position]),
-    )
-    return [available[position] for position in order[: spec.n_genes]]
+    ordered = sorted(pool, key=lambda gene: (-scores[gene], gene))
+    selected = [gene for gene in ordered if scores[gene] > 0][: spec.n_genes]
+
+    if len(selected) < spec.n_genes:
+        # Pool exhausted of positive-direction genes: fall back to the global
+        # ranking, still taking the most positive scores first.
+        chosen = set(selected)
+        for gene in sorted(available, key=lambda item: (-scores[item], item)):
+            if len(selected) >= spec.n_genes:
+                break
+            if gene not in chosen:
+                chosen.add(gene)
+                selected.append(gene)
+    return selected[: spec.n_genes]
 
 
 def run(*, smoke: bool = False) -> dict:
     def selector(fit, pathways, genes, spec):
-        return select_stability_benefit_module(fit, pathways, genes, spec, smoke=smoke)
+        return select_pathway_benefit_module(fit, pathways, genes, spec, smoke=smoke)
 
     return prepare.evaluate_candidate(CANDIDATE, selector=selector, smoke=smoke)
 
