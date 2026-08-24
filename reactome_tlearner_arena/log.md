@@ -452,3 +452,130 @@ objective is a 0.25%-quantile selection LCB (alpha/20 multiplicity), roughly
 against the 2.3 achieved. The remaining experiments go to enlarging the
 increment, since `best_run.txt` only advances on a strictly higher *eligible*
 reward and the frozen winner cannot be lost.
+
+## Experiment 4 (prespecified before running)
+
+**Candidate** `tlearner_bidirectional_pool_module16`
+
+Identical to the eligible experiment 3 — 16 genes, bounded five-pathway
+quota of 8 members each, both arms at locked clinical geometry, threshold
+0.0 — except that the panel is now **sign-stratified across both benefit
+directions**:
+
+- `module_count` 1 -> **2**
+- the benefit-increasing half is anchored on the **top 5** pathways by mean
+  signed score, the benefit-decreasing half on the **bottom 5**
+- 8 genes per direction, positives returned first, so the locked
+  `array_split` grouping yields one sign-pure positive module and one
+  sign-pure negative module (verified on synthetic data before launch)
+
+**Hypothesis.** Experiments 2 and 3 threw away half the available signal.
+The locked ranking is on |correlation|, and every candidate so far has kept
+only the positive tail, discarding the genes most strongly associated with
+*reduced* benefit even though they are exactly as informative. Giving the
+forest both directions supplies a genuine contrast — the benefit axis is
+approximately module 1 minus module 2 — and should raise the mean increment
+above experiment 3's +2.574 / +1.939.
+
+**Why the mean increment is the right target.** Reward is a 0.25%-quantile
+selection LCB minus the repeat range. The bootstrap SD of the increment is
+about 1.7 months, so the LCB sits roughly 2.8 SDs below the mean and the mean
+is worth nearly month-for-month in reward. The repeat range is already down
+to 0.6355, capping any further gain from that term at well under a month.
+Enlarging the increment is the only lever with several months of headroom.
+
+**Costs I am knowingly accepting.**
+
+- A second genomic column will raise the genomic split fraction from ~0.38
+  toward ~0.5. Experiment 1 associated a high split share with harm, but that
+  was four *raw, individually noisy* columns; these are averaged, sign-pure,
+  pathway-anchored modules, and experiment 2 already showed a module column
+  can raise the C-index rather than lower it.
+- Each module now averages 8 genes rather than 16, so per-column noise rises
+  by roughly sqrt(2). The bet is that a real second direction beats the lost
+  averaging.
+
+**Prespecified predictions and what would falsify them.**
+
+- Mean increment exceeds +2.574 in at least one repeat and stays positive in
+  both. If both increments fall below experiment 3's, the negative direction
+  carries no usable signal at this sample size and the bidirectional axis is
+  closed — the panel should go back to one 16-gene module and the next axis
+  becomes *which* signal is tracked, not how much of it.
+- Genomic split fraction lands near 0.5 and the C-index drop stays under
+  0.03. If the drop approaches the gate, two columns is more capacity than
+  this feature geometry supports and column count must return to one.
+- Repeat range stays below 1.0. If it blows out, the negative direction is
+  less stable across partitions than the positive one, and the fix is a
+  bidirectional panel with an *unequal* split favouring the stabler
+  direction.
+
+Eligibility of `run_003` is not at risk: `best_run.txt` advances only on a
+strictly higher eligible reward.
+
+**Result.** (to be appended after the run)
+
+**Result — run_004_20260824T000901Z, 282 s wall. NOT ELIGIBLE, reward -1e6.**
+
+| field | repeat 1 | repeat 2 |
+|---|---|---|
+| incremental alignment (months) | **-2.003** | **+0.868** |
+| selection LCB | -10.342 | -4.531 |
+| bootstrap mean / CI95 | -2.039 / [-7.373, +3.232] | +0.843 / [-2.925, +4.264] |
+| alignment C / C+G | 5.098 / 3.095 | 5.361 / 6.229 |
+| value C / C+G / best constant | 48.152 / 45.948 / 45.448 | 48.526 / 47.916 / 45.489 |
+| Harrell C, C / C+G (drop) | 0.6561 / 0.6534 (0.0027) | 0.6641 / 0.6475 (0.0166) |
+| ACT recommended fraction C+G | 0.2959 | 0.3404 |
+| seed agreement / benefit corr | 0.9926 / 0.9990 | 0.9900 / 0.9986 |
+| predicted benefit mean / IQR / nontrivial | -6.010 / 16.961 / 0.9942 | -4.413 / 15.224 / 0.9913 |
+| genomic split fraction obs / ACT | 0.5094 / 0.4798 | 0.5099 / 0.4094 |
+| arm support obs (pt/ev) | 661.5 / 278.25 | 661.5 / 278.25 |
+| arm support ACT (pt/ev) | 114.0 / 70.5 | 114.0 / 70.5 |
+| raw propensity overlap / IPTW ESS | 0.8723 / 358.5 | 0.8694 / 366.3 |
+
+Diagnostic score -13.214 (robust LCB -10.342, repeat range 2.871).
+Jaccard **0.0784**. Gates 10/13 — `genomic_increment_positive`,
+`genomic_value_at_least_clinical`, `gene_selection_jaccard_at_least_0_10`.
+
+**Scorecard: the central prediction was falsified.**
+
+- *Mean increment exceeds +2.574 somewhere, positive in both*: **falsified on
+  both counts**. Both repeats came in below experiment 3 (-2.003 vs +2.574,
+  +0.868 vs +1.939), and repeat 1 went negative.
+- *Split fraction near 0.5, C-index drop under 0.03*: **confirmed**
+  (0.51/0.48 and 0.0166). Capacity behaved exactly as modelled, so capacity
+  is not what broke this run.
+- *Repeat range below 1.0*: **falsified**, 2.871 — worse than any run since
+  experiment 1.
+
+**Why it failed, and it is not the reason I hedged for.** I accepted two
+risks going in: more split share, and less averaging per module. Both
+materialised and neither was decisive. The decisive fact is an **asymmetry
+between the two benefit directions that I had assumed away**. Listing each
+fold's negative half makes it obvious:
+
+- r1f1 mitochondrial (`ATP5PF, MRPS15, IMMT, APOOL, LYRM4, ATP5ME`)
+- r1f2 cytosolic ribosome (`RPS4Y1, RPS13, RPL30, RPS8, RPL14, RPSA`)
+- r1f4 ER glycosylation (`DPM3, DDOST, CANX, MGAT2, MOGS, EDEM1`)
+- r2f2 glycosylation + ATP synthase, r2f3 back to ribosome
+
+The negative direction has **no stable anchor at all** — it lands on a
+different housekeeping complex in nearly every fold. The positive direction
+recurs (`KCNC3` in 6 of 8 folds, `IFNA8` in 4). So the two tails are not
+mirror images: the positive tail is dominated by a coherent, highly
+reproducible axis, and the negative tail is essentially fold-specific noise
+drawn from whichever large housekeeping pathway happens to score lowest.
+Bolting a noise module onto a signal module halved Jaccard, blew the repeat
+range out to 2.871, and cost more than the second direction could ever repay.
+
+This also sharpens the experiment 2 caveat rather than resolving it. A
+positive tail that is stable across folds while the negative tail is pure
+noise is what a *technical* axis looks like — low-expression probes moving
+together with array background — not what a symmetric biological
+effect-modification signal would look like.
+
+**Prespecified consequence, applied.** My falsification rule for this run
+said that if both increments fell below experiment 3, the bidirectional axis
+is closed, the panel returns to a single 16-gene module, and the next axis
+becomes *which* signal is tracked rather than how much of it. Both fell. The
+axis is closed; experiment 5 reverts to the experiment 3 selector.
