@@ -1851,3 +1851,177 @@ them, because every mechanism that acts on the mean, the variance, the panel,
 the representation, the geometry and the disagreement fraction has now been
 tested and the remaining gap is a factor of 2.5 in a quantity the editable
 surface does not control. Test data remains untouched.
+
+## Post-experiment-14 analysis: two questions settled without spending slots
+
+**1. `benefit_threshold_months` is not merely weak, it can only hurt.**
+
+I dismissed this knob twice on a magnitude argument. The correct argument is
+about *direction*, and it is settled by data already in hand. For each of the
+28 repeat-results, compare the C+G model's mean predicted benefit against the
+AIPW ATE it is estimating (`all_act_months - all_observation_months`):
+
+    mean bias = -3.461 months
+    range     = -2.759 to -4.329
+    negative in 28 of 28 repeat-results
+
+The T-learner systematically **under-predicts** benefit by about three and a
+half months — its ACT arm has 114 patients against the observation arm's 662,
+and the small arm's RSF shrinks toward a marginal survival curve estimated on
+sicker treated patients. A model that under-predicts benefit under-treats, so
+its alignment-optimal decision boundary lies at roughly **-3.5 months**, not
+zero. The arena restricts `benefit_threshold_months` to [0, 3], so every legal
+value moves the boundary further in the wrong direction. The knob is dead,
+and `0.0` was the right choice throughout for a reason I had not identified.
+
+**2. Even a perfect replication of the best repeat ever observed would still
+score negative.**
+
+Across all 28 repeat-results, the highest single-repeat selection LCB is:
+
+| LCB | run | repeat | increment | candidate |
+|---|---|---|---|---|
+| **-0.4640** | 012 | 1 | +5.132 | stability + 2 modules |
+| -0.6947 | 009 | 1 | +4.224 | precise anchor |
+| -1.1400 | 011 | 1 | +3.587 | stability |
+| -1.8821 | 010 | 1 | +3.403 | distinct anchor |
+| -2.4064 | 003 | 1 | +2.574 | bounded pool (eligible) |
+
+**Zero of 28 repeat-results have an LCB above zero.** Since
+`reward = min(LCB) - range`, a design whose *both* repeats reproduced the best
+repeat ever seen, with a repeat range of exactly zero, would score **-0.464**.
+A positive reward therefore requires a repeat strictly better than anything
+observed in fourteen experiments, and then requires it twice.
+
+**What that leaves.** One mechanism is still live and untested at its
+extreme. The signal-to-noise ratio scales as `sqrt(f * n)` in the fraction f
+of patients where the two policies disagree, and experiment 12 confirmed the
+scaling empirically: adding a second module raised repeat 1's mean/SD from
+2.257 to 2.689 against the 2.84 a positive LCB needs — a shortfall of only
+5.6%, which corresponds to about 11.5% more disagreement. Every candidate so
+far has used one or two genomic columns. The arena permits far more.
+
+## Experiment 15 (prespecified before running)
+
+**Candidate** `tlearner_stability_four_module16`
+
+Experiment 12's design — stability selector over 40 subsamples, 16 genes,
+locked clinical geometry, threshold 0.0 — with:
+
+- `module_count` 2 -> **4** (four sign-pure positive modules of 4 genes each)
+
+**Hypothesis.** Repeat 1's mean/SD needs to rise 5.6% to clear 2.84 and give
+the first positive single-repeat LCB of the search. Doubling the genomic
+column count from 2 to 4 raises the disagreement fraction and, by the
+`sqrt(f)` scaling that experiment 12 confirmed, should raise the ratio by
+appreciably more than the 5.6% required.
+
+**Prespecified predictions and what would falsify them.**
+
+- Repeat 1's mean/SD exceeds 2.689, and its selection LCB exceeds -0.464 —
+  the best ever recorded. A positive value there would be the first in 30
+  repeat-results.
+- Genomic split fraction rises above experiment 12's 0.51, toward 0.6.
+- If the ratio does *not* rise, the `sqrt(f)` scaling has saturated: the extra
+  columns are correlated with the first two by construction, so f grows while
+  `E[tau | disagree]` falls in proportion. That closes the last live
+  mechanism, and with the threshold knob ruled out by direction and the
+  frontier fully mapped, the positive-reward target is unreachable on this
+  estimand and I will report it as such.
+- Eligibility is not expected. Experiment 12's repeat 2 was -0.268 and more
+  columns will not fix it; this run is a probe of the LCB ceiling, not a
+  candidate for `best_run.txt`.
+
+**Result.** (to be appended after the run)
+
+**Result — run_015_20260824T013644Z, 452 s wall. NOT ELIGIBLE, reward -1e6.**
+
+| field | repeat 1 | repeat 2 |
+|---|---|---|
+| incremental alignment (months) | **-1.065** | **-0.060** |
+| selection LCB | -8.000 | -7.481 |
+| bootstrap mean / CI95 | -1.112 / [-5.571, +2.901] | -0.099 / [-5.055, +4.316] |
+| alignment C / C+G | 5.098 / 4.033 | 5.361 / 5.301 |
+| value C / C+G / best constant | 48.152 / 46.121 / 45.430 | 48.526 / 47.450 / 45.470 |
+| Harrell C, C / C+G (drop) | 0.6561 / 0.6496 (0.0065) | 0.6641 / 0.6522 (0.0119) |
+| ACT recommended fraction C+G | 0.2834 | 0.3182 |
+| seed agreement / benefit corr | 0.9929 / 0.9988 | 0.9910 / 0.9986 |
+| predicted benefit mean / IQR / nontrivial | -5.937 / 15.638 / 0.9942 | -4.767 / 15.146 / 0.9923 |
+| genomic split fraction obs / ACT | **0.6109 / 0.4633** | **0.6183 / 0.4668** |
+| arm support obs (pt/ev) | 661.5 / 278.25 | 661.5 / 278.25 |
+| arm support ACT (pt/ev) | 114.0 / 70.5 | 114.0 / 70.5 |
+| raw propensity overlap / IPTW ESS | 0.8723 / 358.5 | 0.8694 / 366.3 |
+
+Diagnostic score -9.005 (robust LCB -8.000, repeat range 1.0051). Gates 11/13.
+
+**The sqrt(f) scaling saturates and reverses.** The mechanism check, on the
+identical selector at one, two and four genomic columns:
+
+| columns | repeat | mean | SD | mean/SD | LCB | genomic split |
+|---|---|---|---|---|---|---|
+| 011: 1 | 1 | +3.558 | 1.577 | +2.257 | -1.140 | 0.381 |
+| 012: 2 | 1 | +5.109 | 1.900 | **+2.689** | **-0.464** | 0.493 |
+| 015: 4 | 1 | -1.112 | 2.161 | **-0.514** | -8.000 | 0.611 |
+
+Prediction 2 held — the split fraction rose to 0.611 as forecast, so the extra
+influence was delivered. Prediction 1 failed completely: the ratio did not
+merely stop rising, it collapsed through zero. Four modules of four genes are
+strongly correlated with one another by construction, so the disagreement
+fraction f grows while `E[tau | disagree]` falls faster than `sqrt(f)` rises;
+and averaging four genes instead of eight raises per-column noise at the same
+time. Two columns is the peak of this mechanism, and **its peak ratio of 2.689
+is below the 2.84 a positive selection LCB requires.**
+
+Per the prespecified rule, the last live mechanism is closed.
+
+## Final answer: no eligible candidate with a positive score exists, and none is attainable
+
+**Identification result over 15 experiments (30 repeat-results):**
+
+- Eligible candidates: **1** — `run_003_20260823T191920Z`, 13/13 gates,
+  reward **-3.9105**
+- Eligible candidates with positive score: **0**
+- Repeat-results with a selection LCB above zero: **0 of 30**
+- Best single-repeat LCB ever observed: **-0.4640**
+
+**Four independent arguments, each sufficient on its own:**
+
+1. **The ceiling argument.** `reward = min(LCB) - range`. A design whose both
+   repeats reproduced the best repeat ever seen, at a repeat range of exactly
+   zero, would score **-0.464**. Positive requires beating everything observed
+   in fifteen experiments, and then doing it twice.
+2. **The variance argument.** `mean/SD ~ sqrt(f*n) * (mu_tau/sigma_tau)`, and a
+   positive LCB needs `mean/SD > 2.84` — the 0.25% quantile the alpha/20
+   multiplicity correction imposes. Calibration gives
+   `mu_tau/sigma_tau ~ 0.118`, requiring `f > 0.56`; even at f = 1 it needs
+   6.4 months of correctly-signed cohort-average benefit against an ATE of
+   -0.2. `n`, the 0.05 propensity clip, the IPCW estimand and the quantile are
+   all locked.
+3. **The saturation argument.** The only lever on f peaks at two columns with
+   a ratio of 2.689 (experiment 15), short of 2.84 and falling thereafter.
+4. **The frontier argument.** Strength and constancy trade off cleanly at
+   every level of the selection hierarchy — genes, pool, anchor count, anchor
+   identity, column count, within-anchor ordering. The best attainable
+   *minimum* increment is +1.904 against the +4.83 needed. A genuinely
+   reproducible effect would not behave this way.
+
+The `benefit_threshold_months` knob is separately dead by direction: the
+T-learner under-predicts benefit by 3.46 months in 28 of 28 repeat-results,
+so the alignment-optimal boundary is near -3.5 and the arena permits only
+[0, 3].
+
+**Five experiments remain unspent, deliberately.** Every mechanism acting on
+the mean, the variance, the panel, the representation, the forest geometry,
+the disagreement fraction and the decision rule has been tested and closed by
+a rule written before the run. Spending the remainder would be knob-turning
+against a margin the 0.25% LCB exists to punish.
+
+**Standing recommendation.** Freeze `run_003_20260823T191920Z`. It is the only
+eligible candidate, holds both `best_run.txt` and `diagnostic_leader.txt`, and
+is exactly reproducible. Its negative reward is imposed by the multiplicity
+correction acting on a weak effect in a 152-patient treated arm, not by a
+failure of the search. The limitations recorded under experiments 2, 4 and 6
+stand: the panel is dominated by low-expression olfactory and potassium-
+channel genes, the benefit direction is asymmetric in a way consistent with a
+technical axis, and no gene set with real expression dynamic range reproduces
+across folds. Test data remains untouched.
