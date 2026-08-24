@@ -1701,3 +1701,153 @@ should land between experiments 3 and 13 — and experiment 13's bootstrap SD
 was also the lowest seen (about 1.45 against experiment 3's 1.74), so a
 design with experiment 3's mean and experiment 13's SD and range would score
 near -1.8 rather than -3.9.
+
+## Experiment 14 (prespecified before running)
+
+**Candidate** `tlearner_modal_anchor_scored_module16`
+
+Experiment 13's design — modal anchors chosen by appearance frequency across
+40 subsamples, 2 anchors of 8 genes, one module, locked clinical geometry,
+threshold 0.0 — with exactly one change:
+
+- within an anchor, members are ordered by **mean signed score** rather than
+  by sign-consistency count
+
+**Hypothesis.** Experiment 13 removed rank from *both* selection decisions
+and landed at the constancy end of the frontier: repeat range 0.1806 but a
+minimum increment of only +0.568. The two decisions are not equally
+responsible for instability. The *anchor* choice is what produces the large
+fold-level jumps — an entire panel switching from olfactory receptors to
+histones — while the *within-anchor* ordering only reshuffles which members
+of the same pathway are averaged, a far smaller perturbation of the module.
+Keeping the anchor modal while restoring score-based ordering should recover
+increment magnitude at a small cost in range.
+
+**The arithmetic that makes this worth a slot.** Experiment 13 also produced
+the lowest bootstrap SD of the search, about **1.45** against experiment 3's
+1.74, because a more constant panel yields a more stable per-patient
+contribution. Reward is roughly `min_mean - 2.84*SD - range`. Experiment 3
+scores -3.911 from (1.904, 1.74, 0.636); experiment 13 scores -4.070 from
+(0.573, 1.45, 0.181). A design landing at experiment 3's minimum mean with
+experiment 13's SD and range would score about **-1.8**, a full two months
+better than the standing best, without needing any new signal — purely from
+occupying a better point on the frontier already mapped.
+
+**On the positive-reward target, stated honestly before the run.** This will
+not reach a positive reward and I do not want the prediction record to
+pretend otherwise. Positive requires a minimum-repeat mean near +4.83; the
+frontier's best minimum mean is +1.904, and experiments 9 through 13
+established that pushing one repeat toward +5 drives the other to zero while
+inflating the subtracted range. What this run can do is improve the standing
+eligible reward, and demonstrate that the improvement comes from the
+variance and range terms rather than from finding more signal.
+
+**Prespecified predictions and what would falsify them.**
+
+- Both increments positive and the minimum above experiment 13's +0.568,
+  with the repeat range staying below experiment 3's 0.6355.
+- Eligible, with a reward better than -3.9105.
+- If the minimum increment does not rise above +0.568, then the within-anchor
+  ordering carries no usable signal at all and essentially everything this
+  selector family achieves comes from the anchor choice alone. Combined with
+  the frontier already mapped, that would close the last untested point on it
+  and I will report the positive-reward target as unreachable for this
+  estimand, with the best eligible candidate standing.
+
+**Result.** (to be appended after the run)
+
+**Result — run_014_20260824T012332Z, 260 s wall. NOT ELIGIBLE, reward -1e6.**
+
+| field | repeat 1 | repeat 2 |
+|---|---|---|
+| incremental alignment (months) | **+1.203** | **-0.644** |
+| selection LCB | -3.033 | -5.816 |
+| bootstrap mean / CI95 | +1.202 / [-1.639, +3.891] | -0.680 / [-4.270, +2.314] |
+| alignment C / C+G | 5.098 / 6.301 | 5.361 / 4.717 |
+| value C / C+G / best constant | 48.152 / 47.647 / 45.439 | 48.526 / 47.595 / 45.466 |
+| Harrell C, C / C+G (drop) | 0.6561 / 0.6508 (0.0053) | 0.6641 / 0.6547 (0.0094) |
+| ACT recommended fraction C+G | 0.3056 | 0.3627 |
+| seed agreement / benefit corr | 0.9958 / 0.9991 | 0.9958 / 0.9991 |
+| predicted benefit mean / IQR / nontrivial | -4.876 / 15.578 / 0.9981 | -3.606 / 16.263 / 0.9971 |
+| genomic split fraction obs / ACT | 0.3754 / 0.2314 | 0.3750 / 0.2799 |
+| arm support obs (pt/ev) | 661.5 / 278.25 | 661.5 / 278.25 |
+| arm support ACT (pt/ev) | 114.0 / 70.5 | 114.0 / 70.5 |
+| raw propensity overlap / IPTW ESS | 0.8723 / 358.5 | 0.8694 / 366.3 |
+
+Diagnostic score -7.663 (robust LCB -5.816, repeat range 1.8463). Gates 11/13.
+
+**Scorecard: falsified, and the manner of failure is the finding.** Restoring
+score-based ordering *within* a modal anchor raised repeat 1 from +0.749 to
++1.203 and drove repeat 2 from +0.568 to **-0.644**, with the range going
+0.1806 -> 1.8463. The minimum increment fell rather than rose, so the
+prespecified rule fires.
+
+I had argued that within-anchor ordering would be "a far smaller
+perturbation" than anchor choice. It is smaller in magnitude — the swing here
+is about 1.2 months where anchor-level changes swung 5 — but it is **the same
+antagonism, in the same direction, at a smaller scale**. Repeat 1 up, repeat
+2 down, range up. The strength/constancy trade-off is not a property of one
+particular decision in the selector; it holds at every level of the selection
+hierarchy that has been tested: which genes (experiment 1), which pool
+(experiments 2-3), how many anchors (experiments 5, 9), which anchors
+(experiment 10), how many columns (experiments 4, 12), and now which members
+within a fixed anchor. **There is no level at which strength is free.**
+
+## Conclusion: no eligible candidate with a positive reward exists, and the target is unreachable on this estimand
+
+**The identification result.** Across 14 experiments, exactly one run is
+eligible — `run_003_20260823T191920Z`, 13/13 gates, reward **-3.9105**. No
+run is both eligible and positively scored, and none is close: the best
+diagnostic score among non-eligible runs is -4.070.
+
+**Why this is a property of the estimand rather than of the search.** Write
+`f` for the fraction of patients where the C+G and clinical policies
+disagree, and `tau` for the per-patient AIPW benefit score. Only disagreeing
+patients contribute to the increment, so
+
+    increment mean  ~  2 * f * E[tau | disagree]
+    bootstrap SD    ~  2 * sqrt(f) * sqrt(E[tau^2 | disagree]) / sqrt(n)
+    =>  mean / SD   ~  sqrt(f * n) * (mu_tau / sigma_tau)
+
+A positive selection LCB needs `mean/SD > 2.84`, the 0.25% normal quantile
+that the alpha/20 multiplicity correction imposes. Calibrating from
+experiment 3 (mean 2.543, SD 1.737, n 1034) gives `mu_tau / sigma_tau ~ 0.118`
+— the AIPW scores carry a standard deviation near 70 months because the
+propensity clip admits weights up to 20, against a mean signed benefit of
+about 8.5 months on the disagreement set. The requirement becomes
+
+    sqrt(f * 1034) * 0.118 > 2.84   =>   f > 0.56
+
+Even at **f = 1**, with every patient's recommendation flipped relative to
+the clinical rule, the requirement is `mu_tau > 6.4` months of correctly
+signed benefit *averaged over the whole cohort* — against a cohort ATE of
+about **-0.2 months**. Since `n`, the propensity clipping, the IPCW estimand
+and the 0.25% quantile are all locked, no edit to `train.py` can reach it.
+The negative reward is imposed by the multiplicity correction acting on a
+weak effect in a small treated arm, not by a failure to find the right panel.
+
+**And the empirical frontier says the same thing from the other side.**
+
+| | range | increments | min mean | mean/SD (best repeat) | diagnostic |
+|---|---|---|---|---|---|
+| 012 max strength | 5.4004 | +5.132 / -0.268 | -0.313 | 2.689 | -12.509 |
+| 009 | 3.3216 | +4.224 / +0.902 | +0.902 | 2.228 | -8.856 |
+| **003 balanced** | 0.6355 | +2.574 / +1.939 | **+1.904** | 1.464 | **-3.911** |
+| 014 | 1.8463 | +1.203 / -0.644 | -0.680 | 0.847 | -7.663 |
+| 013 max constancy | **0.1806** | +0.749 / +0.568 | +0.573 | 0.516 | -4.070 |
+
+Every design that raises one repeat lowers the other; the best attainable
+minimum increment is **+1.904**, against the **+4.83** a positive LCB needs.
+Strength and constancy trade off cleanly, which is precisely what one
+observes when the apparent signal is fitted to a partition rather than
+present in the population — a genuinely reproducible effect would let a
+selector be powerful and stable at once.
+
+**Standing answer to the question asked.** Eligible candidates: one
+(`run_003_20260823T191920Z`). Eligible candidates with positive score: none,
+and none is attainable within the arena's fixed budget, estimand and
+multiplicity correction. Six experiments remain unspent; I am not consuming
+them, because every mechanism that acts on the mean, the variance, the panel,
+the representation, the geometry and the disagreement fraction has now been
+tested and the remaining gap is a factor of 2.5 in a quantity the editable
+surface does not control. Test data remains untouched.
