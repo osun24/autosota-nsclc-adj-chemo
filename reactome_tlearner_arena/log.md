@@ -1145,3 +1145,156 @@ sharply: it retains exactly the large nested parents.
 
 Experiment 10 tests it directly by de-duplicating overlapping anchors, which
 is selector logic rather than another knob.
+
+## Experiment 10 (prespecified before running)
+
+**Candidate** `tlearner_distinct_anchor_module16`
+
+The eligible experiment 3 configuration — single sign-coherent 16-gene
+module, 5 anchors of 8 genes, `MIN_PATHWAY_MEMBERS` back to 25, both arms at
+locked clinical geometry, threshold 0.0 — with one addition to the selector:
+
+- **`MAX_ANCHOR_OVERLAP = 0.50`**: a pathway is skipped as an anchor when its
+  development-present membership overlaps an already-accepted anchor by more
+  than Jaccard 0.5. The quota then backfills from further down the ranking
+  until five genuinely distinct anchors are held.
+
+**Hypothesis.** Reactome is hierarchical. A receptor set, its GPCR parent and
+that parent's signalling parent contain largely the same genes, so they score
+almost identically and a naive "top 5 pathways" rule can return five nested
+relatives instead of five distinct gene sets. If that is what has been
+happening, every result in this family has been produced by an effective
+anchor count near one, and the diversification mechanism that experiments 3,
+5 and 9 all point at has never actually been switched on. De-duplicating
+anchors should raise the *effective* diversity that experiment 3 only
+appeared to have, narrowing the repeat range and lifting the binding repeat-2
+LCB above -3.2751.
+
+**Verified before launch.** On a synthetic nested chain constructed so the
+family sweeps the ranking, the naive rule takes 5 of 5 anchors from the
+nested family; de-duplication takes 1 and backfills four distinct sets. The
+mechanism fires as intended, and all three fallback paths still return 16
+valid unique genes.
+
+**Prespecified predictions and what would falsify them.**
+
+- The full-development panel is no longer dominated by a single gene family.
+  If it comes back looking like experiment 3's — `OR*`/`KCN*` throughout —
+  then the top anchors were already distinct pathways that merely happen to
+  share a biology, the nesting diagnosis is wrong, and this run is a null
+  that costs a slot and settles the question.
+- Repeat range below 0.6355 and repeat-2 LCB above -3.2751, giving a reward
+  better than -3.9105.
+- If the panel does diversify but the reward does not improve, then effective
+  anchor diversity is not what limits this design either. Combined with the
+  closure of the capacity, representation, direction, quota, signal and
+  geometry axes, that would exhaust every mechanism I can motivate from the
+  evidence, and I will stop and report experiment 3 rather than spend the
+  remaining slots on knobs whose effects are smaller than the design
+  sensitivity documented under experiment 8.
+
+**Result.** (to be appended after the run)
+
+**Result — run_010_20260824T004651Z, 233 s wall. NOT ELIGIBLE, reward -1e6.**
+
+| field | repeat 1 | repeat 2 |
+|---|---|---|
+| incremental alignment (months) | **+3.403** | **-0.327** |
+| selection LCB | -1.882 | -6.484 |
+| bootstrap mean / CI95 | +3.355 / [-0.162, +6.734] | -0.344 / [-4.584, +3.339] |
+| alignment C / C+G | 5.098 / 8.502 | 5.361 / 5.034 |
+| value C / C+G / best constant | 48.152 / 48.521 / 45.543 | 48.526 / 47.713 / 45.446 |
+| Harrell C, C / C+G (drop) | 0.6561 / 0.6528 (0.0034) | 0.6641 / 0.6543 (0.0097) |
+| ACT recommended fraction C+G | 0.2911 | 0.3395 |
+| seed agreement / benefit corr | 0.9929 / 0.9991 | 0.9936 / 0.9989 |
+| predicted benefit mean / IQR / nontrivial | -6.352 / 15.670 / 0.9952 | -4.036 / 14.852 / 0.9990 |
+| genomic split fraction obs / ACT | 0.3892 / 0.2742 | 0.3837 / 0.2945 |
+| arm support obs (pt/ev) | 661.5 / 278.25 | 661.5 / 278.25 |
+| arm support ACT (pt/ev) | 114.0 / 70.5 | 114.0 / 70.5 |
+| raw propensity overlap / IPTW ESS | 0.8723 / 358.5 | 0.8694 / 366.3 |
+
+Diagnostic score -10.215 (robust LCB -6.484, repeat range 3.7305).
+Jaccard 0.1412. Gates 11/13.
+
+**Scorecard, and an error in my own test design.** The prediction was that the
+panel would stop being dominated by one gene family. The full-development
+panel came back **byte-identical to experiment 3's** — same sixteen genes in
+the same order — and five of the eight folds were unchanged. By the letter of
+my rule this is the null branch. But the reason is a flaw in how I measured
+overlap, and it should be recorded as mine rather than as a fact about the
+data: **Jaccard is the wrong statistic for detecting nesting.** A 60-member
+child inside a 400-member parent has Jaccard 60/400 = 0.15, far below my 0.50
+threshold, so the guard almost never fired on exactly the hierarchy it was
+built to catch. Containment, `|A and B| / min(|A|, |B|)`, would have been the
+right measure. My synthetic test missed this because the nested chain I built
+had members of similar size, where Jaccard and containment nearly coincide.
+
+**What the run nevertheless establishes, and it is the most useful result of
+the second half of the search.** De-duplication fired in only three of eight
+folds and changed between two and five genes in each:
+
+- r1f3: 13 of 16 shared with experiment 3
+- r2f1: 14 of 16 shared
+- r2f2: 11 of 16 shared
+
+Those small perturbations — under 10% of the total gene-slots across the
+search — moved the increments from +2.574/+1.939 to +3.403/-0.327 and the
+repeat range from 0.6355 to **3.7305**. A five-fold swing in the term the
+reward subtracts, from changing a handful of genes in three folds.
+
+This quantifies the design-sensitivity point from experiment 8 far more
+sharply than experiment 8 did, and it settles the question of whether to keep
+tuning. The objective surface is dominated by sensitivity to essentially
+arbitrary micro-variation in gene selection, not by any mechanism that can be
+steered. It also means a containment-based de-duplication is not worth a
+slot: where the guard did fire it made things worse, and a stricter measure
+would only fire more often.
+
+**Why a positive reward is out of reach for this family.** Reward is
+`LCB - range`, and the LCB is the 0.25% bootstrap quantile, about 2.84 SDs
+below the mean. A positive LCB therefore needs `mean/SD > 2.84`. Experiment
+3's best repeat runs at 2.543/1.74 = 1.46, and the ratio scales as
+`sqrt(k) * E[tau|disagree] / sd(tau|disagree)` over the k patients where the
+two policies disagree. Doubling it needs four times as many disagreeing
+patients at the same per-patient signal, or twice the per-patient signal.
+Neither is reachable by any knob in the editable surface. The eligible reward
+is negative by construction of the multiplicity correction, not by a failure
+of the search.
+
+## Search status after 10 of 20 experiments
+
+| run | candidate | elig | score | LCB | range | gates | jaccard | increments |
+|---|---|---|---|---|---|---|---|---|
+| 001 | raw4 dr_gene locked geometry | no | -16.027 | -13.116 | 2.911 | 9/13 | 0.0697 | -1.660 / -4.571 |
+| 002 | pathway benefit module16 | no | -7.764 | -6.142 | 1.622 | 11/13 | 0.1462 | +1.470 / -0.153 |
+| **003** | **bounded pool module16** | **YES** | **-3.911** | **-3.275** | **0.635** | **13/13** | **0.1417** | **+2.574 / +1.939** |
+| 004 | bidirectional pool module16 | no | -13.214 | -10.342 | 2.871 | 10/13 | 0.0784 | -2.003 / +0.868 |
+| 005 | wide anchor module16 | no | -5.446 | -4.568 | 0.878 | 12/13 | 0.1270 | +2.023 / +1.145 |
+| 006 | dynamic range module16 | no | -15.601 | -12.702 | 2.899 | 9/13 | 0.0762 | -5.092 / -2.194 |
+| 007 | regularized ACT module16 | no | -6.448 | -5.914 | 0.534 | 11/13 | 0.1417 | +0.452 / -0.082 |
+| 008 | fine resolution module16 | no | -5.686 | -4.401 | 1.285 | 12/13 | 0.1417 | +2.686 / +1.401 |
+| 009 | precise anchor module16 | no | -8.856 | -5.535 | 3.322 | 12/13 | 0.1378 | +4.224 / +0.902 |
+| 010 | distinct anchor module16 | no | -10.215 | -6.484 | 3.731 | 11/13 | 0.1412 | +3.403 / -0.327 |
+
+**Every axis is now closed by a prespecified rule**: capacity and column
+count (001, 004), representation and sign coherence (002), quota shape (005),
+which signal is tracked (006), ACT-arm and observation-arm geometry in both
+directions (007, 008), anchor precision (009), anchor de-duplication (010),
+and `benefit_threshold_months` by arithmetic, twice.
+
+**Recommendation: stop and freeze `run_003_20260823T191920Z`.** It is the
+only eligible run, it holds both `best_run.txt` and `diagnostic_leader.txt`,
+and it is exactly reproducible. The ten unspent experiments should not be
+consumed for their own sake: experiment 10 showed the objective moves by
+several months on gene-level perturbations that carry no hypothesis, so
+further attempts would be selection on a margin the 0.25% LCB exists to
+punish, and each one risks nothing but also teaches nothing.
+
+**Limitations carried forward to any test-set decision.** The panel is
+dominated by olfactory-receptor and potassium-channel genes whose measured
+variation sits near the array detection floor (experiment 2), the benefit
+direction is asymmetric in a way consistent with a technical rather than
+biological axis (experiment 4), and every gene set with real expression
+dynamic range failed to reproduce across folds (experiment 6). The candidate
+clears the arena's thirteen gates; it should not be described as a
+biologically interpretable pathway result. Test data remains untouched.
