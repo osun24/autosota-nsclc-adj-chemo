@@ -918,3 +918,115 @@ noise-limited, a *finer* C+G forest should move the increment the other way.
 That is the hypothesis for experiment 8, and it is the first one in several
 runs that is derived from a measured effect rather than from a diagnosis of
 what went wrong.
+
+## Experiment 8 (prespecified before running)
+
+**Candidate** `tlearner_fine_resolution_module16`
+
+The eligible experiment 3 configuration — single sign-coherent 16-gene
+module, 5 anchors of 8 genes, threshold 0.0 — with **finer** forest geometry
+in both arms of the C+G panel:
+
+- observation arm depth 9 -> **12**, leaf 8 -> **5**, split 16 -> **10**
+- ACT arm depth 7 -> **8**, leaf 12 -> **10**, split 24 -> **20**
+
+`max_features` stays 1.0 in both arms; the clinical comparator is untouched.
+
+**Hypothesis.** Experiment 7 measured the exchange rate in the coarse
+direction: two months of incremental alignment lost for a tenth of a month of
+repeat range gained. That is the signature of a **resolution-limited**
+problem, not a noise-limited one. Every candidate in this search has sat at
+the locked clinical geometry or coarser, so the fine direction has never been
+sampled. If the exchange rate is even roughly symmetric near the locked
+point, a finer C+G forest should raise both increments above experiment 3's
++2.574 / +1.939 at a modest cost in repeat range, and the reward is
+`LCB - range` with the LCB term about 2.8 times more sensitive.
+
+**Why the asymmetry with the clinical comparator is legitimate and what it
+costs interpretively.** Only the clinical T-learner is locked; the C+G panel's
+geometry is explicitly editable, and red line 9 forbids weakening or
+threshold-tuning the *clinical* learner, which this does not do. But it does
+mean the C+G panel now has more capacity on the clinical features too, so any
+gain is no longer attributable to the module alone. If this run wins, the
+honest statement is that the winning policy uses both a Reactome module and a
+finer forest, and the module's isolated contribution is the one measured by
+experiment 3, where the geometries matched exactly.
+
+**Prespecified predictions and what would falsify them.**
+
+- At least one increment exceeds +2.574 and both stay positive, with the
+  repeat range staying under about 1.0, giving a reward above -3.9105 by more
+  than the ~0.8-month noise floor.
+- The C-index drop stays inside 0.03. A depth-12, leaf-5 forest on ~662
+  patients is the most overfittable configuration the arena permits, and the
+  C-index gate is the natural place for that to show first.
+- If the increments *fall*, then the locked clinical geometry is at or near
+  the optimum rather than on the coarse side of it, experiment 7's exchange
+  rate was one-sided, and the forest-geometry axis closes in both directions.
+  With every other axis already closed by a prespecified rule, that would
+  leave experiment 3 as the search's final answer and the remaining slots
+  would go to confirming it rather than to further tuning.
+
+**Result.** (to be appended after the run)
+
+**Result — run_008_20260824T003334Z, 256 s wall. NOT ELIGIBLE, reward -1e6.**
+
+| field | repeat 1 | repeat 2 |
+|---|---|---|
+| incremental alignment (months) | **+2.687** | **+1.401** |
+| selection LCB | -2.518 | -4.401 |
+| bootstrap mean / CI95 | +2.640 / [-0.890, +6.118] | +1.361 / [-2.468, +4.924] |
+| alignment C / C+G | 5.098 / 7.785 | 5.361 / 6.762 |
+| value C / C+G / best constant | 48.152 / 48.538 / 45.513 | 48.526 / **48.432** / 45.484 |
+| Harrell C, C / C+G (drop) | 0.6561 / 0.6506 (0.0055) | 0.6641 / 0.6570 (0.0071) |
+| ACT recommended fraction C+G | 0.3104 | 0.3656 |
+| seed agreement / benefit corr | 0.9916 / 0.9989 | 0.9903 / 0.9987 |
+| predicted benefit mean / IQR / nontrivial | -5.533 / 16.225 / 0.9942 | -3.951 / 16.365 / 0.9971 |
+| genomic split fraction obs / ACT | 0.4036 / 0.2830 | 0.4094 / 0.2880 |
+| arm support obs (pt/ev) | 661.5 / 278.25 | 661.5 / 278.25 |
+| arm support ACT (pt/ev) | 114.0 / 70.5 | 114.0 / 70.5 |
+| raw propensity overlap / IPTW ESS | 0.8723 / 358.5 | 0.8694 / 366.3 |
+
+Diagnostic score -5.686 (robust LCB -4.401, repeat range 1.2851).
+Jaccard 0.1417. Gates **12/13** — the only failure is
+`genomic_value_at_least_clinical`, in repeat 2, by **0.094 months**.
+
+**Scorecard.**
+
+- *An increment above +2.574, both positive, range under 1.0, reward better
+  than -3.9105*: **falsified.** Repeat 1 did reach +2.687, but by 0.11 months
+  — inside the design-sensitivity scale — while repeat 2 fell to +1.401 and
+  the range rose to 1.2851. Not eligible, so no reward.
+- *C-index drop inside 0.03*: **confirmed**, and more comfortably than
+  expected (0.0055 / 0.0071). A depth-12, leaf-5 forest on ~662 patients is
+  the most overfittable configuration the arena permits and it did not
+  degrade discrimination at all. Whatever limits this problem, it is not
+  observation-arm overfitting.
+
+**The geometry axis closes, from both sides.** Coarser (experiment 7) bought
+0.10 months of repeat range for 2.0 months of increment. Finer (this run)
+bought at most 0.11 months of increment for 0.65 months of repeat range.
+Neither direction pays, and the locked clinical geometry sits at or very near
+the optimum for the C+G panel as well. That is a mildly interesting result in
+its own right: the geometry chosen for the locked comparator turns out to be
+about right for a panel with one extra column.
+
+**A correction to how I have been describing the "noise floor".** This
+pipeline is fully deterministic — fixed fold seeds, fixed forest seeds, a
+fixed bootstrap seed, and a deterministic selector — so re-running any
+candidate reproduces its numbers exactly. The ~0.8-month spread I have been
+attributing to noise is therefore not sampling variability and cannot be
+averaged away. It is *sensitivity to scientifically arbitrary design
+choices*: quota 5x8 versus 8x3 is not a hypothesis about biology, yet it
+moves the increment by that much. For model selection it functions like
+noise, which is exactly what the 0.25% selection LCB is priced to punish, but
+it should be named accurately.
+
+**What the last three runs jointly imply.** Experiments 3, 5 and 8 share a
+selector and differ only in arbitrary design details, and their value-gate
+margins were +0.44/+0.35, -0.48/-0.21, and +0.39/-0.09. The design family
+clears 12 gates dependably and the thirteenth — value — sits within about
+half a month of the line either way. Experiment 3's eligibility is real and
+exactly reproducible, but it is not a comfortable margin, and further tuning
+of arbitrary knobs would be selection on that margin rather than improvement
+of it.
