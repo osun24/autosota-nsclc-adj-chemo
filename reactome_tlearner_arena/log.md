@@ -2501,3 +2501,216 @@ across folds (experiment 6); and the antagonism table indicates the
 reproducible component of the signal is small relative to cross-fitting
 noise. It clears the arena's thirteen gates and should not be described as a
 biologically interpretable pathway result. Test data was never opened.
+
+## Experiments 19-20: correcting the argument for leaving slots unspent
+
+Under experiment 17 I argued that hypothesis-free sampling near `run_003`
+could "install a noise-selected run as the frozen test nominee and degrade
+the deliverable". That argument does not hold and I withdraw it.
+`best_run.txt` advances only on a **higher eligible reward**, and the 0.25%
+selection LCB together with the repeat-range penalty exist precisely to price
+selection across twenty experiments. A higher-reward eligible run being
+promoted is the arena working as designed, not a corruption of it. Combined
+with the fact that unspent slots have no option value, the remaining two
+should be spent.
+
+**Where the only plausible headroom is.** Six of eighteen designs kept *both*
+increments positive, which is the precondition for eligibility:
+
+| run | increments | worst LCB | gates |
+|---|---|---|---|
+| **003** (5 anchors x 8) | +2.574 / +1.939 | **-3.275** | **13/13** |
+| 008 (fine geometry) | +2.686 / +1.401 | -4.401 | 12/13 |
+| 005 (8 anchors x 3) | +2.023 / +1.145 | -4.568 | 12/13 |
+| 016 (4 modal anchors) | +1.796 / +0.412 | -4.639 | 12/13 |
+| 009 (member floor 50) | +4.224 / +0.902 | -5.535 | 12/13 |
+| 013 (2 modal anchors) | +0.749 / +0.568 | -3.889 | 12/13 |
+
+`run_003` is the unique maximum of the worst-repeat LCB across all eighteen.
+The two nearest designs that also kept both increments positive are
+experiment 5 (eight rank anchors of three) and experiment 3 itself (five of
+eight). Six anchors of eight has never been run and sits between them.
+
+## Experiment 19 (prespecified before running)
+
+**Candidate** `tlearner_six_anchor_module16` — the eligible `run_003`
+configuration with `POOL_PATHWAYS` **5 -> 6** (`PER_PATHWAY_TOP` stays 8,
+pool at most 48, 16 selected).
+
+**Hypothesis.** Experiment 5 raised anchor count from five to eight *and*
+cut the per-anchor quota from eight to three at the same time, so it
+confounded two changes; its increments stayed positive but the worst-repeat
+LCB fell to -4.568. Six anchors at the unchanged quota of eight is a single,
+small step in the diversification direction that produced the arena's only
+eligible run, taken from the eligible point itself rather than from two
+changes at once.
+
+**Prespecified predictions and what would falsify them.**
+
+- Both increments stay positive and the run is eligible (13/13). This is the
+  more important prediction: an eligible run is the deliverable regardless of
+  where its reward lands.
+- Worst-repeat LCB above -3.275, giving a reward better than -3.9105.
+- If either increment goes negative, or the worst-repeat LCB falls, then five
+  anchors is the optimum on this axis in both directions — experiment 5
+  already closed it upward at eight — and `run_003` stands as final with the
+  last slot reserved for whatever experiment 19 suggests.
+- A positive reward remains out of reach; the gap in the binding quantity is
+  3.3 months and this change is worth a fraction of one.
+
+**Result.** (to be appended after the run)
+
+**Result — run_019_20260824T020718Z, 232 s wall. NOT ELIGIBLE, reward -1e6.**
+
+| field | repeat 1 | repeat 2 |
+|---|---|---|
+| incremental alignment (months) | **+3.334** | **-0.684** |
+| selection LCB | -2.247 | **-6.598** |
+| bootstrap mean / CI95 | +3.293 / [-0.357, +6.882] | -0.689 / [-4.860, +2.847] |
+| alignment C / C+G | 5.098 / 8.433 | 5.361 / 4.677 |
+| value C / C+G / best constant | 48.152 / 48.232 / 45.497 | 48.526 / 47.715 / 45.424 |
+| Harrell C, C / C+G (drop) | 0.6561 / 0.6559 (0.0002) | 0.6641 / 0.6524 (0.0117) |
+| ACT recommended fraction C+G | 0.2930 | 0.3453 |
+| seed agreement / benefit corr | 0.9923 / 0.9991 | 0.9936 / 0.9990 |
+| predicted benefit mean / IQR / nontrivial | -6.150 / 16.245 / 0.9942 | -3.838 / 14.565 / 0.9932 |
+| genomic split fraction obs / ACT | 0.3875 / 0.2971 | 0.3829 / 0.2921 |
+| arm support obs (pt/ev) | 661.5 / 278.25 | 661.5 / 278.25 |
+| arm support ACT (pt/ev) | 114.0 / 70.5 | 114.0 / 70.5 |
+| raw propensity overlap / IPTW ESS | 0.8723 / 358.5 | 0.8694 / 366.3 |
+
+Diagnostic score -10.616 (robust LCB -6.598, repeat range 4.0182). Gates 11/13.
+
+**Falsified on both clauses.** Repeat 2 went negative (+1.939 -> -0.684) and
+the worst-repeat LCB fell to -6.598. Adding a sixth anchor at the unchanged
+quota behaves like every other sharpening change, so experiment 5's failure
+was not an artefact of confounding two changes after all — the anchor-count
+axis is closed in both directions and five is the optimum.
+
+**`run_003` has now been probed in eleven directions and is a maximum in all
+of them:** anchors 5->6 and 5->8, per-anchor quota 8->4, membership floor
+25->50, anchor de-duplication, `n_genes` 16->10, observation geometry finer,
+ACT geometry coarser, rank -> stability selection, one -> two modules, and
+bounded -> whole-pathway pooling. Every one lowered the worst-repeat LCB.
+
+## Experiment 20 (prespecified before running) — the last slot
+
+One knob in the entire search has been tested in only a single direction.
+`MIN_PATHWAY_MEMBERS` went 25 -> 50 in experiment 9, which concentrated
+selection onto the largest families and cost repeat 2 a month. Downward is
+untested.
+
+**Candidate** `tlearner_low_floor_module16` — the eligible `run_003`
+configuration with `MIN_PATHWAY_MEMBERS` **25 -> 15`.
+
+**Hypothesis.** Lowering the floor admits smaller, more specific Reactome
+pathways as anchor candidates. Two effects oppose: a mean over 15 members is
+noisier than over 25, which argues for instability; but the anchor set
+becomes more diverse, and diversification is the one mechanism ever observed
+to raise both repeats (experiment 2 to experiment 3). Experiment 9 showed
+that moving this knob *up* concentrates and hurts, so the symmetric question
+is whether moving it down diversifies and helps.
+
+**Prespecified predictions and what would falsify them.**
+
+- Both increments positive and the run eligible.
+- Worst-repeat LCB above -3.275.
+- If repeat 2 goes negative or the LCB falls, this knob is optimal at 25 in
+  both directions, the budget is exhausted, and every knob in the editable
+  surface has been tested in both directions with `run_003` the maximum of
+  all twenty.
+- A positive reward remains out of reach for the reasons recorded under
+  experiments 14 and 15.
+
+**Result.** (to be appended after the run)
+
+**Result — run_020_20260824T021215Z, 236 s wall. ELIGIBLE. Reward -3.5747.**
+
+**All 13 gates pass. New best eligible candidate; `best_run.txt` and
+`diagnostic_leader.txt` both advanced to this run.**
+
+| field | repeat 1 | repeat 2 |
+|---|---|---|
+| incremental alignment (months) | **+2.678** | **+1.981** |
+| selection LCB | **-2.878** | -1.300 |
+| bootstrap mean / CI95 | +2.640 / [-1.343, +6.652] | +2.027 / [-0.377, +4.410] |
+| alignment C / C+G | 5.098 / 7.776 | 5.361 / 7.342 |
+| value C / C+G / best constant | 48.152 / 48.609 / 45.549 | 48.526 / **49.006** / 45.443 |
+| Harrell C, C / C+G (drop) | 0.6561 / 0.6562 (**-0.0001**) | 0.6641 / 0.6596 (0.0045) |
+| ACT recommended fraction C+G | 0.3317 | 0.3279 |
+| seed agreement / benefit corr | 0.9952 / 0.9991 | 0.9894 / 0.9988 |
+| predicted benefit mean / IQR / nontrivial | -4.668 / 16.351 / 0.9971 | -3.832 / 13.830 / 0.9913 |
+| genomic split fraction obs / ACT | 0.3795 / 0.2541 | 0.3848 / 0.3004 |
+| arm support obs (pt/ev) | 661.5 / 278.25 | 661.5 / 278.25 |
+| arm support ACT (pt/ev) | 114.0 / 70.5 | 114.0 / 70.5 |
+| raw propensity overlap / IPTW ESS | 0.8723 / 358.5 | 0.8694 / 366.3 |
+
+Reward **-3.5747** = robust LCB -2.8778 minus repeat range 0.6969.
+Jaccard 0.1150. Full-development panel: `OR2S2, TAAR5, ANO2, OR10H2, HTR6,
+OR2J2, OR3A2, OR52A1, FGF22, OR10C1, FGF4, OR2F1, TAS2R13, ADRA2B, FGF16,
+CASR`.
+
+**Both predictions confirmed.** Both increments positive and eligible; and
+the worst-repeat LCB rose from -3.275 to **-2.878**, the best of the search.
+Repeat 2's increment of **+1.981** is also the highest any repeat 2 has
+reached in twenty experiments, beating `run_003`'s +1.939, and repeat 2's
+value margin of +0.480 is the largest recorded.
+
+**Why lowering the floor worked where raising it failed.** Experiment 9 moved
+this knob to 50 and shrank the eligible anchor set to the largest gene
+families, concentrating selection; repeat 2 lost a month. Moving it to 15
+does the opposite — it admits smaller, more specific Reactome sets as anchor
+candidates. The panel shows the effect directly: alongside the familiar
+olfactory core it now carries `FGF22`, `FGF4`, `FGF16`, `CASR` and `TAS2R13`,
+genes that no previous run selected because the pathways containing them
+never cleared a 25-member floor. The noisier per-pathway mean that a smaller
+floor implies was more than repaid by the diversity it bought, which is the
+same mechanism that took experiment 2 to experiment 3.
+
+**This also vindicates reversing my decision to leave slots unspent.** I had
+argued twice for stopping early — first on budget conservation, then on a
+claim that hypothesis-free sampling could corrupt the nominee. Both arguments
+were wrong, and I withdrew them for reasons recorded above. Had I acted on
+either, the arena would have frozen a candidate 0.34 months worse than the
+one it has.
+
+## Final result — budget exhausted, 20 of 20 experiments
+
+**Eligible candidates: 2. Eligible candidates with a positive score: 0.**
+
+| | run | reward | worst LCB | range | increments |
+|---|---|---|---|---|---|
+| **best** | `run_020_20260824T021215Z` | **-3.5747** | **-2.8778** | 0.6969 | +2.678 / +1.981 |
+| | `run_003_20260823T191920Z` | -3.9105 | -3.2751 | 0.6355 | +2.574 / +1.939 |
+
+Across 40 repeat-results, **zero** have a selection LCB above zero. The best
+worst-repeat LCB in the entire search is **-2.878**, held by the winner. The
+gap to a positive reward is 3.57 months in a quantity whose full observed
+range across twenty designs is -2.878 to -13.116.
+
+A positive score is not attainable within this arena. The reward is a 0.25%
+bootstrap quantile (alpha/20 across twenty experiments) minus a repeat-range
+penalty, applied to a treatment-benefit contrast measured in a 152-patient
+treated arm with propensities clipped at 0.05. Sample size, clipping,
+estimand, quantile and penalty are all locked outside `train.py`. The
+negative reward is the multiplicity correction pricing a weak effect, not a
+failure of the search.
+
+**Frozen deliverable.** `run_020_20260824T021215Z` — the locked clinical
+T-learner plus one averaged, sign-coherent Reactome module of 16 genes drawn
+from a bounded five-pathway quota over pathways with at least 15
+development-present members. 13/13 gates, reward -3.5747, increments
++2.678 / +1.981, Harrell C cost 0.0045 in the worse repeat and none in the
+better, Jaccard 0.1150.
+
+**Limitations that must travel with it.** The panel remains dominated by
+olfactory-receptor genes whose measured variation sits near the array
+detection floor (experiment 2); the benefit direction is asymmetric in a way
+consistent with a technical rather than biological axis (experiment 4); no
+gene set restricted to genes with real expression dynamic range reproduces
+across folds (experiment 6); and eleven of thirteen perturbations of the
+eligible design showed repeat 1 and repeat 2 moving in opposite directions,
+indicating the reproducible component of the signal is small relative to
+cross-fitting noise. It clears the arena's thirteen gates and should not be
+described as a biologically interpretable pathway result. Claims remain
+observational and require the usual causal assumptions. **Test data was never
+opened at any point in this search.**

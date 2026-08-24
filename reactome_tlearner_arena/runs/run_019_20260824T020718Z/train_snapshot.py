@@ -17,7 +17,7 @@ except ImportError:
 
 
 CANDIDATE = {
-    "name": "tlearner_low_floor_module16",
+    "name": "tlearner_six_anchor_module16",
     # Recorded enum value.  The effective selection is the custom
     # pathway-anchored, sign-coherent selector below, injected through the
     # locked evaluator's own ``selector`` hook.  It is a global gene ranking
@@ -51,20 +51,19 @@ CANDIDATE = {
 # Minimum number of development-present members a Reactome pathway must have
 # before its aggregate benefit score is trusted.  Small sets win the ranking
 # on noise; averaging over >= 25 members shrinks the aggregate's variance.
-# 15 rather than 25.  Experiment 9 moved this floor UP to 50, which shrank
-# the eligible anchor set to the largest families, concentrated selection and
-# cost repeat 2 a month.  Downward is the untested direction: it admits
-# smaller, more specific pathways, trading a noisier per-pathway mean for a
-# more diverse anchor set.  This is the only knob in the search tested in
-# just one direction.
-MIN_PATHWAY_MEMBERS = 15
+MIN_PATHWAY_MEMBERS = 25
 # The candidate pool is the union of the top ``PER_PATHWAY_TOP`` members of
 # each of the top ``POOL_PATHWAYS`` pathways.  Experiment 2 pooled whole
 # pathways, so one pathway flip replaced the entire pool and two of eight
 # folds jumped to an unrelated family.  Bounding each pathway's contribution
 # keeps the pool small (<= 40 genes, which is what the Jaccard gate rewards)
 # while spreading anchor risk across five pathways instead of three.
-POOL_PATHWAYS = 5
+# 6 rather than 5.  Experiment 5 raised anchor count to eight while also
+# cutting the per-anchor quota to three, confounding two changes; its
+# worst-repeat LCB fell to -4.568.  This is a single small step in the
+# diversification direction, taken from the eligible point with the quota
+# left alone.
+POOL_PATHWAYS = 6
 PER_PATHWAY_TOP = 8
 
 
