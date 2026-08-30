@@ -439,3 +439,35 @@ At 2.0 months the ACT-recommended fraction saturates at 0.315 in both repeats �
 the threshold has pushed past the useful part of the predicted-benefit
 distribution and is now withdrawing treatment from patients whose AIPW delta is
 positive. Experiment 006 remains the diagnostic leader.
+
+## Experiment 008 — threshold fine grid (`run_008_20260830T113029Z`)
+
+Candidate `child001_obsonly01_mf1_thr125`: experiment 006 with
+`benefit_threshold_months` 1.25. Elapsed 917 s.
+
+Result: **ineligible**, score_before_eligibility -5.836446,
+robust_selection_lcb -4.4833, range 1.3532. Three gates fail. Not a leader.
+
+    rep 1  increment -0.7528  clinical 48.1524  genomic 47.7365  gap -0.4159  act_frac 0.311
+    rep 2  increment +0.6004  clinical 48.5260  genomic 48.8089  gap +0.2829  act_frac 0.336
+
+This ends the threshold search, and the reason is the point. Repeat-2's value gap
+flipped positive (-0.018 -> +0.283) exactly as hoped, but repeat 1's flipped
+negative (+0.367 -> -0.416) at the same time. Across the grid the two repeats
+anti-correlate:
+
+    threshold   increments         value gap rep1 / rep2      score
+      0.00      -0.824, -0.106      .      / -0.104           -5.308
+      1.00      +0.722, +0.106     +0.367  / -0.018           -4.364
+      1.25      -0.753, +0.600     -0.416  / +0.283           -5.836
+      2.00      -0.212, -1.672     -0.109  / -0.796           -7.864
+
+No threshold makes both repeats' value gaps positive; moving the boundary trades
+one repeat against the other. Since the two repeats differ only in their outer
+fold seed, an effect that reverses between them is sampling noise, not a policy
+improvement. Continuing to refine this scalar would be fitting the development
+set — precisely what the `multiplicity_alpha / max_experiments` = 0.05/20
+selection quantile exists to penalise — and it could not change eligibility in
+any case, because the OBS panel Jaccard gate fails independently.
+
+Experiment 006 (threshold 1.0) remains the diagnostic leader at -4.363832.

@@ -1,0 +1,46 @@
+{
+  "full_development": {
+    "act": [],
+    "observation": [
+      "FOXA2"
+    ]
+  },
+  "per_fold": {
+    "act": [
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      []
+    ],
+    "observation": [
+      [
+        "ZNF552"
+      ],
+      [
+        "BUB1"
+      ],
+      [
+        "BASP1"
+      ],
+      [
+        "TNFAIP8"
+      ],
+      [
+        "NR3C2"
+      ],
+      [
+        "ATP11B"
+      ],
+      [
+        "PPFIBP2"
+      ],
+      [
+        "RCE1"
+      ]
+    ]
+  }
+}
