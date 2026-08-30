@@ -571,3 +571,69 @@ What the arena did establish, on its own recorded evidence:
 - discrimination is never the binding constraint — genomic C-index stays within
   0.02 of clinical throughout, well inside the 0.03 allowance. It is policy
   value, not risk ranking, that the genes damage.
+
+## Post-search verification — the near-deterministic screening regime
+
+After concluding the search I re-examined the impossibility argument and found an
+error in it worth correcting. The ceiling I had reported, 0.003-0.018, was derived
+from `s*cap/(2P)` — the expected overlap of two panels drawn **uniformly at
+random** from the pool. That formula bounds configurations whose selection is
+random with respect to the pool; it says nothing about a selector that picks the
+same genes twice. Panel Jaccard is simply `|A ∩ B| / |A ∪ B|`, and a screen that
+reliably picks the same ten genes out of 8,647 scores ~1.0 regardless of pool
+size.
+
+Every configuration measured up to that point used `max_features` at `sqrt`
+(~93 of 8,654 features per split) or below, with enough depth and trees that
+hundreds to thousands of genes were used. In that regime the forest *is* a random
+gene sampler and the random-selection model is correct — which is why the
+predictions matched exactly. But that was a property of the screens chosen, not
+of the arena. The opposite corner had never been tested:
+
+    max_features 1.0   every split evaluates all features; the split is
+                       data-driven rather than a feature lottery
+    max_depth 2        ~3 internal nodes per tree
+    min_samples_leaf 60, min_samples_split 150
+                       so only a handful of genes can ever be used
+
+Two properties make this cheap rather than prohibitive: unused genes take the
+zero-shortcut in `_importance_table` and cost nothing, so PFI time scales with
+the handful actually used; and the ACT arm's ~57 inner-train patients fall below
+`min_samples_split`, so its trees never split, `used_act` is 0 in every context,
+and its panels come back empty — a vacuous ACT Jaccard of 1.0 without setting
+`max_panel_genes` to 0.
+
+**Root regime, full 8,647-gene pool, 40 trees.** Used genes collapsed from 1,184
+to 52 and 61 across two fit sets, exactly as designed; 15 positives in each. The
+two 15-gene panels were **completely disjoint**, obs Jaccard 0.0000. With 330
+patients and 8,647 candidates the best log-rank splitter is the strongest
+*spurious* one, and it changes entirely between fit sets.
+
+**Child regime, run_001's real inherited pools, all 8 outer contexts.** The
+remaining hope was that averaging over more bootstrap draws would make the
+used-gene set the genes that win *consistently*, a more stable quantity than
+whatever 40 draws happened to favour:
+
+    trees  cap   obs Jaccard   act Jaccard   used_obs per context
+       40   32      0.01307       1.00000    26-53
+      200   32      0.01467       1.00000    85-125
+     1000   32      0.01046       1.00000    184-235
+
+More trees does not help; 1,000 is slightly worse than 200. At the best setting
+(200 trees, cap 32) the eight panels share on average **0.64 genes**, at most 3,
+and **zero genes are common to all eight contexts**.
+
+This closes the argument from both directions. Across the full space the
+candidate schema exposes — pool size 128-8647, trees 40-1000, depth 2-12,
+leaf 3-60, `max_features` sqrt/0.5/1.0, and either arm — the observed panel
+Jaccard spans **0.0000 to 0.044** against a 0.10 gate, and no configuration ever
+produced a single gene common to all eight outer folds. Fewer genes gives less
+chance overlap, so the deterministic corner is worse than the random one, not
+better. The selector has no reproducible signal to give the gate in any regime,
+and no further slot can change that. Nine of twenty slots were spent; the
+remaining eleven were left unused deliberately, since additional runs would only
+add ineligible results.
+
+Final state: `test_nominee.txt` empty, `best_run.txt` empty,
+`diagnostic_leader.txt` = `run_006_20260830T105721Z` at
+score_before_eligibility -4.363832.
