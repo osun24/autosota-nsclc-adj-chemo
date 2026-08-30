@@ -1,0 +1,73 @@
+{
+  "full_development": {
+    "act": [],
+    "observation": [
+      "GHR",
+      "NLRP3",
+      "CDIPT",
+      "SWAP70"
+    ]
+  },
+  "per_fold": {
+    "act": [
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      []
+    ],
+    "observation": [
+      [
+        "PLCG2",
+        "A1CF",
+        "PLA2G3",
+        "STX16"
+      ],
+      [
+        "COG7",
+        "P2RY10",
+        "AKR1D1",
+        "ABHD17A"
+      ],
+      [
+        "ITGA8",
+        "GLYAT",
+        "GAL",
+        "CALU"
+      ],
+      [
+        "BUB1",
+        "GYS1",
+        "RPLP2",
+        "PNOC"
+      ],
+      [
+        "MAP3K3",
+        "GTPBP2",
+        "ADAMTS20",
+        "RDH11"
+      ],
+      [
+        "TPO",
+        "TRIM68",
+        "RABGEF1",
+        "APCS"
+      ],
+      [
+        "PFKP",
+        "AP1S1",
+        "UNC13B",
+        "ALDOA"
+      ],
+      [
+        "PYGL",
+        "PRIM2",
+        "CCDC88C",
+        "PIP5K1B"
+      ]
+    ]
+  }
+}

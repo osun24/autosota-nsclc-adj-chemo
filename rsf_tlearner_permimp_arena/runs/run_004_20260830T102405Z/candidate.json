@@ -1,0 +1,45 @@
+{
+  "benefit_threshold_months": 0.0,
+  "max_panel_genes": {
+    "act": 0,
+    "observation": 4
+  },
+  "name": "child001_obsonly04_mf1_thr0",
+  "next_pool_size": {
+    "act": 240,
+    "observation": 512
+  },
+  "parent_run_id": "run_001_20260830T092246Z",
+  "screening_tlearner": {
+    "act": {
+      "max_depth": 4,
+      "max_features": "sqrt",
+      "min_samples_leaf": 8,
+      "min_samples_split": 16,
+      "n_estimators": 100
+    },
+    "observation": {
+      "max_depth": 4,
+      "max_features": "sqrt",
+      "min_samples_leaf": 16,
+      "min_samples_split": 32,
+      "n_estimators": 100
+    }
+  },
+  "tlearner": {
+    "act": {
+      "max_depth": 7,
+      "max_features": 1.0,
+      "min_samples_leaf": 12,
+      "min_samples_split": 24,
+      "n_estimators": 1000
+    },
+    "observation": {
+      "max_depth": 9,
+      "max_features": 1.0,
+      "min_samples_leaf": 8,
+      "min_samples_split": 16,
+      "n_estimators": 1000
+    }
+  }
+}

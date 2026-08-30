@@ -272,3 +272,48 @@ Combining with the selector result, the picture is closed:
 Discrimination is not the problem: genomic C-index 0.6596 / 0.6584 against
 clinical 0.6561 / 0.6641, comfortably inside the 0.03 allowance. It is the
 policy value that degrades.
+
+## Experiment 004 — observation-only panel (`run_004_20260830T102405Z`)
+
+Candidate `child001_obsonly04_mf1_thr0`, parent `run_001_20260830T092246Z`,
+panels 4 OBS / 0 ACT, locked clinical geometry, `max_features` 1.0, threshold 0.0.
+Elapsed 1,111 s.
+
+Result: **ineligible**, reward -1000000.0, score_before_eligibility
+-9.339350, robust_selection_lcb -7.0303, repeat increment range 2.3091.
+New diagnostic leader. Panel Jaccard predicted obs 0.000000 / act 1.000000,
+reported obs 0.000000 / act 1.000000 — fourth exact match.
+
+    rep 1  increment -3.5178  lcb -7.0303  sd 1.1968
+           clinical value 48.152 align 5.098 | genomic value 46.334 align 1.580 cindex 0.6437
+    rep 2  increment -1.2087  lcb -5.1390  sd 1.3183
+           clinical value 48.526 align 5.361 | genomic value 47.839 align 4.152 cindex 0.6462
+    genomic split fraction  obs 0.644 / 0.649,  act 0.000
+
+Only **three** gates now fail, down from six in experiment 001: the OBS panel
+Jaccard, increment_positive, and value_at_least_clinical. Emptying the ACT panel
+makes the ACT Jaccard gate pass at exactly 1.0, because `_nonempty_jaccard`
+filters empty panels and `_pairwise_jaccard([])` returns 1.0 — the gate is
+vacuous for an arm carrying no genes.
+
+The substantive finding is the **variance decomposition**. Zeroing the ACT panel
+roughly halves the paired-bootstrap sd at the same OBS panel size:
+
+    4 OBS / 4 ACT (exp 002)   sd 2.0784 / 2.0022
+    4 OBS / 0 ACT (exp 004)   sd 1.1968 / 1.3183
+
+The ACT arm is fit on 152 patients against the OBS arm's 882, so ACT-arm genes
+contribute most of the instability in the estimated benefit and hence in the
+policy. Increments improve correspondingly (-3.82/+0.50 -> -3.52/-1.21 in level,
+with far less spread), and score_before_eligibility improves from -14.568 to
+-9.339. This is a real modelling result and not a metric artifact: it says that
+under a T-learner on this cohort, genomic terms in the small treated arm cost
+more in variance than they return in signal.
+
+Running summary:
+
+    run  panels obs/act  mf    increments          score     sf_obs sf_act  #gates failed
+    001  32 / 32         0.35  -5.447, -3.715      -15.092   0.878  0.879   6
+    002   4 /  4         1.00  -3.819, +0.501      -14.568   0.647  0.587   4
+    003   1 /  1         1.00  -1.500, -3.239      -11.128   0.381  0.310   4
+    004   4 /  0         1.00  -3.518, -1.209       -9.339   0.644  0.000   3
