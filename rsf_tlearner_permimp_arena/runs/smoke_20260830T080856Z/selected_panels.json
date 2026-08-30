@@ -1,0 +1,96 @@
+{
+  "full_development": {
+    "act": [
+      "ABI2",
+      "AATF",
+      "ABCG2",
+      "ABCB4",
+      "ABCC1",
+      "ABCD3",
+      "ABCA6",
+      "ABCB6",
+      "ABHD5",
+      "ABCF1",
+      "ABCA5",
+      "A4GNT"
+    ],
+    "observation": [
+      "ABAT",
+      "ABCF1",
+      "ABL1",
+      "AANAT",
+      "AAMP",
+      "ABHD17B",
+      "ABCA6",
+      "ABLIM3",
+      "ABCC1",
+      "A1CF",
+      "ABCB11",
+      "ABI1",
+      "AAK1",
+      "ABCC10",
+      "ABCA7",
+      "ABCA3"
+    ]
+  },
+  "per_fold": {
+    "act": [
+      [
+        "ABCD4",
+        "A4GALT",
+        "ABCB6",
+        "ABCC1",
+        "ABL2",
+        "ABCB8",
+        "ABCG2",
+        "ABLIM3",
+        "ABHD6",
+        "ABL1"
+      ],
+      [
+        "ABCG2",
+        "AATF",
+        "A4GNT",
+        "AACS",
+        "ABL2",
+        "ABI2",
+        "ABHD17A"
+      ]
+    ],
+    "observation": [
+      [
+        "ABI1",
+        "ABLIM1",
+        "ABCB6",
+        "ABCB9",
+        "AANAT",
+        "ABHD17B",
+        "ABCA5",
+        "ABCA6",
+        "ABHD10",
+        "ABCC1",
+        "ABCA2",
+        "ABCB4",
+        "AAAS"
+      ],
+      [
+        "ABCA2",
+        "ABAT",
+        "ABCB9",
+        "ABCD2",
+        "ABCC8",
+        "ABCB4",
+        "ABHD3",
+        "AADAC",
+        "ABCC4",
+        "ABI2",
+        "AACS",
+        "ABCA3",
+        "ABCC1",
+        "ABCG2",
+        "ABHD17A",
+        "ABCB7"
+      ]
+    ]
+  }
+}

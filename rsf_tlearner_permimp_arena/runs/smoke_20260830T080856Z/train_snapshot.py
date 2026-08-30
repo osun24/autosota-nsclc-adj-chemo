@@ -10,10 +10,10 @@ from . import prepare
 
 
 CANDIDATE = {
-    "name": "root_universe_screen_t100d4_pool1024",
+    "name": "root_all_reactome_to_256",
     "parent_run_id": None,
-    "max_panel_genes": {"observation": 32, "act": 32},
-    "next_pool_size": {"observation": 1024, "act": 480},
+    "max_panel_genes": {"observation": 16, "act": 16},
+    "next_pool_size": {"observation": 256, "act": 256},
     "benefit_threshold_months": 0.0,
     "screening_tlearner": {
         "observation": {
@@ -37,14 +37,14 @@ CANDIDATE = {
             "max_depth": 9,
             "min_samples_leaf": 8,
             "min_samples_split": 16,
-            "max_features": 0.35,
+            "max_features": 1.0,
         },
         "act": {
             "n_estimators": 1000,
             "max_depth": 7,
             "min_samples_leaf": 12,
             "min_samples_split": 24,
-            "max_features": 0.35,
+            "max_features": 1.0,
         },
     },
 }
