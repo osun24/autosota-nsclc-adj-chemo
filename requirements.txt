@@ -7,3 +7,4 @@ lifelines
 threadpoolctl
 optuna
 torch
+rpy2

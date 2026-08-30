@@ -9,6 +9,10 @@ This repository now has isolated arenas for future autonomous research sessions:
 - `xgb_arena/train.py` is the agent-editable XGBoost-Cox pipeline with a single `run() -> dict` entry point. The default loop budget is 10 Optuna trials x 2 bootstraps.
 - `rsf_arena/` repeats the same structure for Random Survival Forest.
 - `deepsurv_arena/` repeats the same structure for DeepSurv. It is GPU-friendly, but CPU-safe by default.
+- `reactome_rsf_pfi_arena/` screens every development-available Reactome gene
+  in an RSF, computes held-out permutation importance for five-year causal-RMST
+  policy difference (with C-index secondary), and optimizes a final top-0..32
+  gene panel plus forest hyperparameters.
 - Each arena has `program.md`, `log.md`, and `runs/`.
 - `red_lines.md` is the shared sealed-test and no-leakage rule set.
 - `finalize.py` is HUMAN ONLY for XGBoost.
