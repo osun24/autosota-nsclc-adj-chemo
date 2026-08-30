@@ -1,0 +1,46 @@
+{
+  "full_development": {
+    "act": [],
+    "observation": [
+      "P2RY10"
+    ]
+  },
+  "per_fold": {
+    "act": [
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      []
+    ],
+    "observation": [
+      [
+        "PLA2G3"
+      ],
+      [
+        "CCNG2"
+      ],
+      [
+        "TGFA"
+      ],
+      [
+        "LDLRAP1"
+      ],
+      [
+        "RNASEH1"
+      ],
+      [
+        "TNFRSF17"
+      ],
+      [
+        "SLC22A1"
+      ],
+      [
+        "ADH7"
+      ]
+    ]
+  }
+}

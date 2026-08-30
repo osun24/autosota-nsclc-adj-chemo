@@ -414,3 +414,28 @@ and seed benefit correlation 0.999 are both comfortable.
     004   4/ 0   0.0   -3.518, -1.209       -9.339    3
     005   1/ 0   0.0   -0.824, -0.106       -5.308    3
     006   1/ 0   1.0   +0.722, +0.106       -4.364    2
+
+## Experiment 007 — threshold overshoot (`run_007_20260830T111411Z`)
+
+Candidate `child001_obsonly01_mf1_thr2`: experiment 006 with
+`benefit_threshold_months` 2.0. Elapsed 915 s.
+
+Result: **ineligible**, score_before_eligibility -7.863992,
+robust_selection_lcb -6.4043, range 1.4597. Three gates fail again
+(increment_positive, value_at_least_clinical, OBS Jaccard). Not a new leader.
+
+    rep 1  increment -0.2120  clinical value 48.1524  genomic 48.0433  gap -0.1091
+    rep 2  increment -1.6717  clinical value 48.5260  genomic 47.7296  gap -0.7964
+    act_recommended_fraction 0.315 / 0.315, nontrivial benefit 0.878 / 0.881
+
+The threshold response is single-peaked near 1.0 month:
+
+    threshold  increments          rep-2 value gap   score
+      0.0      -0.824, -0.106      -0.104            -5.308
+      1.0      +0.722, +0.106      -0.018            -4.364
+      2.0      -0.212, -1.672      -0.796            -7.864
+
+At 2.0 months the ACT-recommended fraction saturates at 0.315 in both repeats —
+the threshold has pushed past the useful part of the predicted-benefit
+distribution and is now withdrawing treatment from patients whose AIPW delta is
+positive. Experiment 006 remains the diagnostic leader.
