@@ -1,0 +1,46 @@
+{
+  "full_development": {
+    "act": [],
+    "observation": [
+      "SEC61G"
+    ]
+  },
+  "per_fold": {
+    "act": [
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      []
+    ],
+    "observation": [
+      [
+        "LDLRAP1"
+      ],
+      [
+        "RHOBTB2"
+      ],
+      [
+        "TRIM68"
+      ],
+      [
+        "EIF2AK2"
+      ],
+      [
+        "KCNC2"
+      ],
+      [
+        "WDR82"
+      ],
+      [
+        "PPFIBP2"
+      ],
+      [
+        "RCE1"
+      ]
+    ]
+  }
+}

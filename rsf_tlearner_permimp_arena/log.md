@@ -363,3 +363,54 @@ Running summary:
     003   1 /  1         -1.500, -3.239      -11.128   1.68 / 1.84   4
     004   4 /  0         -3.518, -1.209       -9.339   1.20 / 1.32   3
     005   1 /  0         -0.824, -0.106       -5.308   1.35 / 1.49   3
+
+## Experiment 006 — policy threshold (`run_006_20260830T105721Z`)
+
+Candidate `child001_obsonly01_mf1_thr1`: experiment 005 exactly, with
+`benefit_threshold_months` 1.0 instead of 0.0. Elapsed 919 s.
+
+Result: **ineligible**, reward -1000000.0, score_before_eligibility
+-4.363832, robust_selection_lcb -3.7478, repeat increment range 0.6160.
+New diagnostic leader.
+
+    rep 1  increment +0.7218  lcb -3.7478  sd 1.7833
+           clinical value 48.152 align 5.098 act_frac 0.372
+           genomic  value 48.519 align 5.820 act_frac 0.319
+    rep 2  increment +0.1058  lcb -3.5971  sd 1.3494
+           clinical value 48.526 align 5.361 act_frac 0.382
+           genomic  value 48.508 align 5.467 act_frac 0.345
+
+**Both increments are positive**, so `all_repeat_genomic_increment_positive`
+passes for the first time. Only **two** gates now fail:
+`all_repeat_genomic_value_at_least_clinical` and the OBS panel Jaccard.
+
+I expected the threshold to hurt and it helped; recording that, because the
+reasoning that produced the wrong prediction was itself wrong. The argument was
+that the clinical policy at threshold 0 already scores 5.098 against 1.5 for
+treating nobody, so it has real signal, and withdrawing marginal patients from
+treatment should cost. What that misses is that the threshold is applied *only*
+to the genomic policy while the clinical comparator stays at 0, so raising it
+does not move the model — it moves the decision boundary of one arm of the
+comparison. ACT-recommended fraction falls from 0.372/0.382 to 0.319/0.345, and
+the patients dropped are those with small predicted benefit, where the AIPW
+score delta is on average negative. The threshold is not a tie-breaker here, it
+is a genuine policy lever, and it is the only candidate knob that improves
+alignment without depending on gene signal.
+
+The remaining value failure is **0.0176 months**. Genomic minus clinical value by
+repeat: +0.3667 and -0.0176. Repeat 2 misses `value_at_least_clinical` by under
+two hundredths of a month on a 60-month RMST scale.
+
+Headroom for a larger threshold looks adequate: nontrivial benefit fraction
+0.9429 / 0.9323 against a 0.10 gate, median |predicted benefit| 7.50 / 7.29
+months, IQR ~14 months, so a threshold of 2 months still leaves the
+`nontrivial_benefit_fraction` gate far from binding. Seed agreement 0.996/0.992
+and seed benefit correlation 0.999 are both comfortable.
+
+    run  panels  thr   increments          score      #gates failed
+    001  32/32   0.0   -5.447, -3.715      -15.092    6
+    002   4/ 4   0.0   -3.819, +0.501      -14.568    4
+    003   1/ 1   0.0   -1.500, -3.239      -11.128    4
+    004   4/ 0   0.0   -3.518, -1.209       -9.339    3
+    005   1/ 0   0.0   -0.824, -0.106       -5.308    3
+    006   1/ 0   1.0   +0.722, +0.106       -4.364    2
