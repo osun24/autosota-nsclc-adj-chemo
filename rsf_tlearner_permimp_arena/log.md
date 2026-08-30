@@ -216,3 +216,59 @@ metric is maximized in the limit by a genomic model identical to the clinical
 one. Whatever tops `diagnostic_leader.txt` at the small-panel end is therefore a
 property of the metric, not evidence that a model is good. It is recorded here
 as such.
+
+## Experiment 003 — panel-size dose response, extreme point (`run_003_20260830T100400Z`)
+
+Candidate `child001_panel01_mf1_thr0`, parent `run_001_20260830T092246Z`,
+panels capped 1/1, otherwise identical to experiment 002. Elapsed 917 s.
+
+Result: **ineligible**, reward -1000000.0, score_before_eligibility
+-11.127635, robust_selection_lcb -9.3888, repeat increment range 1.7389.
+Panel Jaccard predicted 0.000000 / 0.000000, reported 0.000000 / 0.000000 —
+third exact match. New diagnostic leader.
+
+    rep 1  increment -1.4997  lcb -6.3827  sd 1.6842
+           clinical value 48.152 align 5.098 | genomic value 47.251 align 3.599 cindex 0.6596
+           genomic split fraction  obs 0.3769  act 0.2932
+    rep 2  increment -3.2385  lcb -9.3888  sd 1.8431
+           clinical value 48.526 align 5.361 | genomic value 47.152 align 2.123 cindex 0.6584
+           genomic split fraction  obs 0.3850  act 0.3260
+
+The dose response is **not monotone**, and that is the finding. Increments by
+panel size:
+
+    32 genes/arm   -5.4471 / -3.7147
+     4 genes/arm   -3.8188 / +0.5012
+     1 gene /arm   -1.4997 / -3.2385
+
+Four genes produced the only positive increment seen so far; one gene is
+negative in both repeats. The scatter is consistent with noise, not with a
+dose-response curve.
+
+**Mechanism.** With a *single* raw gene per arm, that one gene absorbs
+**37.7-38.5%** of OBS splits and 29.3-32.6% of ACT splits. Eighteen clinical
+pretreatment columns, largely categorical or low-cardinality, compete against one
+continuous expression value with ~1,000 distinct levels, and the log-rank split
+search strongly prefers the high-cardinality continuous feature. So panel size is
+not the operative variable: *any* raw gene admitted to the forest captures roughly
+a third of the splits and displaces clinical structure. This arena hard-codes
+`FeatureTransformer(genes, "raw", len(genes))` in `_fit_arm`, so there is no
+module compression available to blunt it — the sibling arena's eligible runs used
+`representation: "module"` precisely here.
+
+Combining with the selector result, the picture is closed:
+
+1. the PFI selector has ~zero cross-fit reproducibility, so selected genes are
+   effectively random;
+2. any raw gene captures ~1/3 of splits regardless of panel size;
+3. therefore the genomic policy is a random perturbation of the clinical policy,
+   and `alignment = mean((2*pi - 1) * delta)` falls under *any* random
+   perturbation, so the expected increment is negative for every panel;
+4. `all_repeat_genomic_increment_positive` can then only pass by luck in both
+   repeats, and observed pairs are (-5.45, -3.71), (-3.82, +0.50), (-1.50, -3.24);
+5. independently, the panel-stability gate is unreachable at 0.006-0.018 against
+   a 0.10 threshold.
+
+Discrimination is not the problem: genomic C-index 0.6596 / 0.6584 against
+clinical 0.6561 / 0.6641, comfortably inside the 0.03 allowance. It is the
+policy value that degrades.

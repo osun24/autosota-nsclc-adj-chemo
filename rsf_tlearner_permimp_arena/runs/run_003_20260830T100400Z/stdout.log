@@ -1,0 +1,8 @@
+[repeat 1 fold 1/4] OBS=1 ACT=1
+[repeat 1 fold 2/4] OBS=1 ACT=1
+[repeat 1 fold 3/4] OBS=1 ACT=1
+[repeat 1 fold 4/4] OBS=1 ACT=1
+[repeat 2 fold 1/4] OBS=1 ACT=1
+[repeat 2 fold 2/4] OBS=1 ACT=1
+[repeat 2 fold 3/4] OBS=1 ACT=1
+[repeat 2 fold 4/4] OBS=1 ACT=1

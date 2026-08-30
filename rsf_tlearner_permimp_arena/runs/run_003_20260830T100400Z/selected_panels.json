@@ -1,0 +1,64 @@
+{
+  "full_development": {
+    "act": [
+      "TPM1"
+    ],
+    "observation": [
+      "GHR"
+    ]
+  },
+  "per_fold": {
+    "act": [
+      [
+        "PARP6"
+      ],
+      [
+        "AAAS"
+      ],
+      [
+        "SLC6A1"
+      ],
+      [
+        "LDLRAP1"
+      ],
+      [
+        "USP21"
+      ],
+      [
+        "ALAD"
+      ],
+      [
+        "SLC1A4"
+      ],
+      [
+        "TNFRSF8"
+      ]
+    ],
+    "observation": [
+      [
+        "PLCG2"
+      ],
+      [
+        "COG7"
+      ],
+      [
+        "ITGA8"
+      ],
+      [
+        "BUB1"
+      ],
+      [
+        "MAP3K3"
+      ],
+      [
+        "TPO"
+      ],
+      [
+        "PFKP"
+      ],
+      [
+        "PYGL"
+      ]
+    ]
+  }
+}
