@@ -637,3 +637,46 @@ add ineligible results.
 Final state: `test_nominee.txt` empty, `best_run.txt` empty,
 `diagnostic_leader.txt` = `run_006_20260830T105721Z` at
 score_before_eligibility -4.363832.
+
+## Experiment 010 — completing the panel-size × threshold design (`run_010_20260830T122455Z`)
+
+Candidate `child001_obsonly04_mf1_thr1`: panels 4 OBS / 0 ACT at threshold 1.0.
+Elapsed 1,103 s. Panel Jaccard predicted obs 0.000000 / act 1.000000, reported
+identically — sixth exact match.
+
+Result: **ineligible**, score_before_eligibility -10.846829,
+robust_selection_lcb -7.9952, range 2.8516. Three gates fail. Not a leader.
+
+    rep 1  increment -2.5724  lcb -7.9952  sd 1.8558  value gap -1.3796
+    rep 2  increment +0.2792  lcb -3.7947  sd 1.5158  value gap +0.0093
+
+This was run because the experimental design had a hole: panel size had only been
+varied at threshold 0 (runs 002-005) and threshold only at panel size 1
+(runs 005-008). The interaction cell was never sampled, and the claim that no
+further slot could help was therefore stronger than the evidence supported.
+
+Completed 2x2, score_before_eligibility:
+
+                    threshold 0.0    threshold 1.0
+    1 gene            -5.308           -4.364  <- leader
+    4 genes           -9.339          -10.847
+
+There is no helpful interaction. The threshold gains +0.94 at one gene but loses
+-1.51 at four; panel size dominates, and the unsampled corner is the worst of the
+four rather than the best. Run 006 stands as the diagnostic leader.
+
+## Final state
+
+Ten of twenty slots, 11,084 s of 21,600 s. `test_nominee.txt` empty,
+`best_run.txt` empty, `diagnostic_leader.txt` = `run_006_20260830T105721Z` at
+score_before_eligibility **-4.363832**, 16 of 18 gates passing, the two failures
+being `observation_panel_jaccard_at_least_0_10_when_nonempty` (structurally
+unreachable) and `all_repeat_genomic_value_at_least_clinical` (missed in repeat 2
+by 0.0176 months).
+
+The search is closed. Every axis the candidate schema exposes has been either
+run in-arena or predicted exactly offline: pool size, panel caps per arm, benefit
+threshold, screening geometry (trees, depth, leaf, split, max_features), final
+forest geometry, and arm placement. Panel Jaccard across eleven screening
+configurations spans 0.0000 to 0.044 against a 0.10 gate, and no configuration
+ever produced a single gene common to all eight outer folds.

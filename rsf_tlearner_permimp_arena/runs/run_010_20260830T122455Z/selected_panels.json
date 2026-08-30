@@ -1,0 +1,73 @@
+{
+  "full_development": {
+    "act": [],
+    "observation": [
+      "SEC61G",
+      "VPS33A",
+      "MYRIP",
+      "WDR70"
+    ]
+  },
+  "per_fold": {
+    "act": [
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      []
+    ],
+    "observation": [
+      [
+        "LDLRAP1",
+        "USP7",
+        "ABCC2",
+        "FMO2"
+      ],
+      [
+        "RHOBTB2",
+        "TIMM13",
+        "ASNS",
+        "PRIM2"
+      ],
+      [
+        "TRIM68",
+        "RGS20",
+        "SEC23A",
+        "ALDH9A1"
+      ],
+      [
+        "EIF2AK2",
+        "ANO10",
+        "APH1A",
+        "RPA4"
+      ],
+      [
+        "KCNC2",
+        "DPF1",
+        "HSPA1L",
+        "APEX1"
+      ],
+      [
+        "WDR82",
+        "AGO3",
+        "FOXA2",
+        "RAD21"
+      ],
+      [
+        "PPFIBP2",
+        "CDKN1B",
+        "AFP",
+        "LAMC2"
+      ],
+      [
+        "RCE1",
+        "TTN",
+        "SIRPA",
+        "MYF5"
+      ]
+    ]
+  }
+}
