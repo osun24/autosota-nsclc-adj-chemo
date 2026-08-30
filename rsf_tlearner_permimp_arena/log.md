@@ -680,3 +680,45 @@ threshold, screening geometry (trees, depth, leaf, split, max_features), final
 forest geometry, and arm placement. Panel Jaccard across eleven screening
 configurations spans 0.0000 to 0.044 against a 0.10 gate, and no configuration
 ever produced a single gene common to all eight outer folds.
+
+## Addendum — a third gate exploit, identified and rejected
+
+While confirming the impossibility result one further route to a passing gate set
+was found. Recording it because it is a genuine defect in the gate design, and
+because a future operator will find it too.
+
+`min_samples_split` is capped at 150, which exceeds the ACT arm's inner-training
+size everywhere, but the ACT inner-train size is not the same in every context:
+roughly 57 patients in the eight outer folds (152 ACT × 3/4 fit × 1/2 inner) and
+roughly 76 in the `full_development` context, which screens on the whole cohort.
+Setting the screening ACT `min_samples_split` between those two values — say 70 —
+makes the ACT trees fail to split in all eight outer folds while still splitting
+at full development. The consequence:
+
+- ACT fold panels empty in all 8 contexts -> `act_panel_jaccard` = 1.0 (vacuous)
+- `max_panel_genes["observation"] = 0` -> OBS fold panels empty -> `observation_panel_jaccard` = 1.0
+- `full_panels["act"]` non-empty -> `at_least_one_selected_genomic_feature` passes
+
+Three gates satisfied without a single reproducible gene. What stops it is
+`all_repeat_mean_genomic_split_fraction_at_least_0_01`: with every fold panel
+empty, the fold models contain no genes, the genomic split fraction is 0 in both
+arms and both repeats, and the gate fails. The only way to satisfy that gate
+alongside the Jaccard gates is to have **exactly one** gene-bearing fold per arm,
+placed in different repeats — one in repeat 1 for OBS, one in repeat 2 for ACT —
+which would give split fractions of ~0.095 and ~0.034 against the 0.01 bar while
+leaving each arm with a single non-empty panel and therefore a vacuous Jaccard
+of 1.0.
+
+That combination is not reachable through any candidate knob; it would depend on
+which folds happen to yield positive selection scores, and on `min_samples_split`
+landing inside a two-or-three-patient window of the per-fold ACT arm size. It is
+also not a result: a run that passed this way would carry one gene in one fold of
+eight and no reproducible selection anywhere, and nominating it against the sealed
+test set would be exactly the harm the red lines exist to prevent. Recorded as a
+defect to fix, not used.
+
+Together with the two defects already noted — the vacuous empty-arm Jaccard, and
+alphabetical pool padding — the stability gate can be satisfied by three separate
+mechanisms that have nothing to do with reproducible gene selection, and cannot
+be satisfied by reproducible gene selection itself. That is the core finding of
+this arena.
