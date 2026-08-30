@@ -471,3 +471,103 @@ selection quantile exists to penalise — and it could not change eligibility in
 any case, because the OBS panel Jaccard gate fails independently.
 
 Experiment 006 (threshold 1.0) remains the diagnostic leader at -4.363832.
+
+## Experiment 009 — ACT-arm mirror (`run_009_20260830T114540Z`)
+
+Candidate `child001_actonly01_mf1_thr1`: experiment 006 with the arms swapped —
+panels 0 OBS / 1 ACT, same locked clinical geometry, same threshold 1.0.
+Elapsed 851 s.
+
+Result: **ineligible**, score_before_eligibility -9.449137,
+robust_selection_lcb -7.4953, range 1.9538. Not a leader.
+Panel Jaccard obs 1.000000 (vacuous, no genes) / act 0.000000.
+
+    rep 1  increment +0.2303  lcb -2.5101  sd 0.9242  value gap -0.0471
+    rep 2  increment -1.7235  lcb -7.4953  sd 1.7920  value gap -0.9484
+    genomic split fraction  act 0.270 / 0.282,  obs 0.000
+
+This is a controlled A/B on arm placement. Because an arm with zero genes and the
+locked clinical parameters is bit-identical to its clinical counterpart,
+experiments 006 and 009 differ **only** in which arm receives the single raw
+gene, with everything else — geometry, seeds, folds, threshold — held fixed:
+
+    one gene in OBS arm (882 patients, exp 006)  increments +0.722, +0.106  range 0.616  score -4.364
+    one gene in ACT arm (152 patients, exp 009)  increments +0.230, -1.724  range 1.954  score -9.449
+
+The same single gene costs roughly twice as much score in the treated arm, and
+triples the repeat-to-repeat range. This upgrades the earlier variance
+decomposition from an inference about bootstrap sd (experiment 002 vs 004) to a
+direct measurement: in a T-learner on this cohort, genomic terms placed in the
+small treated arm are markedly more destabilising than the same term in the large
+control arm. With 152 ACT patients split across outer folds, each arm-specific
+forest sees ~114 treated cases, and one continuous expression feature taking 27%
+of its splits is enough to swamp it.
+
+Note both experiments show the vacuous-gate behaviour symmetrically: whichever
+arm is emptied reports Jaccard exactly 1.000000, because `_nonempty_jaccard`
+drops empty panels and `_pairwise_jaccard([])` returns 1.0. The gate is
+satisfiable for free by any arm carrying no genes, which is worth flagging as a
+weakness in the gate rather than a route to use.
+
+## Conclusion of the search
+
+Nine of twenty slots consumed, 9,981 s of the 21,600 s cumulative budget.
+`test_nominee.txt` is empty and stays empty. `best_run.txt` is empty: no run was
+eligible. `diagnostic_leader.txt` names `run_006_20260830T105721Z` at
+score_before_eligibility **-4.363832**, up from -15.092 at the root.
+
+The search stopped at nine rather than twenty because the remaining slots could
+not change the outcome, and the reason is structural rather than empirical:
+
+1. **The selector carries no reproducible signal.** Cross-fit Spearman of the
+   arm selection score is ~0 in every reachable configuration — eight
+   combinations of pool size (128/256/512/8647), tree count (40-1000), depth
+   (4-12) and `max_features` (sqrt/0.5/1.0), spanning -0.158 to +0.133. This
+   follows from `budget.json` locking `inner_pfi_folds: 2` and
+   `permutation_repeats: 2`: each gene's importance is a mean of four samples of
+   a discrete policy-flip quantity, minus one standard error of those four.
+
+2. **The panel-stability gate therefore cannot be met.** Panel Jaccard is
+   `s*cap/(2P)` when the cap binds and `rho*s/(2-rho*s)` when it does not. The
+   measured commonality curve `s(K)` only rises where the pool exceeds screening
+   coverage and fills with alphabetically-ordered never-used genes; every honest
+   narrowing lands at 0.003-0.018 against the 0.10 threshold. Predicted values
+   matched the arena's reported values exactly on all five runs where a
+   prediction was made, so this is measured, not modelled.
+
+3. **Raw genes cannot be admitted cheaply.** `_fit_arm` hard-codes
+   `FeatureTransformer(genes, "raw", len(genes))`, and a single continuous
+   expression feature takes 27-38% of splits against 18 mostly categorical
+   clinical columns; 32 genes take 88%. The sibling arena's two eligible runs
+   used `representation: "module"`, which is unavailable here.
+
+The gate that blocks eligibility is inherited from `reactome_tlearner_arena`,
+where selection ran through the deterministic `select_genes_by_dr_benefit` and
+passed the 0.10 stability bar in 16 of 20 runs. Pairing that same bar with a
+stochastic four-sample permutation-importance selector is what makes this arena
+unsatisfiable. Raising `inner_pfi_folds` and `permutation_repeats`, or restoring
+module compression, are the changes that would make it winnable; both are locked.
+
+What the arena did establish, on its own recorded evidence:
+
+    run  panels obs/act  thr   increments        score     gates failed
+    001  32 / 32         0.00  -5.447, -3.715   -15.092    6
+    002   4 /  4         0.00  -3.819, +0.501   -14.568    4
+    003   1 /  1         0.00  -1.500, -3.239   -11.128    4
+    004   4 /  0         0.00  -3.518, -1.209    -9.339    3
+    005   1 /  0         0.00  -0.824, -0.106    -5.308    3
+    006   1 /  0         1.00  +0.722, +0.106    -4.364    2   <- leader
+    007   1 /  0         2.00  -0.212, -1.672    -7.864    3
+    008   1 /  0         1.25  -0.753, +0.600    -5.836    3
+    009   0 /  1         1.00  +0.230, -1.724    -9.449    3
+
+- adding noise-selected raw genes to a clinical RSF T-learner degrades AIPW
+  policy value monotonically in how much of the forest they capture;
+- genomic terms in the 152-patient treated arm cost about twice as much as the
+  same term in the 882-patient control arm;
+- a positive minimum-benefit threshold on the genomic policy alone is a real
+  lever (it produced the only run with both increments positive), but its
+  optimum is noise-limited: repeats anti-correlate across the grid;
+- discrimination is never the binding constraint — genomic C-index stays within
+  0.02 of clinical throughout, well inside the 0.03 allowance. It is policy
+  value, not risk ranking, that the genes damage.

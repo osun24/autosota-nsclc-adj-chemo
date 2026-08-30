@@ -1,0 +1,46 @@
+{
+  "full_development": {
+    "act": [
+      "IFNA1"
+    ],
+    "observation": []
+  },
+  "per_fold": {
+    "act": [
+      [
+        "MT3"
+      ],
+      [
+        "MYO15A"
+      ],
+      [
+        "SLCO1A2"
+      ],
+      [
+        "H4C5"
+      ],
+      [
+        "ABCB4"
+      ],
+      [
+        "CEACAM8"
+      ],
+      [
+        "GNG5"
+      ],
+      [
+        "ACE2"
+      ]
+    ],
+    "observation": [
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      []
+    ]
+  }
+}
