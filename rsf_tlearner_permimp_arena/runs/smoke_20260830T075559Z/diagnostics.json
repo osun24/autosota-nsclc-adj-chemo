@@ -1,0 +1,27 @@
+{
+  "arm_support": {
+    "act": {
+      "events": 47.0,
+      "patients": 76.0
+    },
+    "observation": {
+      "events": 185.5,
+      "patients": 441.0
+    }
+  },
+  "panel_stability": {
+    "act_jaccard": 0.1,
+    "observation_jaccard": 0.18181818181818182
+  },
+  "policy": {
+    "threshold_months": 0.0
+  },
+  "seed_stability": {
+    "seed_agreement": 1.0,
+    "seed_benefit_correlation": 1.0
+  },
+  "split_use": {
+    "act": 0.7782392026578073,
+    "observation": 0.7848897552411442
+  }
+}
