@@ -1,0 +1,46 @@
+{
+  "full_development": {
+    "act": [],
+    "observation": [
+      "GHR"
+    ]
+  },
+  "per_fold": {
+    "act": [
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      []
+    ],
+    "observation": [
+      [
+        "PLCG2"
+      ],
+      [
+        "COG7"
+      ],
+      [
+        "ITGA8"
+      ],
+      [
+        "BUB1"
+      ],
+      [
+        "MAP3K3"
+      ],
+      [
+        "TPO"
+      ],
+      [
+        "PFKP"
+      ],
+      [
+        "PYGL"
+      ]
+    ]
+  }
+}

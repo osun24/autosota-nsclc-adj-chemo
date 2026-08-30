@@ -317,3 +317,49 @@ Running summary:
     002   4 /  4         1.00  -3.819, +0.501      -14.568   0.647  0.587   4
     003   1 /  1         1.00  -1.500, -3.239      -11.128   0.381  0.310   4
     004   4 /  0         1.00  -3.518, -1.209       -9.339   0.644  0.000   3
+
+## Experiment 005 — minimal perturbation (`run_005_20260830T104022Z`)
+
+Candidate `child001_obsonly01_mf1_thr0`, parent `run_001_20260830T092246Z`,
+panels 1 OBS / 0 ACT, locked clinical geometry in both arms, threshold 0.0.
+Elapsed 916 s.
+
+Result: **ineligible**, reward -1000000.0, score_before_eligibility
+-5.308255, robust_selection_lcb -4.5904, repeat increment range 0.7179.
+New diagnostic leader. Panel Jaccard predicted obs 0.000000 / act 1.000000,
+reported identically — fifth exact match.
+
+    rep 1  increment -0.8238  lcb -4.4490  sd 1.3507
+           clinical value 48.152 | genomic value 47.735 align 4.274 cindex 0.6579
+    rep 2  increment -0.1060  lcb -4.5904  sd 1.4872
+           clinical value 48.526 | genomic value 48.422 align 5.255 cindex 0.6621
+    genomic split fraction obs 0.377 / 0.385, act 0.000
+    nontrivial benefit fraction 0.993 / 0.990
+
+This is the **minimum-perturbation configuration reachable in this arena**, and
+worth stating precisely why. With `max_panel_genes["act"] = 0` and
+`tlearner["act"]` set to exactly the locked clinical ACT parameters
+(1000/7/12/24, mf 1.0), the genomic ACT arm in `_fit_predict` is fit on the same
+rows, with the same geometry and the same seeds, and no genes — so it is
+*identical* to the clinical ACT arm and contributes exactly zero difference.
+The entire genomic-vs-clinical contrast is then one raw gene entering the OBS
+arm. Increments -0.8238 / -0.1060 are the cost of that single gene, and repeat 2
+is within noise of zero.
+
+There is no lever that reduces this further. Shrinking `max_features` on the OBS
+arm would cut the gene's share of splits, but `max_features` applies to the whole
+candidate set, so it would simultaneously perturb the OBS arm away from the
+mf 1.0 clinical baseline — trading a gene-shaped perturbation for a
+geometry-shaped one. Any deviation from the locked clinical geometry adds
+difference rather than removing it. score_before_eligibility -5.308 is therefore
+close to the arena's attainable ceiling, and the residual gap to zero is the
+irreducible cost of admitting one raw gene at 38% of splits.
+
+Running summary:
+
+    run  panels obs/act  increments          score     sd            #gates failed
+    001  32 / 32         -5.447, -3.715      -15.092   2.72 / 2.59   6
+    002   4 /  4         -3.819, +0.501      -14.568   2.08 / 2.00   4
+    003   1 /  1         -1.500, -3.239      -11.128   1.68 / 1.84   4
+    004   4 /  0         -3.518, -1.209       -9.339   1.20 / 1.32   3
+    005   1 /  0         -0.824, -0.106       -5.308   1.35 / 1.49   3
