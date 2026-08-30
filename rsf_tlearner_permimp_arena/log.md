@@ -171,3 +171,48 @@ Consequence: no candidate in this arena can produce an eligible run, so
 (-3.5746550301982576) is unreachable behind the gate. Remaining slots go to the
 arena's secondary target, `diagnostic_leader.txt` / `score_before_eligibility`,
 which does not depend on the stability gate.
+
+## Experiment 002 — panel-size dose response, first point (`run_002_20260830T094746Z`)
+
+Candidate `child001_panel04_mf1_thr0`, parent `run_001_20260830T092246Z`,
+inheriting the 1,024 OBS / 480 ACT pools. Panels capped 4/4, final T-learner at
+the locked clinical geometry with `max_features` 1.0, threshold 0.0.
+`next_pool_size` 512/240. Elapsed 1,115 s.
+
+Result: **ineligible**, reward -1000000.0, score_before_eligibility
+-14.567831, robust_selection_lcb -10.2479, repeat increment range 4.3200.
+
+Panel Jaccard predicted offline before launch as 0.000000 / 0.000000; reported
+0.000000 / 0.000000. Second exact match, on a different candidate and a
+different pool. The offline predictor is confirmed.
+
+    rep 1  increment -3.8188  lcb -10.2479  boot mean -3.8919 sd 2.0784
+           clinical value 48.152 align 5.098 cindex 0.6561
+           genomic  value 45.684 align 1.279 cindex 0.6429  seed agreement 0.993
+    rep 2  increment +0.5012  lcb  -5.3079  boot mean +0.4560 sd 2.0022
+           clinical value 48.526 align 5.361 cindex 0.6641
+           genomic  value 47.715 align 5.862 cindex 0.6406  seed agreement 0.992
+
+Failed gates: the two panel-Jaccard gates,
+all_repeat_genomic_increment_positive, all_repeat_genomic_value_at_least_clinical.
+
+Dropping from 32 raw genes per arm to 4 recovers most of the damage.
+all_repeat_genomic_alignment_positive and
+all_repeat_genomic_value_at_least_best_constant now **pass** (they failed in
+experiment 001), and repeat 2's increment turns positive (+0.50 against -3.71).
+Increment by panel size, both repeats:
+
+    32 genes/arm (exp 001, mf 0.35)   -5.4471 / -3.7147
+     4 genes/arm (exp 002, mf 1.00)   -3.8188 / +0.5012
+
+Repeat 1 is the harder of the two in both runs, and it is what still blocks
+increment_positive and value_at_least_clinical. Bootstrap sd also falls with
+panel size (2.72/2.59 -> 2.08/2.00), as expected when fewer patients disagree
+with the clinical policy.
+
+Note on the secondary target: score_before_eligibility = min-repeat LCB minus the
+repeat increment range, and both terms go to zero as the panel empties, so the
+metric is maximized in the limit by a genomic model identical to the clinical
+one. Whatever tops `diagnostic_leader.txt` at the small-panel end is therefore a
+property of the metric, not evidence that a model is good. It is recorded here
+as such.

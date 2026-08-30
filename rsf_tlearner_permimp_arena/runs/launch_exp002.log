@@ -1,0 +1,11 @@
+[repeat 1 fold 1/4] OBS=4 ACT=4
+[repeat 1 fold 2/4] OBS=4 ACT=4
+[repeat 1 fold 3/4] OBS=4 ACT=4
+[repeat 1 fold 4/4] OBS=4 ACT=4
+[repeat 2 fold 1/4] OBS=4 ACT=4
+[repeat 2 fold 2/4] OBS=4 ACT=4
+[repeat 2 fold 3/4] OBS=4 ACT=4
+[repeat 2 fold 4/4] OBS=4 ACT=4
+NO_NEW_TEST_NOMINEE
+[launcher] saved /Users/owen/Documents/GitHub/autosota-nsclc-adj-chemo/rsf_tlearner_permimp_arena/runs/run_002_20260830T094746Z
+[wrapper] exit=0 elapsed=1116s
