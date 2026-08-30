@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import importlib.util
 import json
 from pathlib import Path
 import tempfile
@@ -9,6 +10,16 @@ import numpy as np
 import pandas as pd
 
 from reactome_tlearner_arena import integrity, prepare
+
+
+def _load_finalizer_module():
+    path = Path(__file__).resolve().parent / "finalize-rsf-tlearner.py"
+    spec = importlib.util.spec_from_file_location("finalize_rsf_tlearner", path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"Could not load {path}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 ARM = {
@@ -79,6 +90,34 @@ class BoundaryTests(unittest.TestCase):
                 integrity.read_ledger(path)
 
 
+class FinalizerTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.finalizer = _load_finalizer_module()
+
+    def test_frozen_run20_contract(self):
+        result, spec = self.finalizer._load_frozen_contract()
+        self.assertEqual(result["run_id"], self.finalizer.FROZEN_RUN_ID)
+        self.assertEqual(spec.n_genes, 16)
+        self.assertEqual(spec.module_count, 1)
+
+    def test_final_seed_panel_is_zero_through_fifty(self):
+        self.assertEqual(self.finalizer.FINAL_SEEDS, tuple(range(51)))
+
+    def test_alignment_summary_uses_sixty_month_rmst(self):
+        frame = pd.DataFrame(
+            {
+                "OS_MONTHS": [12.0, 24.0, 36.0, 48.0, 60.0, 72.0],
+                "OS_STATUS": [1, 1, 0, 1, 0, 0],
+            }
+        )
+        summary = self.finalizer._alignment_summary(
+            frame, np.array([True, True, True, False, False, False])
+        )
+        self.assertEqual(summary["aligned_n"], 3)
+        self.assertEqual(summary["not_aligned_n"], 3)
+        self.assertTrue(np.isfinite(summary["alignment_rmst_difference_60_months"]))
+
+
 if __name__ == "__main__":
     unittest.main()
-
