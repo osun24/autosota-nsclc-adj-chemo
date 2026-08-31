@@ -1,0 +1,53 @@
+==============================================================================
+grf heterogeneous-treatment-effect screen
+==============================================================================
+R version 4.5.1 (2025-06-13), grf 2.6.1
+cohort            : train, validation (test set never read)
+features          : genomic (p = 13055, n = 1034)
+treated / control : 152 / 882
+deaths observed   : 465
+outcome           : RMST at 60 months (causal_survival_forest)
+propensity        : grf internal regression forest on all features
+fit time          : 39.8s
+
+-- Overlap (estimated propensity W.hat) --------------------------------------
+  range              : [0.0349, 0.4139]
+  quantiles          : q0.01=0.0375, q0.05=0.0405, q0.5=0.1307, q0.95=0.3367, q0.99=0.3819
+  outside [.05,.95]  : 23.11% (below 23.11%, above 0.00%)
+  mean W.hat treated : 0.2407   control: 0.1231
+
+-- Average treatment effect --------------------------------------------------
+  ATE = -3.5034 (SE 1.4861, 95% CI [-6.4161, -0.5907]), in months of survival restricted to 60 months
+
+-- Calibration test ----------------------------------------------------------
+  best linear projection on doubly-robust scores, sandwich HC3 (grf::test_calibration does not support causal_survival_forest)
+  coefficient                          estimate        SE       t   p(1-sided)
+  mean.forest.prediction                 1.8924    0.8037    2.35       0.0094
+  differential.forest.prediction         0.4218    0.8383    0.50       0.3075
+  mean.forest.prediction ~ 1 means the forest's average effect is calibrated;
+  differential.forest.prediction > 0 with a small p-value is the HTE evidence.
+
+-- Out-of-bag CATE estimates -------------------------------------------------
+  mean -1.8513  sd 1.6658  [min -5.2934, q25 -3.0976, med -2.0675, q75 -0.6493, max +2.2756]
+  share with predicted benefit from chemotherapy: 16.4%
+
+-- RATE ----------------------------------------------------------------------
+  AUTOC  in-sample   : -1.8321 (SE 1.6768, two-sided p = 0.2746)
+  QINI   in-sample   : +0.2393 (SE 0.3772, two-sided p = 0.5258)
+  in-sample RATE reuses the same rows for ranking and evaluation (optimistic)
+  AUTOC  split 1/a_on_b: +1.1394 (SE 2.6442, two-sided p = 0.6665)
+  AUTOC  split 1/b_on_a: +2.5351 (SE 2.6988, two-sided p = 0.3476)
+  AUTOC  split 2/a_on_b: +3.4987 (SE 2.2573, two-sided p = 0.1212)
+  AUTOC  split 2/b_on_a: +2.4632 (SE 2.6395, two-sided p = 0.3507)
+  AUTOC  split 3/a_on_b: -0.8733 (SE 2.3648, two-sided p = 0.7119)
+  AUTOC  split 3/b_on_a: +0.6140 (SE 2.6817, two-sided p = 0.8189)
+  mean split-sample AUTOC : +1.5628, median p = 0.5086
+
+-- Top split-frequency importance --------------------------------------------
+  EPHA1 (0.0019), SPINK1 (0.0016), TESC (0.0016), ADAM3A (0.0015), ZNRF4 (0.0013), USP7 (0.0013), NEAT1 (0.0013), RARB (0.0013), CFAP43 (0.0012), ZMYM2 (0.0012), H4C7 (0.0012), SECISBP2 (0.0011), ADGRG6 (0.0011), CABP2 (0.0011), PPP4R4 (0.0011), POLA2 (0.0010), CD209 (0.0010), CEP72-DT (0.0010), COX10 (0.0010), RRP12 (0.0010), TULP4 (0.0010), ANKRD36B (0.0010), CCT4 (0.0010), DNAJC15 (0.0010), DNMT1 (0.0009)
+
+-- Verdict -------------------------------------------------------------------
+  OVERLAP: THIN - 23.1% of patients have propensity below 0.05 (treated share is 14.7%, so W.hat is low throughout; W.hat maxes out at 0.41, with no mass near 1). Effects for those patients rest on few comparable treated cases.
+  CALIBRATION: no HTE signal (differential.forest.prediction = 0.422, one-sided p = 0.3075).
+  RATE (split-sample AUTOC): mean estimate 1.563, median p = 0.509, 0% of splits significant at 0.05.
+==============================================================================

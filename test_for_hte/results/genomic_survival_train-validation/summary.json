@@ -1,0 +1,247 @@
+{
+  "r_version": "R version 4.5.1 (2025-06-13)",
+  "grf_version": "2.6.1",
+  "features": "genomic",
+  "splits": [
+    "train",
+    "validation"
+  ],
+  "forest": "survival",
+  "outcome": "RMST at 60 months (causal_survival_forest)",
+  "n": 1034,
+  "p": 13055,
+  "n_treated": 152,
+  "n_events": 465,
+  "horizon_months": 60.0,
+  "seed": 42,
+  "propensity_model": "grf internal regression forest on all features",
+  "fit_seconds": 39.8,
+  "tuned_params": null,
+  "overlap": {
+    "min": 0.03487259754929958,
+    "max": 0.4139157570954557,
+    "quantiles": {
+      "0.01": 0.03750488336888062,
+      "0.05": 0.04046753357495099,
+      "0.5": 0.13073843891548143,
+      "0.95": 0.3367273400367561,
+      "0.99": 0.3819214503802373
+    },
+    "share_below_0.05": 0.2311411992263056,
+    "share_above_0.95": 0.0,
+    "share_outside_0.05_0.95": 0.2311411992263056,
+    "mean_treated": 0.24073431181543828,
+    "mean_control": 0.12305125363557312,
+    "treated_min": 0.06741789604088648,
+    "control_max": 0.413903650982961
+  },
+  "ate": {
+    "estimate": -3.5034394970565828,
+    "std_err": 1.4860757851371427
+  },
+  "calibration_method": "best linear projection on doubly-robust scores, sandwich HC3 (grf::test_calibration does not support causal_survival_forest)",
+  "calibration": {
+    "mean.forest.prediction": {
+      "estimate": 1.8924070987861683,
+      "std_err": 0.8036996794220733,
+      "t_value": 2.3546197009148564,
+      "p_value_one_sided": 0.009364105767299492
+    },
+    "differential.forest.prediction": {
+      "estimate": 0.42177736286643425,
+      "std_err": 0.838337274467125,
+      "t_value": 0.5031117853307071,
+      "p_value_one_sided": 0.3074965188270494
+    }
+  },
+  "tau_hat": {
+    "mean": -1.8513138633350863,
+    "sd": 1.6657725709736348,
+    "min": -5.293422928706318,
+    "q25": -3.0976237123275916,
+    "median": -2.067542427029834,
+    "q75": -0.6493319927963984,
+    "max": 2.2756398042649835,
+    "share_positive": 0.1644100580270793
+  },
+  "variable_importance_top": [
+    {
+      "feature": "EPHA1",
+      "importance": 0.0019472592101957653
+    },
+    {
+      "feature": "SPINK1",
+      "importance": 0.0016109501058181915
+    },
+    {
+      "feature": "TESC",
+      "importance": 0.0016028218972854518
+    },
+    {
+      "feature": "ADAM3A",
+      "importance": 0.0015132296734622647
+    },
+    {
+      "feature": "ZNRF4",
+      "importance": 0.0013177610971970486
+    },
+    {
+      "feature": "USP7",
+      "importance": 0.0012682536975219903
+    },
+    {
+      "feature": "NEAT1",
+      "importance": 0.0012645975200366846
+    },
+    {
+      "feature": "RARB",
+      "importance": 0.0012637539549211932
+    },
+    {
+      "feature": "CFAP43",
+      "importance": 0.001222037423648808
+    },
+    {
+      "feature": "ZMYM2",
+      "importance": 0.0011964958235054096
+    },
+    {
+      "feature": "H4C7",
+      "importance": 0.0011530383876189121
+    },
+    {
+      "feature": "SECISBP2",
+      "importance": 0.0011490150263207886
+    },
+    {
+      "feature": "ADGRG6",
+      "importance": 0.0011153452176446504
+    },
+    {
+      "feature": "CABP2",
+      "importance": 0.0011136857989670309
+    },
+    {
+      "feature": "PPP4R4",
+      "importance": 0.0010796488064780748
+    },
+    {
+      "feature": "POLA2",
+      "importance": 0.001046794851364065
+    },
+    {
+      "feature": "CD209",
+      "importance": 0.0010220968163361576
+    },
+    {
+      "feature": "CEP72-DT",
+      "importance": 0.0010167812201732323
+    },
+    {
+      "feature": "COX10",
+      "importance": 0.0010164140363604145
+    },
+    {
+      "feature": "RRP12",
+      "importance": 0.000986400405169582
+    },
+    {
+      "feature": "TULP4",
+      "importance": 0.0009827442276842764
+    },
+    {
+      "feature": "ANKRD36B",
+      "importance": 0.0009790880501989706
+    },
+    {
+      "feature": "CCT4",
+      "importance": 0.000969381908925104
+    },
+    {
+      "feature": "DNAJC15",
+      "importance": 0.0009680896740603024
+    },
+    {
+      "feature": "DNMT1",
+      "importance": 0.0009397354615470893
+    }
+  ],
+  "rate_in_sample": {
+    "AUTOC": {
+      "estimate": -1.8321414659186535,
+      "std_err": 1.6768486257829678,
+      "z": -1.0926099337459128,
+      "p_value_two_sided": 0.27456509932036205
+    },
+    "QINI": {
+      "estimate": 0.23931739532735677,
+      "std_err": 0.3772401911984021,
+      "z": 0.6343899746395062,
+      "p_value_two_sided": 0.5258263506468963
+    }
+  },
+  "rate_in_sample_note": "Priorities are the forest's own out-of-bag predictions evaluated on the same rows, so these are optimistically biased; use the split-sample RATE.",
+  "rate_split_sample": {
+    "repeats": [
+      {
+        "estimate": 1.139430899777738,
+        "std_err": 2.644224805884845,
+        "z": 0.4309130211780336,
+        "p_value_two_sided": 0.666531615199955,
+        "repeat": 1,
+        "direction": "a_on_b",
+        "seed": 1042
+      },
+      {
+        "estimate": 2.5351112644496427,
+        "std_err": 2.698806956186949,
+        "z": 0.9393451645876197,
+        "p_value_two_sided": 0.34755355702481283,
+        "repeat": 1,
+        "direction": "b_on_a",
+        "seed": 1042
+      },
+      {
+        "estimate": 3.4986889377609054,
+        "std_err": 2.257325440789406,
+        "z": 1.5499266851559446,
+        "p_value_two_sided": 0.12115911388632021,
+        "repeat": 2,
+        "direction": "a_on_b",
+        "seed": 2042
+      },
+      {
+        "estimate": 2.463205216490458,
+        "std_err": 2.6395043914304814,
+        "z": 0.9332074704962025,
+        "p_value_two_sided": 0.3507128583349472,
+        "repeat": 2,
+        "direction": "b_on_a",
+        "seed": 2042
+      },
+      {
+        "estimate": -0.8733336724928689,
+        "std_err": 2.364841185749379,
+        "z": -0.3692990792597871,
+        "p_value_two_sided": 0.7119048117703263,
+        "repeat": 3,
+        "direction": "a_on_b",
+        "seed": 3042
+      },
+      {
+        "estimate": 0.6139544512855213,
+        "std_err": 2.681719955494806,
+        "z": 0.22894055362773333,
+        "p_value_two_sided": 0.8189151202723806,
+        "repeat": 3,
+        "direction": "b_on_a",
+        "seed": 3042
+      }
+    ],
+    "mean_estimate": 1.5628428495452324,
+    "median_p_value": 0.5086222367674511,
+    "share_p_below_0.05": 0.0,
+    "note": "Halves are re-drawn per repeat, so repeats are correlated; read the spread, not a pooled p-value."
+  },
+  "verdict": "OVERLAP: THIN - 23.1% of patients have propensity below 0.05 (treated share is 14.7%, so W.hat is low throughout; W.hat maxes out at 0.41, with no mass near 1). Effects for those patients rest on few comparable treated cases.\nCALIBRATION: no HTE signal (differential.forest.prediction = 0.422, one-sided p = 0.3075).\nRATE (split-sample AUTOC): mean estimate 1.563, median p = 0.509, 0% of splits significant at 0.05."
+}

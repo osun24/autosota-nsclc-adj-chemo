@@ -1,0 +1,56 @@
+==============================================================================
+grf heterogeneous-treatment-effect screen
+==============================================================================
+R version 4.5.1 (2025-06-13), grf 2.6.1
+cohort            : train, validation (test set never read)
+features          : clinical (p = 18, n = 1034)
+treated / control : 152 / 882
+deaths observed   : 465
+outcome           : RMST at 60 months (causal_survival_forest)
+propensity        : grf internal regression forest on all features
+fit time          : 3.6s
+
+-- Overlap (estimated propensity W.hat) --------------------------------------
+  range              : [0.0298, 0.4890]
+  quantiles          : q0.01=0.0363, q0.05=0.0412, q0.5=0.1234, q0.95=0.3357, q0.99=0.4258
+  outside [.05,.95]  : 14.12% (below 14.12%, above 0.00%)
+  mean W.hat treated : 0.2151   control: 0.1340
+
+-- Average treatment effect --------------------------------------------------
+  ATE = -1.6108 (SE 1.7417, 95% CI [-5.0245, +1.8030]), in months of survival restricted to 60 months
+
+-- Calibration test ----------------------------------------------------------
+  best linear projection on doubly-robust scores, sandwich HC3 (grf::test_calibration does not support causal_survival_forest)
+  coefficient                          estimate        SE       t   p(1-sided)
+  mean.forest.prediction                -4.7810    5.1758   -0.92       0.8221
+  differential.forest.prediction         0.5197    0.6116    0.85       0.1978
+  mean.forest.prediction ~ 1 means the forest's average effect is calibrated;
+  differential.forest.prediction > 0 with a small p-value is the HTE evidence.
+  NOTE: the mean CATE is near zero, so the mean.forest.prediction coefficient
+  (a ratio with that mean in the denominator) is numerically unstable.  The
+  two regressors are orthogonal, so the differential row is unaffected.
+
+-- Out-of-bag CATE estimates -------------------------------------------------
+  mean +0.3369  sd 3.0369  [min -7.3090, q25 -1.9809, med +0.0279, q75 +2.6242, max +7.0652]
+  share with predicted benefit from chemotherapy: 50.2%
+
+-- RATE ----------------------------------------------------------------------
+  AUTOC  in-sample   : -0.9516 (SE 2.0563, two-sided p = 0.6435)
+  QINI   in-sample   : +0.5673 (SE 0.5131, two-sided p = 0.2689)
+  in-sample RATE reuses the same rows for ranking and evaluation (optimistic)
+  AUTOC  split 1/a_on_b: +1.6206 (SE 2.6447, two-sided p = 0.5400)
+  AUTOC  split 1/b_on_a: +1.0979 (SE 2.7018, two-sided p = 0.6845)
+  AUTOC  split 2/a_on_b: +2.7779 (SE 2.1779, two-sided p = 0.2021)
+  AUTOC  split 2/b_on_a: +3.9055 (SE 2.4278, two-sided p = 0.1077)
+  AUTOC  split 3/a_on_b: +1.8886 (SE 1.8006, two-sided p = 0.2942)
+  AUTOC  split 3/b_on_a: -2.2952 (SE 4.5984, two-sided p = 0.6177)
+  mean split-sample AUTOC : +1.4992, median p = 0.4171
+
+-- Top split-frequency importance --------------------------------------------
+  Age (0.5026), Stage_II (0.1092), Stage_IB (0.1007), Smoked?_Unknown (0.0683), IS_MALE (0.0458), Stage_III (0.0407), Smoked?_Yes (0.0341), Race_Unknown (0.0291), Histology_Adenocarcinoma (0.0252), Race_Caucasian (0.0177), Histology_Squamous Cell Carcinoma (0.0113), Stage_IA (0.0097), Smoked?_No (0.0053), Histology_Large Cell Carcinoma (0.0002), Race_African American (0.0000), Race_Asian (0.0000), Histology_Adenosquamous Carcinoma (0.0000), Race_Native Hawaiian or Other Pacific Islander (0.0000)
+
+-- Verdict -------------------------------------------------------------------
+  OVERLAP: THIN - 14.1% of patients have propensity below 0.05 (treated share is 14.7%, so W.hat is low throughout; W.hat maxes out at 0.49, with no mass near 1). Effects for those patients rest on few comparable treated cases.
+  CALIBRATION: no HTE signal (differential.forest.prediction = 0.520, one-sided p = 0.1978).
+  RATE (split-sample AUTOC): mean estimate 1.499, median p = 0.417, 0% of splits significant at 0.05.
+==============================================================================

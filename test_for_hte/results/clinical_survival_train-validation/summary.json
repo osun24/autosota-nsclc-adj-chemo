@@ -1,0 +1,219 @@
+{
+  "r_version": "R version 4.5.1 (2025-06-13)",
+  "grf_version": "2.6.1",
+  "features": "clinical",
+  "splits": [
+    "train",
+    "validation"
+  ],
+  "forest": "survival",
+  "outcome": "RMST at 60 months (causal_survival_forest)",
+  "n": 1034,
+  "p": 18,
+  "n_treated": 152,
+  "n_events": 465,
+  "horizon_months": 60.0,
+  "seed": 42,
+  "propensity_model": "grf internal regression forest on all features",
+  "fit_seconds": 3.6,
+  "tuned_params": null,
+  "overlap": {
+    "min": 0.029826376514576255,
+    "max": 0.4889533575062332,
+    "quantiles": {
+      "0.01": 0.036337358959377675,
+      "0.05": 0.04121055114551023,
+      "0.5": 0.12342655069822174,
+      "0.95": 0.33569575941650637,
+      "0.99": 0.4257822386504682
+    },
+    "share_below_0.05": 0.14119922630560927,
+    "share_above_0.95": 0.0,
+    "share_outside_0.05_0.95": 0.14119922630560927,
+    "mean_treated": 0.21506416747229926,
+    "mean_control": 0.13401014746230305,
+    "treated_min": 0.029826376514576255,
+    "control_max": 0.48579831756137726
+  },
+  "ate": {
+    "estimate": -1.6107867337351964,
+    "std_err": 1.7417122225143489
+  },
+  "calibration_method": "best linear projection on doubly-robust scores, sandwich HC3 (grf::test_calibration does not support causal_survival_forest)",
+  "calibration": {
+    "mean.forest.prediction": {
+      "estimate": -4.781047204340313,
+      "std_err": 5.17577526054658,
+      "t_value": -0.9237354722073883,
+      "p_value_one_sided": 0.822080008266609
+    },
+    "differential.forest.prediction": {
+      "estimate": 0.5196823407613949,
+      "std_err": 0.6115871393554029,
+      "t_value": 0.8497273852244942,
+      "p_value_one_sided": 0.19783687436121666
+    }
+  },
+  "tau_hat": {
+    "mean": 0.33691086176118695,
+    "sd": 3.0368941133585556,
+    "min": -7.3089560236052655,
+    "q25": -1.9809203702750746,
+    "median": 0.027938800936733958,
+    "q75": 2.6242145197716384,
+    "max": 7.065173367242613,
+    "share_positive": 0.5019342359767892
+  },
+  "variable_importance_top": [
+    {
+      "feature": "Age",
+      "importance": 0.5025970894929453
+    },
+    {
+      "feature": "Stage_II",
+      "importance": 0.10918291964436608
+    },
+    {
+      "feature": "Stage_IB",
+      "importance": 0.100709628734738
+    },
+    {
+      "feature": "Smoked?_Unknown",
+      "importance": 0.06833169636551463
+    },
+    {
+      "feature": "IS_MALE",
+      "importance": 0.045789874313507596
+    },
+    {
+      "feature": "Stage_III",
+      "importance": 0.04072377026166033
+    },
+    {
+      "feature": "Smoked?_Yes",
+      "importance": 0.03414315983968574
+    },
+    {
+      "feature": "Race_Unknown",
+      "importance": 0.02906767867614963
+    },
+    {
+      "feature": "Histology_Adenocarcinoma",
+      "importance": 0.025206976468645018
+    },
+    {
+      "feature": "Race_Caucasian",
+      "importance": 0.01769465499842298
+    },
+    {
+      "feature": "Histology_Squamous Cell Carcinoma",
+      "importance": 0.011348909501410168
+    },
+    {
+      "feature": "Stage_IA",
+      "importance": 0.00971350521615
+    },
+    {
+      "feature": "Smoked?_No",
+      "importance": 0.005264374008702816
+    },
+    {
+      "feature": "Histology_Large Cell Carcinoma",
+      "importance": 0.00022576247810171947
+    },
+    {
+      "feature": "Race_African American",
+      "importance": 0.0
+    },
+    {
+      "feature": "Race_Asian",
+      "importance": 0.0
+    },
+    {
+      "feature": "Histology_Adenosquamous Carcinoma",
+      "importance": 0.0
+    },
+    {
+      "feature": "Race_Native Hawaiian or Other Pacific Islander",
+      "importance": 0.0
+    }
+  ],
+  "rate_in_sample": {
+    "AUTOC": {
+      "estimate": -0.9515508379120614,
+      "std_err": 2.0562557962657166,
+      "z": -0.4627589814653092,
+      "p_value_two_sided": 0.6435371358151759
+    },
+    "QINI": {
+      "estimate": 0.5673361656724786,
+      "std_err": 0.5131123941477366,
+      "z": 1.1056762068957737,
+      "p_value_two_sided": 0.2688666919627814
+    }
+  },
+  "rate_in_sample_note": "Priorities are the forest's own out-of-bag predictions evaluated on the same rows, so these are optimistically biased; use the split-sample RATE.",
+  "rate_split_sample": {
+    "repeats": [
+      {
+        "estimate": 1.620599964098996,
+        "std_err": 2.6446637115014293,
+        "z": 0.6127811097687534,
+        "p_value_two_sided": 0.5400210829895071,
+        "repeat": 1,
+        "direction": "a_on_b",
+        "seed": 1042
+      },
+      {
+        "estimate": 1.0979043747007446,
+        "std_err": 2.701829261688055,
+        "z": 0.4063559419793957,
+        "p_value_two_sided": 0.6844810868606508,
+        "repeat": 1,
+        "direction": "b_on_a",
+        "seed": 1042
+      },
+      {
+        "estimate": 2.777903868752224,
+        "std_err": 2.177896241829205,
+        "z": 1.2754987200028756,
+        "p_value_two_sided": 0.20213277691103687,
+        "repeat": 2,
+        "direction": "a_on_b",
+        "seed": 2042
+      },
+      {
+        "estimate": 3.9055007798511268,
+        "std_err": 2.4277823633535007,
+        "z": 1.6086700516501202,
+        "p_value_two_sided": 0.10768850767494,
+        "repeat": 2,
+        "direction": "b_on_a",
+        "seed": 2042
+      },
+      {
+        "estimate": 1.8886068596174366,
+        "std_err": 1.8006337027361297,
+        "z": 1.048856775671603,
+        "p_value_two_sided": 0.2942440419448016,
+        "repeat": 3,
+        "direction": "a_on_b",
+        "seed": 3042
+      },
+      {
+        "estimate": -2.295157416375714,
+        "std_err": 4.598406425904152,
+        "z": -0.4991201742078363,
+        "p_value_two_sided": 0.6176947259677594,
+        "repeat": 3,
+        "direction": "b_on_a",
+        "seed": 3042
+      }
+    ],
+    "mean_estimate": 1.4992264051074689,
+    "median_p_value": 0.41713256246715436,
+    "share_p_below_0.05": 0.0,
+    "note": "Halves are re-drawn per repeat, so repeats are correlated; read the spread, not a pooled p-value."
+  },
+  "verdict": "OVERLAP: THIN - 14.1% of patients have propensity below 0.05 (treated share is 14.7%, so W.hat is low throughout; W.hat maxes out at 0.49, with no mass near 1). Effects for those patients rest on few comparable treated cases.\nCALIBRATION: no HTE signal (differential.forest.prediction = 0.520, one-sided p = 0.1978).\nRATE (split-sample AUTOC): mean estimate 1.499, median p = 0.417, 0% of splits significant at 0.05."
+}
