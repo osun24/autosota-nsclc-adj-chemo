@@ -1,0 +1,214 @@
+{
+  "folds_audit": [
+    {
+      "arms": {
+        "act": {
+          "events": 76,
+          "fit_n": 123,
+          "optuna_best_cindex": 0.5857750868950297,
+          "parameters": {
+            "bootstrap": true,
+            "low_memory": false,
+            "max_depth": 7,
+            "max_features": 0.9530289423239278,
+            "min_samples_leaf": 8,
+            "min_samples_split": 23,
+            "n_estimators": 700,
+            "n_jobs": -1,
+            "oob_score": false,
+            "random_state": 28070910
+          }
+        },
+        "observation": {
+          "events": 296,
+          "fit_n": 704,
+          "optuna_best_cindex": 0.6906220221043887,
+          "parameters": {
+            "bootstrap": true,
+            "low_memory": false,
+            "max_depth": 8,
+            "max_features": 0.6609364801480618,
+            "min_samples_leaf": 11,
+            "min_samples_split": 31,
+            "n_estimators": 600,
+            "n_jobs": -1,
+            "oob_score": false,
+            "random_state": 28060910
+          }
+        }
+      },
+      "assess_n": 207,
+      "fit_n": 827,
+      "fold": 1
+    },
+    {
+      "arms": {
+        "act": {
+          "events": 75,
+          "fit_n": 121,
+          "optuna_best_cindex": 0.5953156614123181,
+          "parameters": {
+            "bootstrap": true,
+            "low_memory": false,
+            "max_depth": 7,
+            "max_features": 0.712871639581959,
+            "min_samples_leaf": 19,
+            "min_samples_split": 40,
+            "n_estimators": 900,
+            "n_jobs": -1,
+            "oob_score": false,
+            "random_state": 28170910
+          }
+        },
+        "observation": {
+          "events": 297,
+          "fit_n": 706,
+          "optuna_best_cindex": 0.7030396519549589,
+          "parameters": {
+            "bootstrap": true,
+            "low_memory": false,
+            "max_depth": 7,
+            "max_features": 0.6026861338963228,
+            "min_samples_leaf": 12,
+            "min_samples_split": 31,
+            "n_estimators": 700,
+            "n_jobs": -1,
+            "oob_score": false,
+            "random_state": 28160910
+          }
+        }
+      },
+      "assess_n": 207,
+      "fit_n": 827,
+      "fold": 2
+    },
+    {
+      "arms": {
+        "act": {
+          "events": 75,
+          "fit_n": 121,
+          "optuna_best_cindex": 0.6489466578127362,
+          "parameters": {
+            "bootstrap": true,
+            "low_memory": false,
+            "max_depth": 7,
+            "max_features": 0.7380966426455176,
+            "min_samples_leaf": 8,
+            "min_samples_split": 24,
+            "n_estimators": 900,
+            "n_jobs": -1,
+            "oob_score": false,
+            "random_state": 28270910
+          }
+        },
+        "observation": {
+          "events": 297,
+          "fit_n": 706,
+          "optuna_best_cindex": 0.6890784089324731,
+          "parameters": {
+            "bootstrap": true,
+            "low_memory": false,
+            "max_depth": 7,
+            "max_features": 0.6002814283616388,
+            "min_samples_leaf": 5,
+            "min_samples_split": 14,
+            "n_estimators": 600,
+            "n_jobs": -1,
+            "oob_score": false,
+            "random_state": 28260910
+          }
+        }
+      },
+      "assess_n": 207,
+      "fit_n": 827,
+      "fold": 3
+    },
+    {
+      "arms": {
+        "act": {
+          "events": 75,
+          "fit_n": 121,
+          "optuna_best_cindex": 0.6407585816058586,
+          "parameters": {
+            "bootstrap": true,
+            "low_memory": false,
+            "max_depth": 7,
+            "max_features": 0.6793173796947823,
+            "min_samples_leaf": 8,
+            "min_samples_split": 21,
+            "n_estimators": 900,
+            "n_jobs": -1,
+            "oob_score": false,
+            "random_state": 28370910
+          }
+        },
+        "observation": {
+          "events": 297,
+          "fit_n": 706,
+          "optuna_best_cindex": 0.686165953175641,
+          "parameters": {
+            "bootstrap": true,
+            "low_memory": false,
+            "max_depth": 9,
+            "max_features": 0.6352661329201148,
+            "min_samples_leaf": 7,
+            "min_samples_split": 15,
+            "n_estimators": 600,
+            "n_jobs": -1,
+            "oob_score": false,
+            "random_state": 28360910
+          }
+        }
+      },
+      "assess_n": 207,
+      "fit_n": 827,
+      "fold": 4
+    },
+    {
+      "arms": {
+        "act": {
+          "events": 75,
+          "fit_n": 122,
+          "optuna_best_cindex": 0.5851702305615518,
+          "parameters": {
+            "bootstrap": true,
+            "low_memory": false,
+            "max_depth": 6,
+            "max_features": 0.8621704966658941,
+            "min_samples_leaf": 18,
+            "min_samples_split": 48,
+            "n_estimators": 1000,
+            "n_jobs": -1,
+            "oob_score": false,
+            "random_state": 28470910
+          }
+        },
+        "observation": {
+          "events": 297,
+          "fit_n": 706,
+          "optuna_best_cindex": 0.6851975375472986,
+          "parameters": {
+            "bootstrap": true,
+            "low_memory": false,
+            "max_depth": 8,
+            "max_features": 0.6026514364868195,
+            "min_samples_leaf": 7,
+            "min_samples_split": 18,
+            "n_estimators": 700,
+            "n_jobs": -1,
+            "oob_score": false,
+            "random_state": 28460910
+          }
+        }
+      },
+      "assess_n": 206,
+      "fit_n": 828,
+      "fold": 5
+    }
+  ],
+  "historical_use": "Prior performance used only to set Optuna bounds",
+  "inner_folds": 3,
+  "outer_folds": 5,
+  "source": "newly fitted clinical RSF T-learner",
+  "trials_per_arm_per_fold": 20
+}

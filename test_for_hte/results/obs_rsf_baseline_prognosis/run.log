@@ -1,0 +1,24 @@
+Thu Sep 10 23:37:12 PDT 2026
+[data] development=1034 OBS=882 ACT=152 features=18
+[alignment] training a new OOF T-learner: folds=5 inner_folds=3 trials/arm/fold=20
+[alignment fold 1/5] assessed=207
+[alignment fold 2/5] assessed=207
+[alignment fold 3/5] assessed=207
+[alignment fold 4/5] assessed=207
+[alignment fold 5/5] assessed=206
+[Optuna full OBS] best C-index=0.7019 params={'min_samples_leaf': 10, 'split_multiplier': 2.6654143931827163, 'n_estimators': 1000, 'max_depth': 10, 'max_features': 0.7144468683697338}
+[outer 1/5] fit=705 held_out=177 mean_RMST=47.581
+[outer 2/5] fit=705 held_out=177 mean_RMST=46.872
+[outer 3/5] fit=706 held_out=176 mean_RMST=46.511
+[outer 4/5] fit=706 held_out=176 mean_RMST=45.043
+[outer 5/5] fit=706 held_out=176 mean_RMST=47.202
+
+                    Baseline prognosis    Aligned Discordant
+                                     N        672        362
+      Mean predicted OBS RMST (months)   48.88134  40.611058
+                           SD (months)   7.938096   7.786906
+                       Median (months)  49.828369  40.224647
+                          IQR (months)  11.338069   9.907293
+SMD (aligned - discordant) / pooled SD   1.048791           
+
+[done] outputs written to /Users/owen/Documents/GitHub/autosota-nsclc-adj-chemo/test_for_hte/results/obs_rsf_baseline_prognosis
